@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #F4F4F2;
+      --surface:  #FFFFFF;
+      --border:   #E0DED8;
+      --text:     #1A1A18;
+      --muted:    #6B6B68;
+      --teal:     #01696F;
+      --teal-hov: #0C4E54;
+      --shadow:   rgba(0,0,0,0.08);
+    }
+    [data-theme="dark"] {
+      --bg:       #111110;
+      --surface:  #1C1B19;
+      --border:   #2E2D2B;
+      --text:     #E8E7E4;
+      --muted:    #7A7976;
+      --teal:     #4F98A3;
+      --teal-hov: #227F8B;
+      --shadow:   rgba(0,0,0,0.5);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      color: var(--muted);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .theme-toggle:hover { background: var(--border); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px var(--shadow);
+      text-align: center;
+      transition: background 0.25s, border-color 0.25s;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .logo-dot {
+      width: 9px;
+      height: 9px;
+      background: var(--teal);
+      border-radius: 50%;
+    }
+    .logo-text {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    .enter-btn {
+      width: 100%;
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+    .enter-btn:hover { background: var(--teal-hov); }
+    .enter-btn:active { transform: scale(0.98); }
+    .enter-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .error {
+      background: rgba(161,44,123,0.1);
+      border: 1px solid rgba(161,44,123,0.25);
+      color: #c0568a;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      margin-top: 14px;
+      display: none;
+    }
+    .error.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark mode">☀️</button>
+
+  <div class="card">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      <span class="logo-text">Portfolio Admin</span>
+    </div>
+    <h1>Admin Panel</h1>
+    <p class="subtitle">Andre Weissmann Portfolio</p>
+
+    <button class="enter-btn" id="btn" onclick="enter()">Enter Admin</button>
+    <div class="error" id="err">Connection error. Try again.</div>
+  </div>
+
+  <script>
+    var _PORT = '__PORT_5000__';
+    var API_BASE = _PORT.startsWith('__') ? '' : '/' + _PORT;
+
+    // Theme: auto-detect system preference, allow manual override
+    (function() {
+      var saved = localStorage.getItem('adminTheme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+    })();
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+      try { localStorage.setItem('adminTheme', next); } catch(e) {}
+    }
+
+    async function enter() {
+      var btn = document.getElementById('btn');
+      var err = document.getElementById('err');
+      err.classList.remove('show');
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
+      try {
+        var res = await fetch(API_BASE + '/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        var data = await res.json();
+        if (res.ok && data.token) {
+          sessionStorage.setItem('adminToken', data.token);
+          window.location.href = '/admin.html';
+        } else {
+          err.classList.add('show');
+          btn.disabled = false;
+          btn.textContent = 'Enter Admin';
+        }
+      } catch(e) {
+        err.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Enter Admin';
+      }
+    }
+  </script>
+</body>
+</html>

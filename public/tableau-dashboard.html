@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Airbnb Analysis of Seattle Residential Areas, 2016 | Tableau Case Study | Andre Weissmann</title>
+<meta name="description" content="A Tableau deep-dive into 323,346 Seattle Airbnb listings from 2016: pricing gaps, bedroom economics, seasonality, and a $110/night finding hosts can act on."/>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#171614;
+    --surface:#1C1B19;
+    --border:#2E2D2B;
+    --text:#CDCCCA;
+    --muted:#797876;
+    --accent:#E97627;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Satoshi',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+
+  /* ── Sticky top bar ── */
+  .topbar{
+    position:sticky;top:0;z-index:100;
+    height:36px;background:var(--bg);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;gap:12px;
+    border-bottom:1px solid var(--border);
+  }
+  .tb-left{display:flex;align-items:center;gap:14px;min-width:0;}
+  .tb-back{
+    color:var(--muted);text-decoration:none;font-size:12px;font-weight:500;
+    display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;
+    transition:color .15s;
+  }
+  .tb-back:hover{color:var(--text);}
+  .tb-breadcrumb{
+    font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .tb-breadcrumb strong{color:var(--text);font-weight:500;}
+  .tb-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .tb-badge{
+    font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--accent);
+    border:1px solid rgba(233,118,39,.4);background:rgba(233,118,39,.1);
+    padding:3px 8px;border-radius:4px;white-space:nowrap;
+  }
+  .tb-github{
+    font-size:11px;font-weight:600;color:var(--text);text-decoration:none;
+    padding:4px 10px;border:1px solid var(--border);border-radius:5px;
+    white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px;
+  }
+  .tb-github:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* ── Layout ── */
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px;}
+  section{padding:56px 0;border-bottom:1px solid var(--border);}
+  section:last-of-type{border-bottom:none;}
+  h2{
+    font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:20px;
+  }
+  h3{font-size:19px;font-weight:700;color:var(--text);margin-bottom:10px;}
+  p{color:var(--text);margin-bottom:14px;}
+  p:last-child{margin-bottom:0;}
+  .lede{color:var(--muted);font-size:15px;}
+
+  /* ── Hero ── */
+  .hero{padding:64px 0 48px;}
+  .hero h1{
+    font-size:34px;line-height:1.15;font-weight:900;color:#fff;
+    letter-spacing:-.01em;margin-bottom:18px;
+  }
+  .hero .hook{
+    font-size:17px;color:var(--text);max-width:640px;margin-bottom:32px;
+    border-left:3px solid var(--accent);padding-left:16px;
+  }
+  .stat-row{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+  }
+  .stat{
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:16px 14px;
+  }
+  .stat-value{font-size:22px;font-weight:900;color:var(--accent);line-height:1.1;}
+  .stat-label{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.35;}
+
+  /* ── Dataset card ── */
+  .data-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:24px;
+  }
+  .data-card-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:10px 0;border-bottom:1px solid var(--border);
+    font-size:13px;
+  }
+  .data-card-row:last-child{border-bottom:none;}
+  .data-card-row .dk{color:var(--muted);}
+  .data-card-row .dv{color:var(--text);font-weight:600;text-align:right;}
+  .col-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;}
+  .col-tag{
+    background:rgba(233,118,39,.08);border:1px solid rgba(233,118,39,.25);
+    color:var(--accent);font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;
+  }
+  .data-note{
+    margin-top:16px;padding:12px 14px;background:rgba(233,118,39,.06);
+    border:1px solid rgba(233,118,39,.2);border-radius:8px;
+    font-size:12.5px;color:var(--muted);
+  }
+
+  /* ── Process timeline ── */
+  .timeline{list-style:none;counter-reset:step;}
+  .step{
+    display:flex;gap:16px;padding:0 0 28px;position:relative;
+  }
+  .step:last-child{padding-bottom:0;}
+  .step::before{
+    counter-increment:step;content:counter(step);
+    flex-shrink:0;width:30px;height:30px;border-radius:50%;
+    background:var(--surface);border:1px solid var(--accent);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;
+  }
+  .step:not(:last-child)::after{
+    content:'';position:absolute;left:15px;top:30px;bottom:0;
+    width:1px;background:var(--border);
+  }
+  .step-body{padding-top:4px;}
+  .step-title{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:4px;}
+  .step-desc{font-size:13.5px;color:var(--muted);}
+  .code-block{
+    margin-top:24px;background:#111010;border:1px solid var(--border);
+    border-radius:10px;padding:16px 18px;overflow-x:auto;
+  }
+  .code-block .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+  .code-block pre{
+    font-family:'SF Mono','Fira Code',Consolas,monospace;font-size:12.5px;
+    color:#E8C99A;line-height:1.7;white-space:pre;
+  }
+  .code-block pre .fn{color:var(--accent);}
+
+  /* ── Findings grid ── */
+  .findings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .finding-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:20px;
+  }
+  .finding-card .fc-stat{
+    font-size:18px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:10px;
+  }
+  .finding-card .fc-stat .hl{color:var(--accent);}
+  .finding-card .fc-desc{font-size:13px;color:var(--muted);}
+
+  /* ── Recommendation card ── */
+  .reco-card{
+    background:linear-gradient(155deg, rgba(233,118,39,.1), rgba(233,118,39,.02));
+    border:1px solid rgba(233,118,39,.35);border-radius:14px;padding:28px;
+  }
+  .reco-card .reco-tag{
+    font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:14px;
+  }
+  .reco-list{list-style:none;margin:18px 0;}
+  .reco-list li{
+    display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(233,118,39,.18);
+    font-size:14px;color:var(--text);
+  }
+  .reco-list li:first-child{border-top:none;}
+  .reco-num{
+    flex-shrink:0;width:22px;height:22px;border-radius:50%;
+    background:var(--accent);color:#171614;font-size:11px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;
+  }
+  .reco-close{
+    margin-top:16px;font-size:14px;color:var(--text);font-style:italic;
+    border-top:1px solid rgba(233,118,39,.18);padding-top:16px;
+  }
+
+  /* ── Tools ── */
+  .tools-row{display:flex;flex-wrap:wrap;gap:10px;}
+  .tool-badge{
+    background:var(--surface);border:1px solid var(--border);
+    color:var(--text);font-size:12.5px;font-weight:600;
+    padding:8px 14px;border-radius:20px;display:flex;align-items:center;gap:8px;
+  }
+  .tool-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+
+  /* ── Gallery ── */
+  .gallery-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  }
+  .gallery-item{
+    display:block;border-radius:10px;overflow:hidden;border:1px solid var(--border);
+    background:var(--surface);text-decoration:none;position:relative;
+    aspect-ratio:16/10;
+  }
+  .gallery-item img{
+    width:100%;height:100%;object-fit:cover;display:block;
+    transition:transform .25s ease;
+  }
+  .gallery-item:hover img{transform:scale(1.06);}
+  .gallery-caption{
+    position:absolute;left:0;right:0;bottom:0;
+    background:linear-gradient(0deg, rgba(0,0,0,.75), transparent);
+    color:#fff;font-size:11px;font-weight:600;padding:16px 10px 8px;
+  }
+
+  /* ── Lightbox ── */
+  .lightbox{
+    position:fixed;inset:0;background:rgba(10,9,8,.92);z-index:1000;
+    display:none;align-items:center;justify-content:center;padding:32px;
+    cursor:zoom-out;
+  }
+  .lightbox.open{display:flex;}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .lightbox-close{
+    position:absolute;top:20px;right:24px;color:#fff;font-size:28px;
+    cursor:pointer;opacity:.8;
+  }
+  .lightbox-close:hover{opacity:1;}
+
+  /* ── Footer ── */
+  footer{padding:36px 0 60px;text-align:center;}
+  footer p{color:var(--muted);font-size:12px;}
+  footer a{color:var(--accent);text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+
+  /* ── Mobile ── */
+  @media (max-width:640px){
+    .stat-row{grid-template-columns:1fr 1fr;}
+    .findings-grid{grid-template-columns:1fr;}
+    .gallery-grid{grid-template-columns:1fr 1fr;}
+    .hero h1{font-size:26px;}
+    .tb-breadcrumb{display:none;}
+    section{padding:40px 0;}
+  }
+  @media (max-width:420px){
+    .gallery-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Sticky top bar -->
+<div class="topbar">
+  <div class="tb-left">
+    <a class="tb-back" href="/#projects">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back
+    </a>
+    <span class="tb-breadcrumb">Projects / <strong>Airbnb Seattle Tableau</strong></span>
+  </div>
+  <div class="tb-right">
+    <span class="tb-badge">TABLEAU</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <section class="hero" style="border-bottom:1px solid var(--border);">
+    <h1>Airbnb Analysis of Seattle Residential Areas, 2016</h1>
+    <p class="hook">A host in zip code 98134 was leaving $110 per night on the table. Here's the data that proves it.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-value">323,346</div><div class="stat-label">listing records</div></div>
+      <div class="stat"><div class="stat-value">2016</div><div class="stat-label">full calendar year</div></div>
+      <div class="stat"><div class="stat-value">5</div><div class="stat-label">interactive sheets</div></div>
+      <div class="stat"><div class="stat-value">3</div><div class="stat-label">pricing levers identified</div></div>
+    </div>
+  </section>
+
+  <!-- The Question -->
+  <section>
+    <h2>The Question</h2>
+    <h3>What drives Airbnb pricing in Seattle, and how much money are hosts leaving on the table by ignoring the data?</h3>
+    <p>Most Seattle Airbnb hosts set nightly rates by gut feel: they check a few nearby listings, pick a number that feels competitive, and rarely revisit it. That approach ignores three variables that actually move revenue: where a listing sits, how many bedrooms it has, and when it's booked.</p>
+    <p class="lede">This project pulls a full year of Seattle listing data into Tableau to quantify the gap between gut-feel pricing and data-driven pricing, and to show exactly which levers close that gap.</p>
+  </section>
+
+  <!-- The Data -->
+  <section>
+    <h2>The Data</h2>
+    <div class="data-card">
+      <div class="data-card-row">
+        <span class="dk">Rows</span>
+        <span class="dv">323,346 listing records</span>
+      </div>
+      <div class="data-card-row">
+        <span class="dk">Columns</span>
+        <span class="dv">
+          <div class="col-tags">
+            <span class="col-tag">Listing ID</span>
+            <span class="col-tag">Zip Code</span>
+            <span class="col-tag">Bedrooms</span>
+            <span class="col-tag">Price (nightly)</span>
+            <span class="col-tag">Revenue (annual)</span>
+            <span class="col-tag">Calendar entries</span>
+          </div>
+        </span>
+      </div>
+      <div class="data-card-row">
+        <span class="dk">Source</span>
+        <span class="dv">Inside Airbnb / Kaggle 2016 Seattle dataset</span>
+      </div>
+      <div class="data-card-row">
+        <span class="dk">Geography</span>
+        <span class="dv">Seattle, WA residential zip codes</span>
+      </div>
+    </div>
+    <div class="data-note">Price outliers above $1,500/night excluded. Listings with fewer than 10 reviews excluded for reliability.</div>
+  </section>
+
+  <!-- The Process -->
+  <section>
+    <h2>The Process</h2>
+    <p class="lede" style="margin-bottom:28px;">How the dashboard was built in Tableau, from raw tables to cross-filtered sheets.</p>
+    <ol class="timeline">
+      <li class="step">
+        <div class="step-body">
+          <div class="step-title">Data connection and relationship setup</div>
+          <div class="step-desc">Listings and calendar tables joined on listing ID, giving each listing its full year of price and availability history in one model.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-body">
+          <div class="step-title">Calculated field for annual revenue</div>
+          <div class="step-desc">Annual revenue derived as the sum of available price multiplied by booked nights, rolled up per listing.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-body">
+          <div class="step-title">Geographic dimension: zip code as categorical</div>
+          <div class="step-desc">Zip code set as a categorical dimension and mapped to Seattle coordinates to enable the choropleth revenue map.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-body">
+          <div class="step-title">Built 5 sheets</div>
+          <div class="step-desc">Price by zip code bar chart, revenue map, seasonal line chart, price by bedroom count bar chart, and a listing count table by zip code.</div>
+        </div>
+      </li>
+      <li class="step">
+        <div class="step-body">
+          <div class="step-title">Dashboard assembly with cross-filter actions</div>
+          <div class="step-desc">All five sheets combined into one dashboard using layout containers, with cross-filter actions wired to the zip code dimension so clicking any zip updates every sheet.</div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="code-block">
+      <div class="label">Example calculated fields</div>
+      <pre><span class="fn">Annual Revenue</span> = SUM([Price]) * [Booked Nights]
+<span class="fn">Avg Price by Zip</span> = AVG([Price])</pre>
+    </div>
+  </section>
+
+  <!-- Key Findings -->
+  <section>
+    <h2>Key Findings</h2>
+    <div class="findings-grid">
+      <div class="finding-card">
+        <div class="fc-stat"><span class="hl">3x</span> price spread across Seattle zip codes</div>
+        <div class="fc-desc">Zip code is not just an address. It's a pricing tier. Hosts who don't know their zip's market position are flying blind.</div>
+      </div>
+      <div class="finding-card">
+        <div class="fc-stat">4-bedroom properties earn <span class="hl">3.3x</span> more per night than 1-bedrooms</div>
+        <div class="fc-desc">Bedroom count is the single strongest lever available to a host. Every additional bedroom compounds.</div>
+      </div>
+      <div class="finding-card">
+        <div class="fc-stat">Summer revenue peaks <span class="hl">60%</span> above January</div>
+        <div class="fc-desc">Seasonality is predictable and exploitable. Hosts with flat year-round pricing leave peak-season revenue on the table every year.</div>
+      </div>
+      <div class="finding-card">
+        <div class="fc-stat"><span class="hl">$110/night</span> gap in zip code 98134</div>
+        <div class="fc-desc">The most actionable finding. One zip code, under-priced relative to comparables. A specific problem with a specific fix.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Recommendation -->
+  <section>
+    <h2>The Recommendation</h2>
+    <div class="reco-card">
+      <div class="reco-tag">What the data reveals</div>
+      <p>Three variables explain the majority of nightly price variation across Seattle Airbnb listings: zip code, bedroom count, and booking week. Zip code 98134 had the highest average price in the dataset, yet hosted listings priced significantly below comparable zip codes — a gap of roughly $110 per night relative to nearby listings with similar bedroom counts.</p>
+      <ul class="reco-list">
+        <li><span class="reco-num">1</span> Zip code explains a 3x spread in nightly rates across Seattle — location is the strongest pricing signal in the dataset.</li>
+        <li><span class="reco-num">2</span> Bedroom count compounds: 4-bedroom properties earn 3.3x more per night than 1-bedrooms. The relationship is not linear — each additional bedroom adds a disproportionate premium.</li>
+        <li><span class="reco-num">3</span> Summer weekly revenue peaks 60% above January. The four highest-revenue weeks of 2016 fell in March, May, June, and December — spring and holiday seasons drove the clearest demand spikes.</li>
+      </ul>
+      <p>The seasonal pattern is consistent and predictable: spring and holiday weeks outperform the rest of the year by a measurable margin, making timing one of the clearest levers available for maximizing annual revenue.</p>
+      <div class="reco-close">The dashboard makes all three pricing levers interactive — zip code, bedroom count, and week — so any combination can be explored against the full 2016 Seattle dataset.</div>
+    </div>
+  </section>
+
+
+  <!-- ====== DASHBOARD BREAKDOWN ====== -->
+  <section>
+    <h2>The Dashboard</h2>
+    <h3>What each of the 5 sheets does and why</h3>
+    <p class="lede">The finished Tableau dashboard combines five sheets into one interactive view. Clicking any zip code on the map updates every other sheet simultaneously.</p>
+
+    <div class="data-card" style="margin-top:20px;">
+      <div style="display:grid;gap:14px;">
+
+        <div style="padding:14px;border:1px solid var(--border);border-radius:8px;background:rgba(233,118,39,0.04);">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Sheet 1</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:5px;">Advertised Average Home Price by Zip Code</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Bar chart ranked by average nightly price. Immediately shows which zip codes command premium pricing and which are priced below comparable areas. Zip code filter applied here updates all other sheets.</p>
+        </div>
+
+        <div style="padding:14px;border:1px solid var(--border);border-radius:8px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Sheet 2</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:5px;">Average Home Price by Zip Code (World Map / Choropleth)</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Geographic view of price distribution across Seattle. Longitude and latitude columns from the Listings table drove this. Color density encodes price tier, making the $110/night gap in zip code 98134 visible at a glance on the map.</p>
+        </div>
+
+        <div style="padding:14px;border:1px solid var(--border);border-radius:8px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Sheet 3</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:5px;">Yearly Revenue for 2016 (Week by Week)</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Line chart showing weekly revenue across the full calendar year. Color density encodes revenue magnitude. This is where the four peak-revenue weeks surfaced: March 27th ($1.9M), May 29th ($2.0M), June 19th ($2.1M), and December 25th ($2.1M).</p>
+        </div>
+
+        <div style="padding:14px;border:1px solid var(--border);border-radius:8px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Sheet 4</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:5px;">Average Home Price by Bedroom Count</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Horizontal bar chart showing how nightly price scales with bedroom count. The relationship is not linear: 6-bedroom properties earn disproportionately more per bedroom than 2-bedroom properties, which matters for hosts considering property upgrades.</p>
+        </div>
+
+        <div style="padding:14px;border:1px solid var(--border);border-radius:8px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Sheet 5</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:5px;">Number of Homes by Bedroom Count</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Companion to Sheet 4. Shows supply volume per bedroom tier. The peak at 1-bedroom (1,811 listings) vs. the scarcity of 5+ bedroom listings explains part of the per-bedroom pricing premium at higher counts.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== DATA CLEANING DETAIL ====== -->
+  <section>
+    <h2>The Data Cleaning</h2>
+    <h3>Seven missing zip codes, found by hand</h3>
+    <p>Airbnb stakeholders flagged missing zip code values in the Listings worksheet before analysis began. Before any Tableau work, Excel was used to filter and resolve all seven missing entries by cross-referencing neighborhood, city, and state columns.</p>
+
+    <div class="data-card" style="margin-top:18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:14px;letter-spacing:.06em;text-transform:uppercase;">7 Missing Zip Codes Resolved</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13.5px;">
+        <div style="padding:10px 12px;background:rgba(233,118,39,0.06);border:1px solid rgba(233,118,39,0.2);border-radius:7px;display:flex;justify-content:space-between;"><span style="color:var(--muted);">Entry 164</span><strong style="color:#fff;">98107</strong></div>
+        <div style="padding:10px 12px;background:rgba(233,118,39,0.06);border:1px solid rgba(233,118,39,0.2);border-radius:7px;display:flex;justify-content:space-between;"><span style="color:var(--muted);">Entry 481</span><strong style="color:#fff;">98119</strong></div>
+        <div style="padding:10px 12px;background:rgba(233,118,39,0.06);border:1px solid rgba(233,118,39,0.2);border-radius:7px;display:flex;justify-content:space-between;"><span style="color:var(--muted);">Entry 990</span><strong style="color:#fff;">98122</strong></div>
+        <div style="padding:10px 12px;background:rgba(233,118,39,0.06);border:1px solid rgba(233,118,39,0.2);border-radius:7px;display:flex;justify-content:space-between;"><span style="color:var(--muted);">Entry 1674</span><strong style="color:#fff;">98104</strong></div>
+        <div style="padding:10px 12px;background:rgba(233,118,39,0.06);border:1px solid rgba(233,118,39,0.2);border-radius:7px;display:flex;justify-content:space-between;"><span style="color:var(--muted);">Entry 1919</span><strong style="color:#fff;">98119</strong></div>
+        <div style="padding:10px 12px;background:rgba(233,118,39,0.06);border:1px solid rgba(233,118,39,0.2);border-radius:7px;display:flex;justify-content:space-between;"><span style="color:var(--muted);">Entry 2523</span><strong style="color:#fff;">98102</strong></div>
+        <div style="padding:10px 12px;background:rgba(233,118,39,0.06);border:1px solid rgba(233,118,39,0.2);border-radius:7px;display:flex;justify-content:space-between;"><span style="color:var(--muted);">Entry 2673</span><strong style="color:#fff;">98102</strong></div>
+      </div>
+      <div class="data-note">Method: filtered for nulls in zipcode column, then cross-referenced neighbourhood_cleansed, city, and state to identify each address. Verified with targeted web searches for neighborhood-level zip codes.</div>
+    </div>
+  </section>
+
+  <!-- ====== WHAT I BUILT / LEARNED ====== -->
+  <section>
+    <h2>What I Built &middot; What I Learned</h2>
+    <div class="tools-row" style="margin-bottom:24px;">
+      <span class="tool-badge"><span class="dot"></span>Multi-table join in Tableau</span>
+      <span class="tool-badge"><span class="dot"></span>Choropleth map with coordinates</span>
+      <span class="tool-badge"><span class="dot"></span>Time-series revenue analysis</span>
+      <span class="tool-badge"><span class="dot"></span>Cross-filter dashboard actions</span>
+      <span class="tool-badge"><span class="dot"></span>Excel data cleaning pre-Tableau</span>
+      <span class="tool-badge"><span class="dot"></span>Missing value resolution</span>
+      <span class="tool-badge"><span class="dot"></span>Pricing strategy framing</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-tag">Key takeaway</div>
+      <p style="font-size:15.5px;color:var(--text);">Joining three tables (Listings, Calendar, Reviews) in Tableau requires understanding which columns connect them before you open the tool. The listing_id pattern that connected all three worksheets was the first thing identified in the raw data. Getting the join wrong at that stage would have corrupted every downstream calculation. The data cleaning and relationship mapping happened before Tableau was even opened.</p>
+    </div>
+  </section>
+
+
+  <!-- Tools Used -->
+  <section>
+    <h2>Tools Used</h2>
+    <div class="tools-row">
+      <span class="tool-badge"><span class="dot"></span>Tableau</span>
+      <span class="tool-badge"><span class="dot"></span>Data Visualization</span>
+      <span class="tool-badge"><span class="dot"></span>Geospatial Analysis</span>
+      <span class="tool-badge"><span class="dot"></span>Time Series</span>
+      <span class="tool-badge"><span class="dot"></span>Airbnb Data</span>
+    </div>
+  </section>
+
+  <!-- Screenshot Gallery -->
+  <section>
+    <h2>Dashboard Screenshots</h2>
+    <p class="lede" style="margin-bottom:20px;">Real screenshots of the completed Tableau dashboard and its component sheets. Click any image to view full size.</p>
+    <div class="gallery-grid">
+      <a class="gallery-item" href="images/airbnb-dashboard.png" target="_blank" rel="noopener" data-lightbox="images/airbnb-dashboard.png">
+        <img src="images/airbnb-dashboard.png" alt="Full Airbnb Seattle Tableau dashboard" loading="lazy">
+        <div class="gallery-caption">Full Dashboard</div>
+      </a>
+      <a class="gallery-item" href="images/tableau-sheet1.png" target="_blank" rel="noopener" data-lightbox="images/tableau-sheet1.png">
+        <img src="images/tableau-sheet1.png" alt="Avg price by zip code sheet" loading="lazy">
+        <div class="gallery-caption">Avg Price by Zip Code</div>
+      </a>
+      <a class="gallery-item" href="images/tableau-sheet2.png" target="_blank" rel="noopener" data-lightbox="images/tableau-sheet2.png">
+        <img src="images/tableau-sheet2.png" alt="Revenue map by zip code sheet" loading="lazy">
+        <div class="gallery-caption">Revenue Map by Zip Code</div>
+      </a>
+      <a class="gallery-item" href="images/tableau-sheet3.png" target="_blank" rel="noopener" data-lightbox="images/tableau-sheet3.png">
+        <img src="images/tableau-sheet3.png" alt="Revenue by week and month sheet" loading="lazy">
+        <div class="gallery-caption">Revenue by Week / Month</div>
+      </a>
+      <a class="gallery-item" href="images/tableau-sheet4.png" target="_blank" rel="noopener" data-lightbox="images/tableau-sheet4.png">
+        <img src="images/tableau-sheet4.png" alt="Avg price by bedroom count sheet" loading="lazy">
+        <div class="gallery-caption">Avg Price by Bedroom Count</div>
+      </a>
+      <a class="gallery-item" href="images/tableau-sheet5.png" target="_blank" rel="noopener" data-lightbox="images/tableau-sheet5.png">
+        <img src="images/tableau-sheet5.png" alt="Listing count by zip code table" loading="lazy">
+        <div class="gallery-caption">Listing Count by Zip Code</div>
+      </a>
+      <a class="gallery-item" href="images/tableau-join.png" target="_blank" rel="noopener" data-lightbox="images/tableau-join.png">
+        <img src="images/tableau-join.png" alt="Data relationship and join setup" loading="lazy">
+        <div class="gallery-caption">Data Join Setup</div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <p>Airbnb Seattle, 2016 dataset via <a href="https://www.kaggle.com/datasets/airbnb/seattle" target="_blank" rel="noopener">Inside Airbnb / Kaggle</a>. Built in Tableau by Andre Weissmann. &middot; <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener">View more projects on GitHub</a></p>
+  </footer>
+
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lightbox-close">&times;</span>
+  <img id="lightbox-img" src="" alt="Full size screenshot">
+</div>
+
+<script>
+  // Lightbox: intercept gallery clicks to show in-page instead of new tab
+  document.querySelectorAll('[data-lightbox]').forEach(el => {
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      const src = this.getAttribute('data-lightbox');
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox').classList.add('open');
+    });
+  });
+  function closeLightbox(){
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightbox-img').src = '';
+  }
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLightbox(); });
+</script>
+
+</body>
+</html>

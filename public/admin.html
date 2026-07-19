@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Dark mode (default) */
+    :root, [data-theme="dark"] {
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --surface2: #1a1a1a;
+      --border: #222;
+      --border2: #2a2a2a;
+      --text: #e8e8e8;
+      --text-muted: #666;
+      --text-faint: #333;
+      --teal: #01696F;
+      --teal-light: #4F98A3;
+      --teal-dim: rgba(1,105,111,0.15);
+      --red: #D163A7;
+      --gold: #E8AF34;
+      --green: #6DAA45;
+      --sidebar-bg: #111;
+    }
+
+    /* Light mode */
+    [data-theme="light"] {
+      --bg: #F0EFEC;
+      --surface: #FFFFFF;
+      --surface2: #F4F4F2;
+      --border: #DDDBD5;
+      --border2: #E8E6E1;
+      --text: #1A1A18;
+      --text-muted: #6B6B68;
+      --text-faint: #B0AFA9;
+      --teal: #01696F;
+      --teal-light: #01696F;
+      --teal-dim: rgba(1,105,111,0.08);
+      --red: #A12C7B;
+      --gold: #9A6A00;
+      --green: #437A22;
+      --sidebar-bg: #F7F6F2;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 200px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 16px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .logo-dot { width: 7px; height: 7px; background: var(--teal); border-radius: 50%; }
+    .logo-text { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #444; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 16px; font-size: 0.82rem; color: #777;
+      cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left; transition: background 0.12s, color 0.12s;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: #0e2224; color: var(--teal-light); font-weight: 600; }
+    .nav-badge {
+      margin-left: auto; background: var(--teal); color: #fff;
+      border-radius: 10px; padding: 1px 6px; font-size: 0.65rem;
+      display: none;
+    }
+    .nav-bottom { margin-top: auto; padding: 12px 0; border-top: 1px solid var(--border); }
+    .logout-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 16px; font-size: 0.82rem; color: var(--red);
+      cursor: pointer; background: none; border: none; width: 100%; text-align: left;
+    }
+    .logout-btn:hover { background: var(--surface2); }
+
+    /* ── MAIN ── */
+    .main { margin-left: 200px; display: flex; flex-direction: column; min-height: 100vh; }
+    .page { display: none; flex: 1; }
+    .page.active { display: flex; flex-direction: column; }
+
+    /* ── SHARED COMPONENTS ── */
+    .page-header { padding: 24px 28px 0; }
+    .page-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .page-sub { font-size: 0.8rem; color: var(--text-muted); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .btn {
+      padding: 7px 14px; border-radius: 7px; font-size: 0.78rem;
+      font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-teal { background: var(--teal); color: #fff; }
+    .btn-ghost { background: var(--border2); color: #888; }
+    .btn-danger { background: rgba(161,44,123,0.2); color: var(--red); }
+    .btn-gold { background: rgba(232,175,52,0.15); color: var(--gold); }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 20px;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .badge-green { background: rgba(109,170,69,0.15); color: var(--green); }
+    .badge-gray  { background: rgba(90,89,87,0.15); color: #666; }
+    .badge-gold  { background: rgba(232,175,52,0.15); color: var(--gold); }
+    .empty { text-align: center; padding: 40px; color: #444; font-size: 0.82rem; }
+    .loading { text-align: center; padding: 40px; color: #444; font-size: 0.82rem; }
+
+    /* ── OVERVIEW PAGE ── */
+    #page-overview { padding: 24px 28px; gap: 20px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 20px;
+    }
+    .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; color: #fff; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 11px 18px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #444; border-bottom: 1px solid var(--border); }
+    td { padding: 13px 18px; font-size: 0.82rem; color: #bbb; border-bottom: 1px solid var(--surface); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+    .toggle { position: relative; display: inline-block; width: 34px; height: 18px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #2a2a2a; border-radius: 20px; transition: .2s; }
+    .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: #555; border-radius: 50%; transition: .2s; }
+    input:checked + .slider { background: var(--teal); }
+    input:checked + .slider:before { transform: translateX(16px); background: #fff; }
+
+    /* ── MESSAGES PAGE ── */
+    #page-contacts { padding: 24px 28px; gap: 16px; }
+    .contact-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 18px; margin-bottom: 10px;
+    }
+    .contact-meta { display: flex; gap: 14px; margin-bottom: 8px; align-items: center; }
+    .contact-name { font-weight: 600; color: #fff; font-size: 0.88rem; }
+    .contact-email { font-size: 0.78rem; color: var(--teal-light); }
+    .contact-time { font-size: 0.72rem; color: #444; margin-left: auto; }
+    .contact-msg { font-size: 0.83rem; color: #999; line-height: 1.55; }
+
+    /* ── PREVIEW PAGE ── */
+    #page-preview { flex-direction: column; height: calc(100vh); overflow: hidden; }
+    .preview-toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; background: #111; border-bottom: 1px solid var(--border);
+      flex-shrink: 0; flex-wrap: wrap;
+    }
+    .preview-toolbar-title { font-size: 0.8rem; font-weight: 700; color: #555; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 4px; }
+    .vp-btn {
+      padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border2); background: var(--surface);
+      color: #888; transition: all 0.15s;
+    }
+    .vp-btn:hover { border-color: var(--teal); color: var(--teal-light); }
+    .vp-btn.active { background: var(--teal-dim); border-color: var(--teal); color: var(--teal-light); }
+    .vp-sep { width: 1px; height: 20px; background: var(--border2); margin: 0 4px; }
+    .preview-main {
+      display: flex; flex: 1; overflow: hidden; min-height: 0;
+    }
+    /* Left: iframe panel */
+    .preview-frame-wrap {
+      flex: 1; display: flex; flex-direction: column;
+      background: #0a0a0a; overflow: hidden; min-width: 0;
+      transition: flex 0.3s ease;
+    }
+    .preview-frame-inner {
+      flex: 1; display: flex; align-items: flex-start; justify-content: center;
+      padding: 16px; overflow: auto; min-height: 0;
+    }
+    .preview-frame-inner.mobile-mode {
+      align-items: flex-start;
+      padding: 12px;
+    }
+    .device-frame {
+      background: #fff;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .device-frame.desktop-frame {
+      width: 100%; max-width: 1280px; height: calc(100vh - 120px);
+      border-radius: 6px;
+    }
+    .device-frame.mobile-frame {
+      width: 390px; min-height: 844px;
+      border-radius: 36px;
+      border: 8px solid #1a1a1a;
+      box-shadow: 0 0 0 2px #333, 0 16px 60px rgba(0,0,0,0.7);
+    }
+    .device-frame iframe {
+      width: 100%; height: 100%; border: none; display: block;
+    }
+    .device-frame.mobile-frame iframe {
+      min-height: 844px; height: 100%;
+    }
+    /* Right: tools panel */
+    .preview-tools {
+      width: 340px; flex-shrink: 0;
+      background: #111; border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transition: width 0.3s ease;
+    }
+    .preview-tools.collapsed { width: 0; overflow: hidden; }
+    .tools-tabs {
+      display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .tool-tab {
+      flex: 1; padding: 10px 6px; font-size: 0.72rem; font-weight: 600;
+      text-align: center; cursor: pointer; border: none; background: none;
+      color: #555; letter-spacing: 0.05em; text-transform: uppercase;
+      border-bottom: 2px solid transparent; transition: all 0.15s;
+    }
+    .tool-tab:hover { color: #888; }
+    .tool-tab.active { color: var(--teal-light); border-bottom-color: var(--teal); }
+    .tool-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
+    .tool-panel.active { display: flex; }
+
+    /* Notepad panel */
+    .notepad-area {
+      flex: 1; display: flex; flex-direction: column; padding: 14px; gap: 10px; overflow-y: auto;
+    }
+    .notepad-label { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; }
+    .notepad-textarea {
+      flex: 1; background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 8px; color: var(--text); font-size: 0.82rem;
+      line-height: 1.6; padding: 12px; resize: none; min-height: 200px;
+      font-family: inherit; outline: none;
+      transition: border-color 0.15s;
+    }
+    .notepad-textarea:focus { border-color: var(--teal); }
+    .notepad-textarea::placeholder { color: #444; }
+    .notepad-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .notepad-actions .btn { flex: 1; }
+    .copy-confirm {
+      font-size: 0.72rem; color: var(--green); text-align: center;
+      height: 18px; transition: opacity 0.3s;
+    }
+
+    /* Prompt panel */
+    .prompt-area {
+      flex: 1; display: flex; flex-direction: column; padding: 14px; gap: 10px; overflow: hidden;
+    }
+    .prompt-history {
+      flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+      gap: 10px; min-height: 0;
+    }
+    .prompt-msg {
+      padding: 10px 12px; border-radius: 8px; font-size: 0.82rem; line-height: 1.5;
+    }
+    .prompt-msg.user { background: var(--teal-dim); border: 1px solid var(--teal); color: #ccc; }
+    .prompt-msg.ai { background: var(--surface); border: 1px solid var(--border2); color: #bbb; }
+    .prompt-msg .msg-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+    .prompt-msg.user .msg-label { color: var(--teal-light); }
+    .prompt-msg.ai .msg-label { color: #555; }
+    .prompt-input-area { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+    .prompt-input {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 8px; color: var(--text); font-size: 0.82rem;
+      line-height: 1.5; padding: 10px 12px; resize: none; height: 80px;
+      font-family: inherit; outline: none; transition: border-color 0.15s;
+    }
+    .prompt-input:focus { border-color: var(--teal); }
+    .prompt-input::placeholder { color: #444; }
+    .prompt-send-row { display: flex; gap: 8px; align-items: center; }
+    .prompt-hint { font-size: 0.68rem; color: #444; flex: 1; }
+    .prompt-status {
+      font-size: 0.72rem; padding: 6px 10px; border-radius: 6px;
+      background: var(--surface); border: 1px solid var(--border2);
+      color: #666; text-align: center; flex-shrink: 0;
+    }
+    .prompt-status.sending { color: var(--gold); border-color: rgba(232,175,52,0.3); }
+    .prompt-status.success { color: var(--green); border-color: rgba(109,170,69,0.3); }
+    .prompt-status.error { color: var(--red); border-color: rgba(209,99,167,0.3); }
+
+    /* Annotations panel */
+    .annotations-area {
+      flex: 1; display: flex; flex-direction: column; padding: 14px; gap: 10px; overflow: hidden;
+    }
+    .annotations-hint {
+      font-size: 0.78rem; color: #555; line-height: 1.55; padding: 10px 12px;
+      background: var(--surface); border-radius: 8px; border: 1px solid var(--border2);
+    }
+    .annotations-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+    .annotation-item {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 10px 12px;
+    }
+    .annotation-num { font-size: 0.68rem; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .annotation-text { font-size: 0.82rem; color: #bbb; line-height: 1.5; }
+    .annotation-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* Toolbar toggle button */
+    .tools-toggle {
+      position: absolute; right: 340px; top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface); border: 1px solid var(--border2);
+      color: #666; width: 20px; height: 40px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 4px 0 0 4px; font-size: 0.7rem;
+      z-index: 10; transition: right 0.3s ease;
+    }
+
+    /* Annotation overlay */
+    #annotation-overlay {
+      display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      cursor: crosshair; z-index: 200;
+      background: rgba(0,0,0,0.02);
+    }
+    #annotation-overlay.active { display: block; }
+    .ann-pin {
+      position: absolute; width: 22px; height: 22px;
+      background: var(--gold); border-radius: 50%;
+      border: 2px solid #fff; color: #000; font-size: 0.65rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      cursor: default; transform: translate(-50%, -50%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      pointer-events: none;
+    }
+
+    /* Annotation input modal */
+    .ann-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 500;
+      align-items: center; justify-content: center;
+    }
+    .ann-modal.active { display: flex; }
+    .ann-modal-box {
+      background: #1a1a1a; border: 1px solid var(--border2);
+      border-radius: 12px; padding: 20px; width: 340px;
+    }
+    .ann-modal-title { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+    .ann-modal-input {
+      width: 100%; background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 8px; color: var(--text); font-size: 0.85rem; padding: 10px 12px;
+      resize: none; height: 80px; font-family: inherit; outline: none; margin-bottom: 12px;
+    }
+    .ann-modal-input:focus { border-color: var(--teal); }
+    .ann-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* Quick links bar in preview */
+    .section-jumper {
+      display: flex; gap: 6px; flex-wrap: wrap; align-items: center; flex: 1;
+    }
+    .section-btn {
+      padding: 4px 10px; border-radius: 5px; font-size: 0.72rem;
+      cursor: pointer; border: 1px solid var(--border2); background: none;
+      color: #666; transition: all 0.15s;
+    }
+    .section-btn:hover { border-color: var(--teal); color: var(--teal-light); }
+
+    /* Perplexity link chip */
+    .perplexity-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 6px;
+      background: rgba(79,152,163,0.1); border: 1px solid var(--teal);
+      font-size: 0.72rem; color: var(--teal-light); font-weight: 600;
+      text-decoration: none; white-space: nowrap;
+    }
+    .perplexity-chip:hover { background: var(--teal-dim); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Annotation input modal -->
+<div class="ann-modal" id="ann-modal">
+  <div class="ann-modal-box">
+    <div class="ann-modal-title">Add annotation</div>
+    <textarea class="ann-modal-input" id="ann-input" placeholder="What's wrong here? Be specific..."></textarea>
+    <div class="ann-modal-actions">
+      <button class="btn btn-ghost" onclick="cancelAnnotation()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveAnnotation()">Save pin</button>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-dot"></div>
+      <span class="logo-text">Admin</span>
+    </div>
+    <button class="nav-item active" id="nav-overview" onclick="showPage('overview', this)">
+      <span>📊</span> Overview
+    </button>
+    <button class="nav-item" id="nav-contacts" onclick="showPage('contacts', this)">
+      <span>✉️</span> Messages
+      <span class="nav-badge" id="msg-count"></span>
+    </button>
+    <button class="nav-item" id="nav-projects" onclick="showPage('projects', this)">
+      <span>📁</span> Projects
+    </button>
+    <button class="nav-item" id="nav-preview" onclick="showPage('preview', this)">
+      <span>🔍</span> Live Preview
+    </button>
+    <button class="nav-item" id="nav-editor" onclick="showPage('editor', this)">
+      <span>✏️</span> Edit Text
+    </button>
+    <button class="nav-item" id="nav-sections" onclick="showPage('sections', this)">
+      <span>👁</span> Sections
+    </button>
+    <div class="nav-bottom">
+      <button class="logout-btn" id="theme-toggle-btn" onclick="toggleTheme()" style="margin-bottom:8px;">
+        <span id="theme-icon">☀️</span> <span id="theme-label">Light mode</span>
+      </button>
+      <button class="logout-btn" onclick="logout()">
+        <span>🔓</span> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- ── OVERVIEW ── -->
+    <div class="page active" id="page-overview" style="padding:24px 28px;gap:20px;">
+      <div>
+        <div class="page-title">Overview</div>
+        <div class="page-sub">Portfolio at a glance</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Profile Views</div>
+          <div class="stat-value" id="stat-views">...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Projects Live</div>
+          <div class="stat-value" id="stat-projects">...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Messages</div>
+          <div class="stat-value" id="stat-messages">...</div>
+        </div>
+      </div>
+      <div class="card" style="flex:1;">
+        <div class="card-header">
+          <span class="card-title">Recent Messages</span>
+          <button class="btn btn-ghost" onclick="showPage('contacts', document.getElementById('nav-contacts'))">View all</button>
+        </div>
+        <div id="recent-contacts"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ── MESSAGES ── -->
+    <div class="page" id="page-contacts" style="padding:24px 28px;gap:16px;">
+      <div>
+        <div class="page-title">Messages</div>
+        <div class="page-sub">Contact form submissions from visitors</div>
+      </div>
+      <div id="contacts-list"><div class="loading">Loading...</div></div>
+    </div>
+
+    <!-- ── PROJECTS ── -->
+    <div class="page" id="page-projects" style="padding:24px 28px;gap:16px;">
+      <div>
+        <div class="page-title">Projects</div>
+        <div class="page-sub">Toggle visibility of portfolio projects</div>
+      </div>
+      <div class="card">
+        <div id="projects-list"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ── LIVE PREVIEW ── -->
+    <div class="page" id="page-preview">
+
+      <!-- Toolbar -->
+      <div class="preview-toolbar">
+        <span class="preview-toolbar-title">Preview</span>
+
+        <!-- Viewport -->
+        <button class="vp-btn active" id="btn-desktop" onclick="setViewport('desktop')">🖥 Desktop</button>
+        <button class="vp-btn" id="btn-mobile" onclick="setViewport('mobile')">📱 Mobile</button>
+        <div class="vp-sep"></div>
+
+        <!-- Section jumper -->
+        <div class="section-jumper">
+          <span style="font-size:0.7rem;color:#444;margin-right:2px;">Jump:</span>
+          <button class="section-btn" onclick="jumpTo('#home')">Home</button>
+          <button class="section-btn" onclick="jumpTo('#about')">About</button>
+          <button class="section-btn" onclick="jumpTo('#skills')">Skills</button>
+          <button class="section-btn" onclick="jumpTo('#projects')">Projects</button>
+          <button class="section-btn" onclick="jumpTo('#experience')">Experience</button>
+          <button class="section-btn" onclick="jumpTo('#contact')">Contact</button>
+        </div>
+        <div class="vp-sep"></div>
+
+        <!-- Tools toggle -->
+        <button class="vp-btn" id="btn-annotate" onclick="toggleAnnotationMode()" title="Click anywhere on the preview to drop a pin and add a note">📌 Annotate</button>
+        <button class="vp-btn" id="btn-tools" onclick="toggleToolsPanel()">📝 Notes →</button>
+
+        <!-- Perplexity link -->
+        <a class="perplexity-chip" href="https://www.perplexity.ai/computer/tasks/af085272-f7cb-4c28-86cb-01b8ec090c0c" target="_blank">
+          ⚡ Open in Perplexity
+        </a>
+      </div>
+
+      <!-- Body -->
+      <div class="preview-main">
+
+        <!-- Frame -->
+        <div class="preview-frame-wrap" id="frame-wrap">
+          <div class="preview-frame-inner" id="frame-inner">
+            <div class="device-frame desktop-frame" id="device-frame">
+              <div id="annotation-overlay" onclick="handleAnnotationClick(event)"></div>
+              <iframe id="preview-iframe" src="https://andre-weissmann-portfolio.pplx.app" title="Portfolio Preview"></iframe>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tools Panel -->
+        <div class="preview-tools" id="preview-tools">
+          <div class="tools-tabs">
+            <button class="tool-tab active" id="tab-notepad" onclick="switchTab('notepad')">📝 Notes</button>
+            <button class="tool-tab" id="tab-annotations" onclick="switchTab('annotations')">📌 Pins</button>
+            <button class="tool-tab" id="tab-prompt" onclick="switchTab('prompt')">⚡ Prompt</button>
+          </div>
+
+          <!-- NOTEPAD PANEL -->
+          <div class="tool-panel active" id="panel-notepad">
+            <div class="notepad-area">
+              <div class="notepad-label">Session notes</div>
+              <textarea class="notepad-textarea" id="notepad-text"
+                placeholder="Type anything you want to fix or change while browsing the preview...
+
+Example:
+- Change job title to Mailroom Specialist only
+- Remove certifications column
+- The Skills section nav link should be removed"></textarea>
+              <div class="notepad-actions">
+                <button class="btn btn-ghost" onclick="clearNotes()">Clear</button>
+                <button class="btn btn-teal" onclick="copyNotes()">Copy to clipboard</button>
+              </div>
+              <div class="copy-confirm" id="copy-confirm"></div>
+              <div class="notepad-label" style="margin-top:4px;">Quick paste template</div>
+              <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:0.75rem;color:#555;line-height:1.6;">
+                After copying your notes, paste them into the Perplexity Computer thread linked above (⚡ Open in Perplexity). I will make all the changes and redeploy automatically.
+              </div>
+            </div>
+          </div>
+
+          <!-- PINS PANEL -->
+          <div class="tool-panel" id="panel-annotations">
+            <div class="annotations-area">
+              <div class="annotations-hint">
+                Click <strong style="color:var(--gold)">📌 Annotate</strong> in the toolbar, then click anywhere on the preview to drop a numbered pin. Add a note to each pin, then export them all.
+              </div>
+              <div class="annotations-list" id="annotations-list">
+                <div class="empty" id="ann-empty">No pins yet. Click Annotate to start.</div>
+              </div>
+              <div class="annotation-actions">
+                <button class="btn btn-ghost" onclick="clearAnnotations()">Clear all</button>
+                <button class="btn btn-gold" onclick="exportAnnotations()">Export to clipboard</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROMPT PANEL -->
+          <div class="tool-panel" id="panel-prompt">
+            <div class="prompt-area">
+              <div class="prompt-history" id="prompt-history">
+                <div class="prompt-msg ai">
+                  <div class="msg-label">Computer</div>
+                  Hi! Type a change request below. I will make it and redeploy the site automatically. For example: "Remove the certifications column from the Experience section" or "Change the job title to Mailroom Specialist only."
+                </div>
+              </div>
+              <div class="prompt-input-area">
+                <textarea class="prompt-input" id="prompt-input"
+                  placeholder="Describe a change to make to the portfolio..."
+                  onkeydown="handlePromptKey(event)"></textarea>
+                <div class="prompt-send-row">
+                  <span class="prompt-hint">Enter to send &middot; Shift+Enter for new line</span>
+                  <div class="prompt-status" id="prompt-status">Ready</div>
+                  <button class="btn btn-teal" onclick="sendPrompt()">Send ▶</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /preview-tools -->
+      </div><!-- /preview-main -->
+    </div><!-- /page-preview -->
+
+    <!-- ── EDIT TEXT PAGE ── -->
+    <div class="page" id="page-editor" style="padding:24px 32px;overflow-y:auto;">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">✏️ Edit Text</h1>
+          <p class="page-sub">Change any text on the portfolio. Saves instantly and applies on next page load.</p>
+        </div>
+        <button class="btn btn-ghost" style="font-size:0.8rem;" onclick="resetAllEdits()">🗑 Reset all</button>
+      </div>
+
+      <div id="editor-loading" style="color:var(--muted);font-size:0.85rem;margin-top:16px;">Loading fields...</div>
+      <div id="editor-error" style="display:none;color:#e57373;font-size:0.85rem;margin-top:16px;"></div>
+
+      <div id="editor-fields" style="display:flex;flex-direction:column;gap:16px;margin-top:20px;"></div>
+
+      <div style="margin-top:24px;padding:16px;background:var(--surface);border-radius:10px;border:1px solid var(--border2);">
+        <p style="font-size:0.78rem;color:var(--muted);margin:0;">
+          <strong style="color:var(--teal-light);">Note:</strong> Changes are stored in memory and apply via the
+          <code style="background:#1a2f32;padding:1px 5px;border-radius:4px;">/api/editor/inject</code> script on the live site.
+          They reset if the server restarts. Use the Prompt tab or Perplexity thread to make permanent code changes.
+        </p>
+      </div>
+    </div><!-- /page-editor -->
+
+    <!-- ── SECTIONS PAGE ── -->
+    <div class="page" id="page-sections" style="padding:24px 32px;overflow-y:auto;">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">👁 Section Visibility</h1>
+          <p class="page-sub">Show or hide entire sections on the portfolio. Updates apply instantly on next page load.</p>
+        </div>
+      </div>
+
+      <div id="sections-loading" style="color:var(--muted);font-size:0.85rem;margin-top:16px;">Loading...</div>
+      <div id="sections-error" style="display:none;color:#e57373;font-size:0.85rem;margin-top:16px;"></div>
+
+      <div id="sections-list" style="display:flex;flex-direction:column;gap:12px;margin-top:20px;"></div>
+
+      <div style="margin-top:24px;padding:16px;background:var(--surface);border-radius:10px;border:1px solid var(--border2);">
+        <p style="font-size:0.78rem;color:var(--muted);margin:0;">
+          <strong style="color:var(--teal-light);">Note:</strong> Visibility resets on server restart. To permanently remove a section, use the Perplexity thread to update the HTML directly.
+        </p>
+      </div>
+    </div><!-- /page-sections -->
+
+  </main>
+</div>
+
+<script>
+  var _PORT = '__PORT_5000__';
+  var API_BASE = _PORT.startsWith('__') ? '' : '/' + _PORT;
+
+  // ── AUTH GUARD ──
+  const token = sessionStorage.getItem('adminToken');
+  if (!token) window.location.href = '/admin-login.html';
+  const headers = { 'Content-Type': 'application/json', 'x-admin-token': token };
+
+  // ── PAGE NAVIGATION ──
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (name === 'contacts') loadContacts();
+    if (name === 'projects') loadProjects();
+    if (name === 'preview') initPreview();
+    if (name === 'editor') loadEditorFields();
+    if (name === 'sections') loadSections();
+  }
+
+  function logout() {
+    sessionStorage.removeItem('adminToken');
+    window.location.href = '/admin-login.html';
+  }
+
+  function timeAgo(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'Just now';
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+
+  // ── OVERVIEW ──
+  async function loadOverview() {
+    try {
+      const [viewsRes, projectsRes, contactsRes] = await Promise.all([
+        fetch(API_BASE + '/api/views', { headers }),
+        fetch(API_BASE + '/api/admin/projects', { headers }),
+        fetch(API_BASE + '/api/admin/contacts', { headers }),
+      ]);
+      const views = await viewsRes.json();
+      const projects = await projectsRes.json();
+      const contacts = await contactsRes.json();
+      document.getElementById('stat-views').textContent = views.views ?? 0;
+      document.getElementById('stat-projects').textContent = projects.filter(p => (p.status ?? 'published') === 'published').length;
+      document.getElementById('stat-messages').textContent = contacts.length;
+      if (contacts.length > 0) {
+        const badge = document.getElementById('msg-count');
+        badge.textContent = contacts.length;
+        badge.style.display = 'inline-block';
+      }
+      const rc = document.getElementById('recent-contacts');
+      if (!contacts.length) { rc.innerHTML = '<div class="empty">No messages yet</div>'; return; }
+      rc.innerHTML = contacts.slice(-3).reverse().map(c => `
+        <div style="padding:12px 18px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+            <span style="font-weight:600;color:#fff;font-size:0.85rem;">${c.name}</span>
+            <span style="font-size:0.75rem;color:var(--teal-light);">${c.email}</span>
+            <span style="margin-left:auto;font-size:0.72rem;color:#444;">${timeAgo(c.ts)}</span>
+          </div>
+          <div style="font-size:0.82rem;color:#999;">${c.message.slice(0,120)}${c.message.length>120?'...':''}</div>
+        </div>`).join('');
+    } catch(e) { console.error(e); }
+  }
+
+  // ── CONTACTS ──
+  async function loadContacts() {
+    const el = document.getElementById('contacts-list');
+    el.innerHTML = '<div class="loading">Loading...</div>';
+    try {
+      const res = await fetch(API_BASE + '/api/admin/contacts', { headers });
+      const contacts = await res.json();
+      if (!contacts.length) { el.innerHTML = '<div class="empty">No messages yet.</div>'; return; }
+      el.innerHTML = [...contacts].reverse().map(c => `
+        <div class="contact-item">
+          <div class="contact-meta">
+            <span class="contact-name">${c.name}</span>
+            <a href="mailto:${c.email}" class="contact-email">${c.email}</a>
+            <span class="contact-time">${timeAgo(c.ts)}</span>
+          </div>
+          <div class="contact-msg">${c.message}</div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty">Failed to load.</div>'; }
+  }
+
+  // ── PROJECTS ──
+  async function loadProjects() {
+    const el = document.getElementById('projects-list');
+    el.innerHTML = '<div class="loading">Loading...</div>';
+    try {
+      const res = await fetch(API_BASE + '/api/admin/projects', { headers });
+      const projects = await res.json();
+      if (!projects.length) { el.innerHTML = '<div class="empty">No projects found.</div>'; return; }
+      el.innerHTML = `<table>
+        <thead><tr><th>Title</th><th>Tool</th><th>Status</th><th>Visible</th></tr></thead>
+        <tbody>${projects.map(p => `
+          <tr>
+            <td style="color:#fff;font-weight:500;">${p.title}</td>
+            <td>${p.tool||''}</td>
+            <td><span class="badge ${(p.status??'published')==='published'?'badge-green':'badge-gray'}">${(p.status??'published')==='published'?'Published':'Draft'}</span></td>
+            <td><label class="toggle"><input type="checkbox" ${(p.status??'published')==='published'?'checked':''} onchange="toggleProject(${p.id},this)"><span class="slider"></span></label></td>
+          </tr>`).join('')}
+        </tbody></table>`;
+    } catch(e) { el.innerHTML = '<div class="empty">Failed to load.</div>'; }
+  }
+
+  async function toggleProject(id, cb) {
+    try { await fetch(API_BASE + `/api/admin/projects/${id}/toggle`, { method:'PATCH', headers }); loadProjects(); }
+    catch { cb.checked = !cb.checked; }
+  }
+
+  // ── PREVIEW ──
+  var viewportMode = 'desktop';
+  var toolsPanelOpen = true;
+  var previewInited = false;
+
+  function initPreview() {
+    if (previewInited) return;
+    previewInited = true;
+  }
+
+  function setViewport(mode) {
+    viewportMode = mode;
+    const frame = document.getElementById('device-frame');
+    const inner = document.getElementById('frame-inner');
+    const iframe = document.getElementById('preview-iframe');
+    document.getElementById('btn-desktop').classList.toggle('active', mode === 'desktop');
+    document.getElementById('btn-mobile').classList.toggle('active', mode === 'mobile');
+    if (mode === 'mobile') {
+      frame.className = 'device-frame mobile-frame';
+      inner.className = 'preview-frame-inner mobile-mode';
+      iframe.style.width = '100%';
+      iframe.style.height = '844px';
+      frame.style.height = '844px';
+    } else {
+      frame.className = 'device-frame desktop-frame';
+      inner.className = 'preview-frame-inner';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      frame.style.height = '';
+    }
+    // Reload iframe to reset scroll position
+    iframe.src = iframe.src;
+  }
+
+  function jumpTo(hash) {
+    const iframe = document.getElementById('preview-iframe');
+    // Navigate iframe to section
+    try {
+      iframe.contentWindow.location.hash = hash;
+      iframe.contentWindow.document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' });
+    } catch(e) {
+      // Cross-origin fallback: reload with hash
+      const base = 'https://andre-weissmann-portfolio.pplx.app';
+      iframe.src = base + '/' + hash;
+    }
+  }
+
+  function toggleToolsPanel() {
+    toolsPanelOpen = !toolsPanelOpen;
+    const panel = document.getElementById('preview-tools');
+    panel.classList.toggle('collapsed', !toolsPanelOpen);
+    document.getElementById('btn-tools').textContent = toolsPanelOpen ? '📝 Notes →' : '← Notes';
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // ── NOTEPAD ──
+  function copyNotes() {
+    const text = document.getElementById('notepad-text').value.trim();
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const el = document.getElementById('copy-confirm');
+      el.textContent = 'Copied to clipboard!';
+      el.style.opacity = '1';
+      setTimeout(() => { el.style.opacity = '0'; el.textContent = ''; }, 2000);
+    });
+  }
+
+  function clearNotes() {
+    document.getElementById('notepad-text').value = '';
+  }
+
+  // ── ANNOTATIONS ──
+  var annotations = [];
+  var annotationMode = false;
+  var pendingX = 0, pendingY = 0;
+
+  function toggleAnnotationMode() {
+    annotationMode = !annotationMode;
+    const overlay = document.getElementById('annotation-overlay');
+    const btn = document.getElementById('btn-annotate');
+    overlay.classList.toggle('active', annotationMode);
+    btn.classList.toggle('active', annotationMode);
+    btn.textContent = annotationMode ? '📌 Stop' : '📌 Annotate';
+    if (annotationMode) switchTab('annotations');
+  }
+
+  function handleAnnotationClick(e) {
+    if (!annotationMode) return;
+    const overlay = document.getElementById('annotation-overlay');
+    const rect = overlay.getBoundingClientRect();
+    pendingX = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+    pendingY = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+    document.getElementById('ann-input').value = '';
+    document.getElementById('ann-modal').classList.add('active');
+    setTimeout(() => document.getElementById('ann-input').focus(), 50);
+  }
+
+  function saveAnnotation() {
+    const text = document.getElementById('ann-input').value.trim();
+    if (!text) return;
+    const n = annotations.length + 1;
+    annotations.push({ n, text, x: pendingX, y: pendingY });
+    document.getElementById('ann-modal').classList.remove('active');
+    renderAnnotations();
+    // Drop pin on overlay
+    const pin = document.createElement('div');
+    pin.className = 'ann-pin';
+    pin.textContent = n;
+    pin.style.left = pendingX + '%';
+    pin.style.top = pendingY + '%';
+    document.getElementById('annotation-overlay').appendChild(pin);
+  }
+
+  function cancelAnnotation() {
+    document.getElementById('ann-modal').classList.remove('active');
+  }
+
+  function renderAnnotations() {
+    const list = document.getElementById('annotations-list');
+    const empty = document.getElementById('ann-empty');
+    if (!annotations.length) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    list.innerHTML = annotations.map(a => `
+      <div class="annotation-item">
+        <div class="annotation-num">Pin ${a.n}</div>
+        <div class="annotation-text">${a.text}</div>
+      </div>`).join('');
+  }
+
+  function clearAnnotations() {
+    annotations = [];
+    // Remove pins from overlay
+    document.querySelectorAll('.ann-pin').forEach(p => p.remove());
+    renderAnnotations();
+  }
+
+  function exportAnnotations() {
+    if (!annotations.length) return;
+    const text = annotations.map(a => `Pin ${a.n}: ${a.text}`).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Annotations copied! Paste into the Perplexity Computer thread to apply all fixes.');
+    });
+  }
+
+  // ── PROMPT CHANNEL ──
+  const PERPLEXITY_THREAD = 'https://www.perplexity.ai/computer/tasks/af085272-f7cb-4c28-86cb-01b8ec090c0c';
+
+  function handlePromptKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPrompt(); }
+  }
+
+  function sendPrompt() {
+    const input = document.getElementById('prompt-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Add user message to history
+    const history = document.getElementById('prompt-history');
+    history.innerHTML += `
+      <div class="prompt-msg user">
+        <div class="msg-label">You</div>
+        ${escHtml(text)}
+      </div>`;
+    history.scrollTop = history.scrollHeight;
+    input.value = '';
+
+    // Update status
+    const status = document.getElementById('prompt-status');
+    status.textContent = 'Copied...';
+    status.className = 'prompt-status sending';
+
+    // Copy text to clipboard so user can paste into thread
+    const fullMsg = `[Portfolio change request from Admin Panel]\n\n${text}`;
+    navigator.clipboard.writeText(fullMsg).then(() => {
+      status.textContent = 'Copied to clipboard';
+      status.className = 'prompt-status success';
+
+      // Add AI response directing user
+      setTimeout(() => {
+        history.innerHTML += `
+          <div class="prompt-msg ai">
+            <div class="msg-label">Computer</div>
+            Your request has been copied to your clipboard. Open the Perplexity thread (⚡ button above) and paste it in — I will make the change and redeploy immediately.
+          </div>`;
+        history.scrollTop = history.scrollHeight;
+        status.textContent = 'Ready';
+        status.className = 'prompt-status';
+      }, 1200);
+    }).catch(() => {
+      // Fallback: open the thread in a new tab
+      status.textContent = 'Opening thread...';
+      window.open(PERPLEXITY_THREAD, '_blank');
+      status.textContent = 'Ready';
+      status.className = 'prompt-status';
+    });
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── EDIT TEXT (live overrides) ──
+  var editorFieldsLoaded = false;
+
+  async function loadEditorFields() {
+    if (!headers) return;
+    const loading = document.getElementById('editor-loading');
+    const errEl   = document.getElementById('editor-error');
+    const container = document.getElementById('editor-fields');
+    loading.style.display = '';
+    errEl.style.display = 'none';
+    container.innerHTML = '';
+    try {
+      const res = await fetch(API_BASE + '/api/editor/fields', { headers });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const { fields } = await res.json();
+      loading.style.display = 'none';
+      fields.forEach(function(field) {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 18px;';
+        card.innerHTML = `
+          <div style="font-size:0.78rem;font-weight:600;color:var(--teal-light);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">${escHtml(field.label)}</div>
+          <textarea
+            id="ef-${escHtml(field.id)}"
+            rows="2"
+            style="width:100%;box-sizing:border-box;background:#0d1f21;border:1px solid var(--border2);border-radius:6px;color:#ccc;font-size:0.85rem;font-family:inherit;padding:8px 10px;resize:vertical;outline:none;"
+            placeholder="${field.value !== null ? '' : 'No override (showing original)'}"
+          >${field.value !== null ? escHtml(field.value) : ''}</textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+            <span id="ef-status-${escHtml(field.id)}" style="font-size:0.75rem;color:var(--muted);"></span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost" style="font-size:0.75rem;padding:4px 10px;" onclick="clearField('${escHtml(field.id)}')">Clear</button>
+              <button class="btn btn-teal" style="font-size:0.75rem;padding:4px 10px;" onclick="saveField('${escHtml(field.id)}')">Save</button>
+            </div>
+          </div>`;
+        container.appendChild(card);
+      });
+    } catch(e) {
+      loading.style.display = 'none';
+      errEl.textContent = 'Failed to load fields: ' + e.message;
+      errEl.style.display = '';
+    }
+  }
+
+  async function saveField(fieldId) {
+    const ta = document.getElementById('ef-' + fieldId);
+    const status = document.getElementById('ef-status-' + fieldId);
+    if (!ta) return;
+    const value = ta.value;
+    status.textContent = 'Saving...';
+    status.style.color = 'var(--teal-light)';
+    try {
+      const res = await fetch(API_BASE + '/api/editor/fields/' + fieldId, {
+        method: 'PATCH',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
+        body: JSON.stringify({ value })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      status.textContent = 'Saved. Reload portfolio to see change.';
+      status.style.color = '#6daa45';
+      setTimeout(function(){ status.textContent = ''; }, 4000);
+    } catch(e) {
+      status.textContent = 'Error: ' + e.message;
+      status.style.color = '#e57373';
+    }
+  }
+
+  async function clearField(fieldId) {
+    const ta = document.getElementById('ef-' + fieldId);
+    const status = document.getElementById('ef-status-' + fieldId);
+    if (!ta) return;
+    ta.value = '';
+    status.textContent = 'Clearing...';
+    status.style.color = 'var(--teal-light)';
+    try {
+      const res = await fetch(API_BASE + '/api/editor/fields/' + fieldId, {
+        method: 'PATCH',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
+        body: JSON.stringify({ value: '' })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      status.textContent = 'Cleared.';
+      status.style.color = '#6daa45';
+      setTimeout(function(){ status.textContent = ''; }, 3000);
+    } catch(e) {
+      status.textContent = 'Error: ' + e.message;
+      status.style.color = '#e57373';
+    }
+  }
+
+  async function resetAllEdits() {
+    if (!confirm('Reset ALL text overrides and section visibility? This cannot be undone.')) return;
+    try {
+      await fetch(API_BASE + '/api/editor/reset', { method: 'DELETE', headers });
+      loadEditorFields();
+    } catch(e) {
+      alert('Reset failed: ' + e.message);
+    }
+  }
+
+  // ── SECTION VISIBILITY ──
+  var SECTION_LABELS = { skills: 'Skills', certifications: 'Certifications', toc: 'Table of Contents sidebar' };
+
+  async function loadSections() {
+    if (!headers) return;
+    const loading = document.getElementById('sections-loading');
+    const errEl   = document.getElementById('sections-error');
+    const list    = document.getElementById('sections-list');
+    loading.style.display = '';
+    errEl.style.display = 'none';
+    list.innerHTML = '';
+    try {
+      const res = await fetch(API_BASE + '/api/editor/sections', { headers });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      loading.style.display = 'none';
+      Object.entries(data).forEach(function([section, visible]) {
+        const label = SECTION_LABELS[section] || section;
+        const card = document.createElement('div');
+        card.id = 'sec-card-' + section;
+        card.style.cssText = 'background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;';
+        card.innerHTML = `
+          <div>
+            <div style="font-size:0.9rem;font-weight:600;color:#ccc;">${escHtml(label)}</div>
+            <div id="sec-status-${escHtml(section)}" style="font-size:0.75rem;color:var(--muted);margin-top:2px;">${visible ? 'Visible' : 'Hidden'}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="sec-save-${escHtml(section)}" style="font-size:0.75rem;color:var(--teal-light);"></span>
+            <button id="sec-btn-${escHtml(section)}"
+              class="btn ${visible ? 'btn-ghost' : 'btn-teal'}"
+              style="font-size:0.8rem;min-width:80px;"
+              onclick="toggleSection('${escHtml(section)}', ${visible})">
+              ${visible ? 'Hide' : 'Show'}
+            </button>
+          </div>`;
+        list.appendChild(card);
+      });
+    } catch(e) {
+      loading.style.display = 'none';
+      errEl.textContent = 'Failed to load sections: ' + e.message;
+      errEl.style.display = '';
+    }
+  }
+
+  async function toggleSection(section, currentlyVisible) {
+    var newVisible = !currentlyVisible;
+    var btn = document.getElementById('sec-btn-' + section);
+    var statusEl = document.getElementById('sec-status-' + section);
+    var saveEl = document.getElementById('sec-save-' + section);
+    if (btn) { btn.disabled = true; btn.textContent = '...'; }
+    try {
+      const res = await fetch(API_BASE + '/api/editor/sections/' + section, {
+        method: 'PATCH',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
+        body: JSON.stringify({ visible: newVisible })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      // Update UI in place
+      if (btn) {
+        btn.disabled = false;
+        btn.className = 'btn ' + (newVisible ? 'btn-ghost' : 'btn-teal');
+        btn.textContent = newVisible ? 'Hide' : 'Show';
+        btn.setAttribute('onclick', `toggleSection('${section}', ${newVisible})`);
+      }
+      if (statusEl) statusEl.textContent = newVisible ? 'Visible' : 'Hidden';
+      if (saveEl) {
+        saveEl.textContent = 'Saved. Reload portfolio to see change.';
+        setTimeout(function(){ saveEl.textContent = ''; }, 4000);
+      }
+    } catch(e) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Error'; }
+      alert('Failed: ' + e.message);
+    }
+  }
+
+  // ── THEME ──
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    var icon  = document.getElementById('theme-icon');
+    var label = document.getElementById('theme-label');
+    if (theme === 'dark') {
+      if (icon)  icon.textContent  = '\u2600\ufe0f';
+      if (label) label.textContent = 'Light mode';
+    } else {
+      if (icon)  icon.textContent  = '\ud83c\udf19';
+      if (label) label.textContent = 'Dark mode';
+    }
+    try { localStorage.setItem('adminTheme', theme); } catch(e) {}
+  }
+
+  function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  // Load saved theme on boot
+  (function() {
+    var saved = null;
+    try { saved = localStorage.getItem('adminTheme'); } catch(e) {}
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+  })();
+
+  // ── BOOT ──
+  loadOverview();
+</script>
+</body>
+</html>

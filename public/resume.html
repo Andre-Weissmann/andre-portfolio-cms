@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume — Andre Weissmann</title>
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=instrument-serif@400,400i&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Tokens ── */
+    :root, [data-theme="dark"] {
+      --bg:       #171614;
+      --surface:  #1C1B19;
+      --border:   #4a4845;
+      --text:     #E8E7E5;
+      --muted:    #A8A7A5;
+      --faint:    #787674;
+      --teal:     #5BAAB6;
+      --teal-dim: #2D929E;
+      --shadow:   rgba(0,0,0,0.45);
+      --font-display: 'Instrument Serif', Georgia, serif;
+      --font-body:    'Satoshi', system-ui, sans-serif;
+    }
+    [data-theme="light"] {
+      --bg:       #F7F6F2;
+      --surface:  #FFFFFF;
+      --border:   #D4D1CA;
+      --text:     #1A1916;
+      --muted:    #3D3C3A;
+      --faint:    #6B6A68;
+      --teal:     #01696F;
+      --teal-dim: #0C4E54;
+      --shadow:   rgba(0,0,0,0.12);
+    }
+
+    html { background: var(--bg); color: var(--text); font-family: var(--font-body); transition: background 0.25s, color 0.25s; }
+    body { min-height: 100vh; padding: 0; overflow-x: clip; }
+
+    /* ── Top bar ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(23, 22, 20, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 32px;
+      gap: 12px;
+      transition: background 0.25s, border-color 0.25s;
+      min-width: 0;
+    }
+    [data-theme="light"] .topbar {
+      background: rgba(247, 246, 242, 0.94);
+    }
+
+    .topbar-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: color 0.18s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .topbar-back:hover { color: var(--teal); }
+    .topbar-back svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      min-width: 0;
+    }
+
+    .btn-copy {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.18s, color 0.18s;
+      white-space: nowrap;
+    }
+    .btn-copy:hover { border-color: var(--teal); color: var(--teal); }
+    .btn-copy.copied { border-color: #437A22; color: #6DAA45; }
+    .btn-copy svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    /* ── Get Resume button + panel ── */
+    .gr-wrap { position: relative; flex-shrink: 0; }
+    .gr-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.18s, box-shadow 0.18s;
+      white-space: nowrap;
+    }
+    .gr-btn:hover { background: var(--teal-dim); }
+    .gr-btn.open { background: var(--teal-dim); box-shadow: 0 0 0 3px rgba(91,170,182,0.22); }
+    .gr-btn svg.gr-icon { width: 13px; height: 13px; flex-shrink: 0; }
+    .gr-btn svg.gr-caret { width: 10px; height: 10px; flex-shrink: 0; opacity: 0.75; transition: transform 0.18s; }
+    .gr-btn.open svg.gr-caret { transform: rotate(180deg); }
+
+    .gr-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 272px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px var(--shadow);
+      z-index: 300;
+      overflow: hidden;
+      animation: grIn 0.16s ease;
+    }
+    .gr-panel.open { display: block; }
+    @keyframes grIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .gr-section { padding: 14px 16px 10px; }
+    .gr-section + .gr-section { border-top: 1px solid var(--border); padding-top: 12px; }
+    .gr-section-label { font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
+
+    .gr-view-row { display: flex; gap: 6px; }
+    .gr-view-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;
+      padding: 10px 6px 9px; background: rgba(91,170,182,0.07); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--muted); text-decoration: none; font-family: var(--font-body);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.03em; text-align: center; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s; line-height: 1.2;
+    }
+    .gr-view-btn:hover { background: rgba(91,170,182,0.15); border-color: var(--teal); color: var(--teal); }
+    .gr-view-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .gr-dl-row { display: flex; gap: 6px; padding-bottom: 4px; }
+    .gr-dl-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1;
+      padding: 9px 10px; border-radius: 8px; font-family: var(--font-body); font-size: 12px;
+      font-weight: 700; letter-spacing: 0.04em; text-decoration: none; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+    }
+    .gr-dl-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .gr-dl-btn.pdf { background: var(--teal); color: #fff; border: 1px solid var(--teal); }
+    .gr-dl-btn.pdf:hover { background: var(--teal-dim); border-color: var(--teal-dim); }
+    .gr-dl-btn.word { background: transparent; color: var(--teal); border: 1px solid var(--teal); }
+    .gr-dl-btn.word:hover { background: rgba(91,170,182,0.12); }
+
+    /* ── Theme toggle ── */
+    .btn-theme {
+      display: flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; background: transparent; border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; color: var(--muted);
+      transition: color 0.18s, border-color 0.18s, background 0.18s; flex-shrink: 0;
+    }
+    .btn-theme:hover { border-color: var(--teal); color: var(--teal); background: rgba(91,170,182,0.08); }
+    .btn-theme svg { width: 15px; height: 15px; }
+    [data-theme="dark"]  .icon-sun  { display: block; }
+    [data-theme="dark"]  .icon-moon { display: none;  }
+    [data-theme="light"] .icon-sun  { display: none;  }
+    [data-theme="light"] .icon-moon { display: block; }
+
+    /* ── Layout ── */
+    .page { max-width: 780px; margin: 0 auto; padding: 52px 32px 80px; }
+
+    /* ── Header ── */
+    .resume-name { font-family: var(--font-display); font-style: italic; font-size: clamp(40px, 7vw, 64px); color: var(--text); line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 6px; }
+    .resume-title { font-family: var(--font-body); font-size: 15px; font-weight: 700; color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+    .resume-contact { display: flex; flex-wrap: wrap; gap: 6px 0; align-items: center; font-size: 13px; color: var(--muted); padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 36px; }
+    .resume-contact a { color: var(--teal); text-decoration: none; }
+    .resume-contact a:hover { text-decoration: underline; }
+    .resume-contact .sep { margin: 0 8px; color: var(--faint); }
+
+    /* ── Sections ── */
+    .section { margin-bottom: 32px; }
+    .section-label { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); border-bottom: 1px solid var(--teal-dim); padding-bottom: 6px; margin-bottom: 18px; }
+
+    /* ── Summary ── */
+    .summary-text { font-size: 14.5px; line-height: 1.72; color: var(--muted); }
+
+    /* ── Skills ── */
+    .skills-grid { display: flex; flex-direction: column; gap: 8px; }
+    .skill-row { font-size: 14px; line-height: 1.6; }
+    .skill-row strong { color: var(--text); font-weight: 700; }
+    .skill-row span { color: var(--muted); }
+
+    /* ── Projects ── */
+    .project { margin-bottom: 14px; }
+    .project:last-child { margin-bottom: 0; }
+    .project-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .project-title a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); transition: color 0.18s, border-color 0.18s; }
+    .project-title a:hover { color: var(--teal); border-bottom-color: var(--teal); }
+    .project-title .tool-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); margin-right: 6px; font-style: normal; }
+    .project-bullet { font-size: 13.5px; line-height: 1.65; color: var(--muted); padding-left: 14px; position: relative; }
+    .project-bullet::before { content: '•'; position: absolute; left: 0; color: var(--faint); }
+
+    .portfolio-link { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; font-style: italic; }
+    .portfolio-link a { color: var(--teal); text-decoration: none; }
+    .portfolio-link a:hover { text-decoration: underline; }
+
+    /* ── Work Experience ── */
+    .job { margin-bottom: 20px; }
+    .job:last-child { margin-bottom: 0; }
+    .job-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; margin-bottom: 2px; }
+    .job-title { font-size: 14.5px; font-weight: 700; color: var(--text); }
+    .job-company { font-size: 13.5px; font-weight: 700; color: var(--teal); }
+    .job-location { font-size: 12.5px; color: var(--muted); font-style: italic; }
+    .job-dates { font-size: 12.5px; color: var(--faint); font-style: italic; margin-bottom: 8px; }
+    .job-bullets { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .job-bullets li { font-size: 13.5px; line-height: 1.65; color: var(--muted); padding-left: 14px; position: relative; }
+    .job-bullets li::before { content: '•'; position: absolute; left: 0; color: var(--faint); }
+
+    /* ── Education ── */
+    .edu-row { margin-bottom: 8px; }
+    .edu-row:last-child { margin-bottom: 0; }
+    .edu-degree { font-size: 14px; font-weight: 700; color: var(--text); }
+    .edu-meta { font-size: 13px; color: var(--muted); font-style: italic; }
+
+    /* ── Freshness stamp ── */
+    .freshness { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--faint); text-align: center; }
+
+    /* ── Print styles ── */
+    @media print {
+      :root { --bg: #fff; --surface: #fff; --border: #ccc; --text: #111; --muted: #444; --faint: #777; --teal: #01696F; --teal-dim: #01696F; }
+      html, body { background: #fff; color: #111; }
+      .topbar { display: none !important; }
+      .page { padding: 20px 0; max-width: 100%; }
+      .resume-name { font-size: 32px; }
+      a { color: #01696F !important; }
+      .section { margin-bottom: 18px; }
+      .section-label { border-bottom-color: #01696F; color: #01696F; }
+      .freshness { display: none; }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 540px) {
+      .topbar { padding: 10px 14px; gap: 8px; }
+      .btn-copy span { display: none; }
+      .btn-copy { padding: 7px 10px; }
+      .gr-btn { padding: 7px 10px; font-size: 11px; letter-spacing: 0.03em; }
+      .gr-btn svg.gr-icon { display: none; }
+      .page { padding: 36px 18px 60px; }
+      .resume-contact .sep { margin: 0 5px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<nav class="topbar">
+  <a href="portfolio.html" class="topbar-back">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 3L5 8l5 5"/>
+    </svg>
+    Back to Portfolio
+  </a>
+  <div class="topbar-actions">
+    <button class="btn-theme" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle light/dark mode">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+    <button class="btn-copy" id="copyBtn" onclick="copyResume()" title="Copy plain text for ATS submission" aria-label="Copy resume as plain text">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/>
+      </svg>
+      <span>Copy as text</span>
+    </button>
+    <div class="gr-wrap">
+      <button class="gr-btn" id="gr-trigger" onclick="toggleGR()" aria-haspopup="true" aria-expanded="false">
+        <svg class="gr-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 2h8l4 4v8H2V2z"/><path d="M10 2v4h4"/>
+        </svg>
+        Download / View
+        <svg class="gr-caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 6l4 4 4-4"/>
+        </svg>
+      </button>
+      <div class="gr-panel" id="gr-panel" role="dialog" aria-label="Get Resume">
+        <div class="gr-section">
+          <div class="gr-section-label">View online</div>
+          <div class="gr-view-row">
+            <a class="gr-view-btn" href="https://view.officeapps.live.com/op/view.aspx?src=https://andre-weissmann-portfolio.pplx.app/Andre_Weissmann_Resume.docx" target="_blank" rel="noopener">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="16" height="16" rx="2"/><path d="M5 6l2 8 3-5 3 5 2-8"/></svg>
+              Word Online
+            </a>
+            <a class="gr-view-btn" href="https://andre-weissmann-portfolio.pplx.app/Andre_Weissmann_Resume.pdf" target="_blank" rel="noopener">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="2"/><path d="M6 8h8M6 11h8M6 14h5"/></svg>
+              View PDF
+            </a>
+          </div>
+        </div>
+        <div class="gr-section">
+          <div class="gr-section-label">Download</div>
+          <div class="gr-dl-row">
+            <a class="gr-dl-btn pdf" href="https://andre-weissmann-portfolio.pplx.app/Andre_Weissmann_Resume.pdf" download="Andre_Weissmann_Resume.pdf">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M3 13h10"/></svg>
+              PDF
+            </a>
+            <a class="gr-dl-btn word" href="https://andre-weissmann-portfolio.pplx.app/Andre_Weissmann_Resume.docx" download="Andre_Weissmann_Resume.docx">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M3 13h10"/></svg>
+              Word
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Resume ── -->
+<main class="page" id="resumeContent">
+
+  <h1 class="resume-name">Andre Weissmann</h1>
+  <div class="resume-title">Data Analyst &nbsp;|&nbsp; Healthcare Operations and Analytics</div>
+  <div class="resume-contact">
+    <span>Chicago, IL</span>
+    <span class="sep">|</span>
+    <a href="mailto:andre_weissmann@icloud.com">andre_weissmann@icloud.com</a>
+    <span class="sep">|</span>
+    <a href="https://www.linkedin.com/in/andre-weissmann" target="_blank" rel="noopener">linkedin.com/in/andre-weissmann</a>
+    <span class="sep">|</span>
+    <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener">github.com/Andre-Weissmann</a>
+  </div>
+
+  <!-- Summary -->
+  <section class="section" aria-labelledby="lbl-summary">
+    <h2 class="section-label" id="lbl-summary">Professional Summary</h2>
+    <p class="summary-text">
+      Data Analyst with 5+ years embedded inside EMS medical billing and healthcare operations, building technical solutions to real workflow problems. Hands-on with revenue cycle processes, claims analytics, and EHR documentation. Self-built a full analytics toolkit across SQL, Python, Power BI, Tableau, Excel, and VBA. Automated daily billing workflows using Excel macros, cutting manual processing time by 40%. Brings a rare combination of healthcare domain knowledge and analytical execution to every dataset.
+    </p>
+  </section>
+
+  <!-- Skills -->
+  <section class="section" aria-labelledby="lbl-skills">
+    <h2 class="section-label" id="lbl-skills">Core Skills</h2>
+    <div class="skills-grid">
+      <div class="skill-row"><strong>Languages and Analytics:</strong> <span>SQL, Python, R, Visual Basic (VBA), Microsoft Excel (Power Query, Power Pivot, DAX, Macros)</span></div>
+      <div class="skill-row"><strong>Visualization and BI:</strong> <span>Power BI, Tableau, Microsoft Excel, Exploratory Data Analysis (EDA), Data Cleaning and Validation</span></div>
+      <div class="skill-row"><strong>Healthcare Domain:</strong> <span>Revenue Cycle, Claims Analytics, Medical Billing, ICD-10, CPT Codes, Denial Management, Accounts Receivable, Prior Authorization, HIPAA, EHR/EMR, HL7, FHIR, EDI 837/835</span></div>
+      <div class="skill-row"><strong>AI and Automation:</strong> <span>Microsoft Copilot, Prompt Engineering, AI-Assisted Debugging, GitHub</span></div>
+    </div>
+  </section>
+
+  <!-- Projects -->
+  <section class="section" aria-labelledby="lbl-projects">
+    <h2 class="section-label" id="lbl-projects">Data Analytics Projects</h2>
+    <div class="portfolio-link">Full interactive portfolio: <a href="https://andre-weissmann-portfolio.pplx.app" target="_blank" rel="noopener">andre-weissmann-portfolio.pplx.app</a></div>
+
+    <div class="project">
+      <div class="project-title">
+        <a href="https://andre-weissmann-portfolio.pplx.app/#proj-nashville" target="_blank" rel="noopener">
+          <span class="tool-tag">SQL</span> Nashville Housing Data Cleaning
+        </a>
+      </div>
+      <div class="project-bullet">Cleaned 56,477 property records in SQL Server, removing duplicate parcels, resolving NULLs, and normalizing date formats. Flagged ~18% of records with data quality issues, producing a production-ready dataset that eliminated a full manual review stage downstream.</div>
+    </div>
+
+    <div class="project">
+      <div class="project-title">
+        <a href="https://andre-weissmann-portfolio.pplx.app/#proj-survey" target="_blank" rel="noopener">
+          <span class="tool-tag">Power BI</span> Data Professionals Survey Dashboard
+        </a>
+      </div>
+      <div class="project-bullet">Built a cross-filtered Power BI dashboard across 630 survey respondents, surfacing that Data Scientists earn 2x the salary of Data Analysts and Python is the dominant tool across every role. Gives hiring teams and career switchers a single view to benchmark compensation and skill investment.</div>
+    </div>
+
+    <div class="project">
+      <div class="project-title">
+        <a href="https://andre-weissmann-portfolio.pplx.app/#proj-airbnb" target="_blank" rel="noopener">
+          <span class="tool-tag">Tableau</span> Airbnb Seattle Pricing Analysis
+        </a>
+      </div>
+      <div class="project-bullet">Analyzed 323,346 Airbnb listings across Seattle, identifying that zip code alone accounts for a 3x spread in nightly pricing. Interactive dashboard lets hosts benchmark their listing against neighborhood averages, enabling data-driven pricing decisions without a spreadsheet.</div>
+    </div>
+
+    <div class="project">
+      <div class="project-title">
+        <a href="https://andre-weissmann-portfolio.pplx.app/#proj-bmi" target="_blank" rel="noopener">
+          <span class="tool-tag">Python</span> Health Metrics Calculator
+        </a>
+      </div>
+      <div class="project-bullet">Built a Python health metrics tool using CDC-aligned BMI thresholds and waist-to-hip ratio risk classification. Validates inputs, returns plain-language clinical interpretations, and includes preset health scenarios so non-technical users get immediate actionable output without reading a chart.</div>
+    </div>
+
+    <div class="project">
+      <div class="project-title">
+        <a href="https://andre-weissmann-portfolio.pplx.app/#proj-bikes" target="_blank" rel="noopener">
+          <span class="tool-tag">Excel</span> Bike Sales Business Insights
+        </a>
+      </div>
+      <div class="project-bullet">Segmentation analysis on 1,026 customer records using pivot tables and dynamic charts, identifying that middle-aged Pacific Region buyers drive the highest purchase conversion rate. Insight directly informs where a marketing team should concentrate regional ad spend.</div>
+    </div>
+  </section>
+
+  <!-- Work Experience -->
+  <section class="section" aria-labelledby="lbl-experience">
+    <h2 class="section-label" id="lbl-experience">Work Experience</h2>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-title">Mailroom Specialist (Billing and Claims Operations)</span>
+        <span class="job-company">EMS Management and Consultants</span>
+        <span class="job-location">Arlington Heights, IL</span>
+      </div>
+      <div class="job-dates">February 2021 to Present</div>
+      <ul class="job-bullets">
+        <li>Processed approximately 1,200 insurance claims and payment documents per week, sorting, scanning, and logging PHI documents into billing systems with HIPAA-compliant handling across all patient records.</li>
+        <li>Reconciled incoming insurance checks against billing records using Excel, counting and logging daily payment totals to ensure accurate intake reporting for the billing team.</li>
+        <li>Built VBA macros in Excel automating daily tape runs and claim validation workflows, cutting manual processing time ~40% and eliminating a class of keying errors.</li>
+        <li>Maintained HIPAA-compliant EHR/EMR documentation for thousands of patient accounts with zero PHI findings; sustained billing continuity through a full company acquisition in 2024.</li>
+        <li>Used Microsoft Copilot and prompt engineering to debug VBA macro runtime errors, reducing development cycle time and resolving issues that would otherwise require manual code review.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-title">Stock Associate</span>
+        <span class="job-company">Walmart</span>
+        <span class="job-location">Palatine, IL</span>
+      </div>
+      <div class="job-dates">April 2020 to February 2021</div>
+      <ul class="job-bullets">
+        <li>Maintained inventory accuracy across high-volume daily stock cycles; applied the same data verification and reconciliation discipline that carried into healthcare claims processing.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-header">
+        <span class="job-title">Team Member</span>
+        <span class="job-company">Goodwill Industries International</span>
+        <span class="job-location">Palatine, IL</span>
+      </div>
+      <div class="job-dates">April 2017 to April 2020</div>
+      <ul class="job-bullets">
+        <li>Processed and tracked donated goods inventory across intake, categorization, and disposition workflows, maintaining accuracy across high daily item volume.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Education -->
+  <section class="section" aria-labelledby="lbl-education">
+    <h2 class="section-label" id="lbl-education">Education</h2>
+    <div class="edu-row">
+      <div class="edu-degree">Bachelor of Arts, Information Technology</div>
+      <div class="edu-meta">Southern New Hampshire University &nbsp;|&nbsp; 2022 to 2024</div>
+    </div>
+    <div class="edu-row">
+      <div class="edu-degree">Associate of Science, Health Information Technology</div>
+      <div class="edu-meta">Harper College &nbsp;|&nbsp; 2003 to 2007</div>
+    </div>
+    <div class="edu-row" style="margin-top:8px;">
+      <div class="edu-degree">Continuing Education</div>
+      <div class="edu-meta">Maven Analytics Lifetime Membership &nbsp;|&nbsp; SQL, Python, Power BI, Tableau, Excel</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Scripts ── -->
+<script>
+// ── Theme: read/write localStorage to stay in sync with portfolio.html ──
+const THEME_KEY = 'theme-preference';
+
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+}
+
+function toggleTheme() {
+  var current = document.documentElement.getAttribute('data-theme') || 'dark';
+  var next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try { localStorage.setItem(THEME_KEY, next); } catch(e) {}
+}
+
+// On load: check localStorage first, then OS preference
+(function() {
+  var saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch(e) {}
+  if (saved === 'light' || saved === 'dark') {
+    applyTheme(saved);
+  } else {
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+  }
+})();
+
+// ── Get Resume panel toggle ──
+function toggleGR() {
+  var panel = document.getElementById('gr-panel');
+  var btn   = document.getElementById('gr-trigger');
+  var isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.setAttribute('aria-expanded', String(!isOpen));
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.gr-wrap') && !e.target.closest('#themeToggleBtn')) {
+    var panel = document.getElementById('gr-panel');
+    var btn   = document.getElementById('gr-trigger');
+    if (panel) { panel.classList.remove('open'); }
+    if (btn)   { btn.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  }
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var panel = document.getElementById('gr-panel');
+    var btn   = document.getElementById('gr-trigger');
+    if (panel) { panel.classList.remove('open'); }
+    if (btn)   { btn.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  }
+});
+
+// ── Copy as text ──
+function copyResume() {
+  const text = `ANDRE WEISSMANN
+Data Analyst | Healthcare Operations and Analytics
+Chicago, IL | andre_weissmann@icloud.com | andre-weissmann-portfolio.pplx.app | linkedin.com/in/andre-weissmann | github.com/Andre-Weissmann
+
+PROFESSIONAL SUMMARY
+Data Analyst with 5+ years embedded inside EMS medical billing and healthcare operations, building technical solutions to real workflow problems. Hands-on with revenue cycle processes, claims analytics, and EHR documentation. Self-built a full analytics toolkit across SQL, Python, Power BI, Tableau, Excel, and VBA. Automated daily billing workflows using Excel macros, cutting manual processing time by 40%. Brings a rare combination of healthcare domain knowledge and analytical execution to every dataset.
+
+CORE SKILLS
+Languages and Analytics: SQL, Python, R, Visual Basic (VBA), Microsoft Excel (Power Query, Power Pivot, DAX, Macros)
+Visualization and BI: Power BI, Tableau, Microsoft Excel, Exploratory Data Analysis (EDA), Data Cleaning and Validation
+Healthcare Domain: Revenue Cycle, Claims Analytics, Medical Billing, ICD-10, CPT Codes, Denial Management, Accounts Receivable, Prior Authorization, HIPAA, EHR/EMR, HL7, FHIR, EDI 837/835
+AI and Automation: Microsoft Copilot, Prompt Engineering, AI-Assisted Debugging, GitHub
+
+DATA ANALYTICS PROJECTS
+Full portfolio: andre-weissmann-portfolio.pplx.app
+
+SQL | Nashville Housing Data Cleaning
+- Cleaned 56,477 property records in SQL Server, removing duplicate parcels, resolving NULLs, and normalizing date formats. Flagged ~18% of records with data quality issues, producing a production-ready dataset that eliminated a full manual review stage downstream.
+
+Power BI | Data Professionals Survey Dashboard
+- Built a cross-filtered Power BI dashboard across 630 survey respondents, surfacing that Data Scientists earn 2x the salary of Data Analysts and Python is the dominant tool across every role.
+
+Tableau | Airbnb Seattle Pricing Analysis
+- Analyzed 323,346 Airbnb listings across Seattle, identifying that zip code alone accounts for a 3x spread in nightly pricing.
+
+Python | Health Metrics Calculator
+- Built a Python health metrics tool using CDC-aligned BMI thresholds and waist-to-hip ratio risk classification. Includes preset health scenarios for non-technical users.
+
+Excel | Bike Sales Business Insights
+- Segmentation analysis on 1,026 customer records using pivot tables and dynamic charts, identifying that middle-aged Pacific Region buyers drive the highest purchase conversion rate.
+
+WORK EXPERIENCE
+
+Mailroom Specialist (Billing and Claims Operations) | EMS Management and Consultants | Arlington Heights, IL
+February 2021 to Present
+- Processed approximately 1,200 insurance claims and payment documents per week, sorting, scanning, and logging PHI documents into billing systems with HIPAA-compliant handling across all patient records.
+- Reconciled incoming insurance checks against billing records using Excel, counting and logging daily payment totals to ensure accurate intake reporting for the billing team.
+- Built VBA macros in Excel automating daily tape runs and claim validation workflows, cutting manual processing time ~40% and eliminating a class of keying errors.
+- Maintained HIPAA-compliant EHR/EMR documentation for thousands of patient accounts with zero PHI findings; sustained billing continuity through a full company acquisition in 2024.
+- Used Microsoft Copilot and prompt engineering to debug VBA macro runtime errors, reducing development cycle time.
+
+Stock Associate | Walmart | Palatine, IL
+April 2020 to February 2021
+- Maintained inventory accuracy across high-volume daily stock cycles; applied the same data verification and reconciliation discipline that carried into healthcare claims processing.
+
+Team Member | Goodwill Industries International | Palatine, IL
+April 2017 to April 2020
+- Processed and tracked donated goods inventory across intake, categorization, and disposition workflows, maintaining accuracy across high daily item volume.
+
+EDUCATION
+Bachelor of Arts, Information Technology | Southern New Hampshire University | 2022 to 2024
+Associate of Science, Health Information Technology | Harper College | 2003 to 2007
+Continuing Education: Maven Analytics Lifetime Membership | SQL, Python, Power BI, Tableau, Excel`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.classList.add('copied');
+    btn.querySelector('span').textContent = 'Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.querySelector('span').textContent = 'Copy as text';
+    }, 2200);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+</script>
+
+<script>
+(function () {
+  function shouldIntercept(href) {
+    if (!href) return false;
+    // Always intercept mailto, tel links
+    if (href.startsWith('mailto:') || href.startsWith('tel:')) return true;
+    // Intercept external http/https links
+    try {
+      var url = new URL(href, window.location.href);
+      return url.origin !== window.location.origin;
+    } catch (e) { return false; }
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('a[href]');
+    if (!el) return;
+    var href = el.getAttribute('href');
+    if (!shouldIntercept(href)) return;
+    // If not in iframe, let browser handle normally
+    if (window.self === window.top) return;
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      window.top.open(href, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    }
+  }, true);
+})();
+</script>
+
+</body>
+</html>

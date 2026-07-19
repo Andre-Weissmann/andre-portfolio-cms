@@ -1,0 +1,430 @@
+/* ═══════════════════════════════════════════════════════════════════
+   THE DATA RAIL — CSS
+   Glass pill (mobile) ↔ side rail (desktop)
+   All animations use transform/opacity only (GPU-accelerated, 60fps)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Custom properties ──────────────────────────────────────────── */
+:root {
+  --dr-accent: #01696F;
+  --dr-accent-glow: rgba(1, 105, 111, 0.25);
+  --dr-glass-bg: rgba(255, 255, 255, 0.72);
+  --dr-glass-border: rgba(255, 255, 255, 0.5);
+  --dr-glass-blur: blur(24px) saturate(180%);
+  --dr-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.07);
+  --dr-shadow-deep: 0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+  --dr-text: #28251D;
+  --dr-text-muted: #7A7974;
+  --dr-dot-size: 7px;
+  --dr-pill-h: 48px;
+  --dr-rail-w: 200px;
+  --dr-radius: 999px;
+  --dr-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dr-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dr-duration: 300ms;
+}
+
+[data-theme="dark"] {
+  --dr-glass-bg: rgba(23, 22, 20, 0.80);
+  --dr-glass-border: rgba(255, 255, 255, 0.10);
+  --dr-text: #CDCCCA;
+  --dr-text-muted: #797876;
+  --dr-shadow: 0 4px 24px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.20);
+  --dr-shadow-deep: 0 8px 40px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30);
+  --dr-accent-glow: rgba(79, 152, 163, 0.25);
+}
+
+/* ── Reduced motion — instant swaps, no bloom ───────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  #data-rail,
+  #data-rail .dr-sheet,
+  #data-rail .dr-trigger,
+  .dr-backdrop {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ── Page dim when sheet open ───────────────────────────────────── */
+/* dr-page-dimmed: pointer-events only — NO transform/filter (breaks position:fixed on iOS) */
+body.dr-page-dimmed > *:not(#data-rail):not(.dr-backdrop) {
+  pointer-events: none;
+}
+
+/* ── Backdrop ────────────────────────────────────────────────────── */
+.dr-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0,0,0,0.35);
+  pointer-events: none;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity var(--dr-duration) var(--dr-ease);
+}
+.dr-backdrop--visible {
+  pointer-events: all;
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MOBILE — PILL MODE (< 1024px)
+══════════════════════════════════════════════════════════════════ */
+#data-rail[data-mode="pill"] {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  margin: 0 auto;
+  max-width: 420px;
+  z-index: 9100;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* filter removed — iOS Safari breaks position:fixed when filter is on the element */
+  transition: transform var(--dr-duration) var(--dr-ease),
+              opacity var(--dr-duration) var(--dr-ease);
+}
+
+/* Pill hidden on scroll-down */
+#data-rail[data-mode="pill"].dr--scroll-hidden {
+  transform: translateY(calc(100% + 28px));
+  opacity: 0;
+}
+
+/* ── Pill trigger button ─────────────────────────────────────────── */
+#data-rail[data-mode="pill"] .dr-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--dr-pill-h);
+  padding: 0 18px;
+  background: var(--dr-glass-bg);
+  backdrop-filter: var(--dr-glass-blur);
+  -webkit-backdrop-filter: var(--dr-glass-blur);
+  border: 1px solid var(--dr-glass-border);
+  border-radius: var(--dr-radius);
+  box-shadow: var(--dr-shadow);
+  cursor: pointer;
+  width: 100%;
+  color: var(--dr-text);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow var(--dr-duration) var(--dr-ease);
+}
+
+#data-rail[data-mode="pill"] .dr-trigger:active {
+  box-shadow: var(--dr-shadow-deep);
+  transform: scale(0.98);
+}
+
+/* ── Progress track + fill ──────────────────────────────────────── */
+.dr-trigger__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.dr-progress {
+  position: relative;
+  height: 3px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .dr-progress {
+  background: rgba(255,255,255,0.10);
+}
+
+.dr-progress__fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: var(--pct, 0%);
+  background: var(--dr-accent);
+  border-radius: 99px;
+  transition: width 0.1s linear;
+
+  /* Native CSS scroll-driven animation where supported */
+  @supports (animation-timeline: scroll()) {
+    animation: dr-fill-progress linear both;
+    animation-timeline: scroll(root);
+    width: 100%;
+  }
+}
+
+@keyframes dr-fill-progress {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
+/* ── Section dots ────────────────────────────────────────────────── */
+.dr-dots {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  padding: 0 2px;
+}
+
+/* Connecting line behind dots */
+.dr-dots::before {
+  content: '';
+  position: absolute;
+  left: 2px; right: 2px;
+  top: 50%;
+  height: 1px;
+  background: rgba(0,0,0,0.08);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+[data-theme="dark"] .dr-dots::before {
+  background: rgba(255,255,255,0.08);
+}
+
+.dr-dot {
+  display: inline-block;
+  width: var(--dr-dot-size);
+  height: var(--dr-dot-size);
+  border-radius: 50%;
+  background: rgba(0,0,0,0.15);
+  border: 1.5px solid transparent;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  transition: background var(--dr-duration) var(--dr-ease),
+              transform var(--dr-duration) var(--dr-spring),
+              border-color var(--dr-duration) var(--dr-ease);
+}
+
+[data-theme="dark"] .dr-dot {
+  background: rgba(255,255,255,0.15);
+}
+
+.dr-dot--passed {
+  background: var(--dr-accent);
+  opacity: 0.5;
+}
+
+.dr-dot--active {
+  background: var(--dr-accent);
+  transform: scale(1.6);
+  border-color: var(--dr-accent-glow);
+  box-shadow: 0 0 0 3px var(--dr-accent-glow);
+}
+
+/* ── Active label ───────────────────────────────────────────────── */
+.dr-active-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--dr-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+/* ── Sheet (expanded) ────────────────────────────────────────────── */
+#data-rail[data-mode="pill"] .dr-sheet {
+  position: absolute;
+  bottom: calc(var(--dr-pill-h) + 8px);
+  left: 0; right: 0;
+  background: var(--dr-glass-bg);
+  backdrop-filter: var(--dr-glass-blur);
+  -webkit-backdrop-filter: var(--dr-glass-blur);
+  border: 1px solid var(--dr-glass-border);
+  border-radius: 20px;
+  box-shadow: var(--dr-shadow-deep);
+  padding: 10px 12px 8px;
+  transform-origin: bottom center;
+  transform: scaleY(0.7) translateY(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform var(--dr-duration) var(--dr-spring),
+              opacity 200ms var(--dr-ease);
+}
+
+#data-rail[data-mode="pill"] .dr-sheet:not([hidden]) {
+  transform: scaleY(1) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Sheet close button ─────────────────────────────────────────── */
+.dr-sheet__close {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.06);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dr-text-muted);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 150ms;
+}
+.dr-sheet__close:hover { background: rgba(0,0,0,0.12); }
+[data-theme="dark"] .dr-sheet__close { background: rgba(255,255,255,0.08); }
+[data-theme="dark"] .dr-sheet__close:hover { background: rgba(255,255,255,0.14); }
+
+/* ── Section list ──────────────────────────────────────────── */
+.dr-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dr-list__btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms;
+  gap: 8px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dr-list__btn:hover,
+.dr-list__item--active .dr-list__btn {
+  background: rgba(1,105,111,0.08);
+}
+
+[data-theme="dark"] .dr-list__btn:hover,
+[data-theme="dark"] .dr-list__item--active .dr-list__btn {
+  background: rgba(79,152,163,0.12);
+}
+
+.dr-list__label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dr-text);
+  flex-shrink: 0;
+}
+
+.dr-list__item--active .dr-list__label {
+  color: var(--dr-accent);
+}
+
+.dr-list__readout {
+  font-size: 11px;
+  color: var(--dr-text-muted);
+  flex: 1;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+/* ══════════════════════════════════════════════════════════════════
+   DESKTOP — RAIL MODE (≥ 1024px)
+══════════════════════════════════════════════════════════════════ */
+#data-rail[data-mode="rail"] {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9100;
+  width: var(--dr-rail-w);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide pill trigger on desktop — rail is always open */
+#data-rail[data-mode="rail"] .dr-trigger {
+  display: none;
+}
+
+/* Sheet always visible on desktop */
+#data-rail[data-mode="rail"] .dr-sheet {
+  position: relative;
+  background: var(--dr-glass-bg);
+  backdrop-filter: var(--dr-glass-blur);
+  -webkit-backdrop-filter: var(--dr-glass-blur);
+  border: 1px solid var(--dr-glass-border);
+  border-radius: 16px;
+  box-shadow: var(--dr-shadow);
+  padding: 14px 12px 12px;
+  transform: none;
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Hide filter on desktop (only 5 items) */
+#data-rail[data-mode="rail"] 
+
+/* Close button hidden on desktop */
+#data-rail[data-mode="rail"] .dr-sheet__close {
+  display: none;
+}
+
+/* Rail list items — vertical, no readout truncation */
+#data-rail[data-mode="rail"] .dr-list__btn {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 10px;
+  gap: 2px;
+}
+
+#data-rail[data-mode="rail"] 
+
+/* Rail section label — smaller */
+#data-rail[data-mode="rail"] .dr-list__label {
+  font-size: 13px;
+}
+
+/* Rail progress — vertical strip on left edge of rail */
+#data-rail[data-mode="rail"] .dr-progress {
+  display: none; /* dots give enough context on desktop */
+}
+
+/* Rail header showing progress + dots */
+.dr-rail-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  margin-bottom: 4px;
+}
+
+[data-theme="dark"] .dr-rail-header {
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+
+/* ── Hide old mobile-section-nav completely ──────────────────────── */
+#mobile-section-nav { display: none !important; }
+
+/* ── Ensure body has enough left padding on desktop for rail ─────── */
+@media (min-width: 1024px) {
+  /* Only pad if rail is narrower than existing sidebar gap */
+  body { /* No extra padding needed — rail is positioned absolutely */ }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+  #data-rail[data-mode="pill"] { display: none; }
+}
+
+@media (max-width: 1023px) {
+  #data-rail[data-mode="rail"] .dr-sheet { display: none; }
+}

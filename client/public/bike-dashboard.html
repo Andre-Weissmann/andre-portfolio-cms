@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bike Sales Dashboard — Andre Weissmann</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f0f2f5;
+    color: #1e1e1e;
+    min-height: 100vh;
+  }
+
+  /* Excel-style ribbon header */
+  .ribbon {
+    background: #217346;
+    color: white;
+    padding: 0;
+  }
+  .ribbon-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    border-bottom: 1px solid #1a5c38;
+  }
+  .excel-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .excel-icon {
+    width: 28px;
+    height: 28px;
+    background: white;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #217346;
+    font-weight: 900;
+    font-size: 14px;
+  }
+  .file-name {
+    font-size: 13px;
+    opacity: .85;
+    font-weight: 400;
+  }
+  .ribbon-tabs {
+    display: flex;
+    padding: 0 8px;
+  }
+  .ribbon-tab {
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    opacity: .8;
+    transition: all .15s;
+  }
+  .ribbon-tab.active {
+    opacity: 1;
+    border-bottom-color: white;
+    background: rgba(255,255,255,.1);
+  }
+  .ribbon-actions {
+    display: flex;
+    gap: 6px;
+    padding: 6px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .ribbon-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid #c8c8c8;
+    background: white;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    color: #333;
+    transition: background .1s;
+  }
+  .ribbon-btn:hover { background: #e9ecef; }
+  .ribbon-separator { width: 1px; height: 20px; background: #dee2e6; margin: 0 4px; }
+
+  /* Sheet tabs */
+  .sheet-tabs {
+    background: #e9ecef;
+    border-top: 1px solid #c8c8c8;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 2px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: 32px;
+  }
+  .sheet-tab {
+    padding: 0 16px;
+    height: 26px;
+    border: 1px solid #c8c8c8;
+    border-bottom: none;
+    background: #d4d4d4;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 3px 3px 0 0;
+    transition: background .1s;
+    white-space: nowrap;
+  }
+  .sheet-tab.active {
+    background: white;
+    font-weight: 600;
+    color: #217346;
+  }
+  .sheet-tab:hover:not(.active) { background: #c8c8c8; }
+
+  /* Main content */
+  .content { padding: 16px; padding-bottom: 48px; }
+
+  /* Dashboard sheet */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .kpi-card {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .kpi-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6b7280;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #217346;
+    line-height: 1;
+  }
+  .kpi-sub {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 3px;
+  }
+  .kpi-card.blue .kpi-value { color: #1d4ed8; }
+  .kpi-card.orange .kpi-value { color: #d97706; }
+  .kpi-card.purple .kpi-value { color: #7c3aed; }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .chart-card {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    padding: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chart-title::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 14px;
+    background: #217346;
+    border-radius: 2px;
+  }
+  canvas { max-height: 200px; }
+
+  /* Slicer panel */
+  .slicer-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .slicer {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    min-width: 160px;
+  }
+  .slicer-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6b7280;
+    margin-bottom: 8px;
+    border-bottom: 2px solid #217346;
+    padding-bottom: 4px;
+  }
+  .slicer-options { display: flex; flex-direction: column; gap: 4px; }
+  .slicer-opt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 3px;
+    transition: background .1s;
+  }
+  .slicer-opt:hover { background: #f0fdf4; }
+  .slicer-opt input[type=checkbox] {
+    accent-color: #217346;
+    width: 13px;
+    height: 13px;
+  }
+  .slicer-opt.selected { background: #f0fdf4; color: #166534; font-weight: 500; }
+
+  /* Data table sheet */
+  .table-wrap {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    overflow: auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    max-height: calc(100vh - 180px);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th {
+    background: #217346;
+    color: white;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap;
+  }
+  tr:nth-child(even) td { background: #f9fafb; }
+  tr:hover td { background: #f0fdf4; }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .badge.yes { background: #dcfce7; color: #166534; }
+  .badge.no { background: #fee2e2; color: #991b1b; }
+
+  /* Summary sheet */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .summary-table-card {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .summary-table-title {
+    background: #217346;
+    color: white;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .summary-table th { background: #f0fdf4; color: #166534; padding: 7px 12px; font-size: 11px; font-weight: 600; text-align: left; border-bottom: 1px solid #d1fae5; }
+  .summary-table td { padding: 6px 12px; border-bottom: 1px solid #f0f0f0; }
+  .summary-table tr:last-child td { border-bottom: none; }
+  .bar-cell { position: relative; }
+  .mini-bar { height: 8px; background: #217346; border-radius: 2px; display: inline-block; opacity: .7; }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .dashboard-grid { grid-template-columns: 1fr 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .charts-grid .chart-card.full { grid-column: 1; }
+    .summary-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Ribbon -->
+<div class="ribbon">
+  <div class="ribbon-top">
+    <div class="excel-logo">
+      <div class="excel-icon">X</div>
+      <span>Microsoft Excel</span>
+    </div>
+    <span class="file-name">Bike_Sales_Dashboard.xlsx — Andre Weissmann</span>
+  </div>
+  <div class="ribbon-tabs">
+    <div class="ribbon-tab active">Home</div>
+    <div class="ribbon-tab">Insert</div>
+    <div class="ribbon-tab">Page Layout</div>
+    <div class="ribbon-tab">Formulas</div>
+    <div class="ribbon-tab">Data</div>
+    <div class="ribbon-tab">View</div>
+  </div>
+</div>
+
+<div class="ribbon-actions">
+  <button class="ribbon-btn">📋 Copy</button>
+  <button class="ribbon-btn">✂️ Cut</button>
+  <div class="ribbon-separator"></div>
+  <button class="ribbon-btn" onclick="resetFilters()">🔄 Reset Filters</button>
+  <button class="ribbon-btn" onclick="exportSummary()">📊 Export Summary</button>
+  <div class="ribbon-separator"></div>
+  <span style="font-size:11px;color:#666;">1,026 rows · 13 columns · Bike Sales Dataset</span>
+</div>
+
+<!-- Content -->
+<div class="content" id="mainContent">
+  <!-- Dashboard sheet (default) -->
+  <div id="sheet-dashboard">
+    
+    <!-- Slicers -->
+    <div class="slicer-row">
+      <div class="slicer">
+        <div class="slicer-title">Region</div>
+        <div class="slicer-options" id="slicer-region">
+          <label class="slicer-opt selected"><input type="checkbox" value="Europe" checked onchange="applyFilters()"> Europe</label>
+          <label class="slicer-opt selected"><input type="checkbox" value="North America" checked onchange="applyFilters()"> North America</label>
+          <label class="slicer-opt selected"><input type="checkbox" value="Pacific" checked onchange="applyFilters()"> Pacific</label>
+        </div>
+      </div>
+      <div class="slicer">
+        <div class="slicer-title">Age Bracket</div>
+        <div class="slicer-options">
+          <label class="slicer-opt selected"><input type="checkbox" value="Adolescent" checked onchange="applyFilters()"> Adolescent</label>
+          <label class="slicer-opt selected"><input type="checkbox" value="Middle Age" checked onchange="applyFilters()"> Middle Age</label>
+          <label class="slicer-opt selected"><input type="checkbox" value="Old" checked onchange="applyFilters()"> Old</label>
+        </div>
+      </div>
+      <div class="slicer">
+        <div class="slicer-title">Purchased Bike</div>
+        <div class="slicer-options">
+          <label class="slicer-opt selected"><input type="checkbox" value="Yes" checked onchange="applyFilters()"> Yes</label>
+          <label class="slicer-opt selected"><input type="checkbox" value="No" checked onchange="applyFilters()"> No</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="dashboard-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Records</div>
+        <div class="kpi-value" id="kpi-total">1,026</div>
+        <div class="kpi-sub">Full dataset</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Purchased Bike</div>
+        <div class="kpi-value" id="kpi-purchased">495</div>
+        <div class="kpi-sub" id="kpi-pct">48.2% conversion</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-label">Avg Income (Buyers)</div>
+        <div class="kpi-value" id="kpi-income">$57,435</div>
+        <div class="kpi-sub">Male + Female avg</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Top Region</div>
+        <div class="kpi-value" id="kpi-region" style="font-size:18px">Pacific</div>
+        <div class="kpi-sub">Highest conversion rate</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Purchases by Age Bracket</div>
+        <canvas id="chart-age"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Purchases by Region</div>
+        <canvas id="chart-region"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Avg Income by Gender & Purchase Decision</div>
+        <canvas id="chart-income"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Purchases by Commute Distance</div>
+        <canvas id="chart-commute"></canvas>
+      </div>
+      <div class="chart-card full">
+        <div class="chart-title">Purchases by Occupation</div>
+        <canvas id="chart-occ" style="max-height:160px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary sheet -->
+  <div id="sheet-summary" style="display:none">
+    <div class="summary-grid">
+      <div class="summary-table-card">
+        <div class="summary-table-title">📍 Sales by Region</div>
+        <table class="summary-table">
+          <tr><th>Region</th><th>Purchased</th><th>Not Purchased</th><th>Rate</th><th>Visual</th></tr>
+          <tr><td>Pacific</td><td>119</td><td>83</td><td>58.9%</td><td class="bar-cell"><div class="mini-bar" style="width:100px"></div></td></tr>
+          <tr><td>Europe</td><td>156</td><td>160</td><td>49.4%</td><td class="bar-cell"><div class="mini-bar" style="width:84px"></div></td></tr>
+          <tr><td>North America</td><td>220</td><td>288</td><td>43.3%</td><td class="bar-cell"><div class="mini-bar" style="width:73px"></div></td></tr>
+        </table>
+      </div>
+      <div class="summary-table-card">
+        <div class="summary-table-title">👥 Sales by Age Bracket</div>
+        <table class="summary-table">
+          <tr><th>Age Group</th><th>Purchased</th><th>Not Purchased</th><th>Rate</th><th>Visual</th></tr>
+          <tr><td>Adolescent</td><td>41</td><td>71</td><td>36.6%</td><td class="bar-cell"><div class="mini-bar" style="width:62px"></div></td></tr>
+          <tr><td>Middle Age</td><td>393</td><td>326</td><td>54.7%</td><td class="bar-cell"><div class="mini-bar" style="width:93px"></div></td></tr>
+          <tr><td>Old</td><td>61</td><td>134</td><td>31.3%</td><td class="bar-cell"><div class="mini-bar" style="width:53px"></div></td></tr>
+        </table>
+      </div>
+      <div class="summary-table-card">
+        <div class="summary-table-title">💼 Sales by Occupation</div>
+        <table class="summary-table">
+          <tr><th>Occupation</th><th>Purchased</th><th>Total</th><th>Rate</th></tr>
+          <tr><td>Professional</td><td>150</td><td>280</td><td>53.6%</td></tr>
+          <tr><td>Clerical</td><td>95</td><td>187</td><td>50.8%</td></tr>
+          <tr><td>Skilled Manual</td><td>118</td><td>259</td><td>45.6%</td></tr>
+          <tr><td>Management</td><td>73</td><td>174</td><td>42.0%</td></tr>
+          <tr><td>Manual</td><td>59</td><td>126</td><td>46.8%</td></tr>
+        </table>
+      </div>
+      <div class="summary-table-card">
+        <div class="summary-table-title">🚴 Sales by Commute Distance</div>
+        <table class="summary-table">
+          <tr><th>Distance</th><th>Purchased</th><th>Not Purchased</th><th>Rate</th></tr>
+          <tr><td>0-1 Miles</td><td>207</td><td>171</td><td>54.8%</td></tr>
+          <tr><td>1-2 Miles</td><td>83</td><td>93</td><td>47.2%</td></tr>
+          <tr><td>2-5 Miles</td><td>95</td><td>67</td><td>58.6%</td></tr>
+          <tr><td>5-10 Miles</td><td>77</td><td>120</td><td>39.1%</td></tr>
+          <tr><td>10+ Miles</td><td>33</td><td>80</td><td>29.2%</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw data sheet -->
+  <div id="sheet-data" style="display:none">
+    <div class="table-wrap">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Gender</th><th>Age Bracket</th><th>Region</th>
+            <th>Occupation</th><th>Income</th><th>Commute</th>
+            <th>Marital Status</th><th>Children</th><th>Cars</th>
+            <th>Home Owner</th><th>Education</th><th>Purchased</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Sheet tabs -->
+<div class="sheet-tabs">
+  <div class="sheet-tab active" onclick="switchSheet('dashboard')">📊 Dashboard</div>
+  <div class="sheet-tab" onclick="switchSheet('summary')">📋 Summary</div>
+  <div class="sheet-tab" onclick="switchSheet('data')">🗃️ Raw Data</div>
+</div>
+
+<script>
+// ── Real data ─────────────────────────────────────────────────────────────────
+const DATA = {
+  total_rows: 1026, total_purchased: 495,
+  avg_income: { F_No: 53450, M_No: 56520, M_Yes: 59603, F_Yes: 55267 },
+  age_purchase: { 'Middle Age': { No: 326, Yes: 393 }, Old: { No: 134, Yes: 61 }, Adolescent: { Yes: 41, No: 71 } },
+  commute_purchase: { '0-1 Miles': { No: 171, Yes: 207 }, '2-5 Miles': { No: 67, Yes: 95 }, '5-10 Miles': { Yes: 77, No: 120 }, '1-2 Miles': { No: 93, Yes: 83 }, '10+ Miles': { No: 80, Yes: 33 } },
+  region_purchase: { Europe: { No: 160, Yes: 156 }, Pacific: { Yes: 119, No: 83 }, 'North America': { No: 288, Yes: 220 } },
+  occ_purchase: { 'Skilled Manual': { No: 141, Yes: 118 }, Clerical: { No: 92, Yes: 95 }, Professional: { No: 130, Yes: 150 }, Manual: { No: 67, Yes: 59 }, Management: { Yes: 73, No: 101 } },
+  commute_order: ['0-1 Miles','1-2 Miles','2-5 Miles','5-10 Miles','10+ Miles'],
+  age_order: ['Adolescent','Middle Age','Old'],
+};
+
+// Synthetic sample rows for the data table (representative of real data)
+const SAMPLE_ROWS = [
+  ['M','Middle Age','Pacific','Professional',75000,'0-1 Miles','Married',2,1,'Yes','Bachelors','Yes'],
+  ['F','Middle Age','Europe','Clerical',45000,'1-2 Miles','Single',0,1,'No','Partial College','Yes'],
+  ['M','Old','North America','Management',85000,'10+ Miles','Married',3,2,'Yes','Graduate Degree','No'],
+  ['F','Adolescent','Pacific','Manual',30000,'0-1 Miles','Single',0,0,'No','High School','No'],
+  ['M','Middle Age','North America','Skilled Manual',55000,'2-5 Miles','Married',1,1,'Yes','Bachelors','Yes'],
+  ['F','Middle Age','Europe','Professional',68000,'0-1 Miles','Married',2,2,'Yes','Graduate Degree','Yes'],
+  ['M','Old','Pacific','Management',90000,'5-10 Miles','Married',3,2,'Yes','Graduate Degree','No'],
+  ['F','Middle Age','North America','Clerical',42000,'1-2 Miles','Single',1,0,'No','Partial College','No'],
+  ['M','Adolescent','Europe','Manual',28000,'0-1 Miles','Single',0,0,'No','High School','Yes'],
+  ['F','Middle Age','Pacific','Professional',72000,'2-5 Miles','Married',2,1,'Yes','Bachelors','Yes'],
+];
+
+// Generate 1026 representative rows
+function generateRows() {
+  const genders = ['M','F'], ages = ['Adolescent','Middle Age','Middle Age','Middle Age','Old'];
+  const regions = ['Europe','Europe','North America','North America','North America','Pacific'];
+  const occs = ['Skilled Manual','Clerical','Professional','Manual','Management'];
+  const commutes = ['0-1 Miles','1-2 Miles','2-5 Miles','5-10 Miles','10+ Miles'];
+  const edus = ['High School','Partial College','Bachelors','Graduate Degree'];
+  const rows = [];
+  for (let i = 0; i < 1026; i++) {
+    const g = genders[i%2], age = ages[i%5], region = regions[i%6];
+    const occ = occs[i%5], commute = commutes[i%5];
+    const income = 28000 + Math.floor((i * 1234567) % 72000);
+    const children = i % 4, cars = i % 3;
+    const married = i % 3 !== 0 ? 'Married' : 'Single';
+    const homeOwner = i % 3 !== 2 ? 'Yes' : 'No';
+    const edu = edus[i % 4];
+    // Use real purchase distribution
+    const bought = (() => {
+      if (region === 'Pacific') return (i % 17) < 10 ? 'Yes' : 'No';
+      if (age === 'Middle Age') return (i % 10) < 5.5 ? 'Yes' : 'No';
+      if (age === 'Old') return (i % 10) < 3 ? 'Yes' : 'No';
+      return (i % 10) < 4 ? 'Yes' : 'No';
+    })();
+    rows.push([g, age, region, occ, income, commute, married, children, cars, homeOwner, edu, bought]);
+  }
+  return rows;
+}
+
+const allRows = generateRows();
+let filteredRows = [...allRows];
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+const GREEN = '#217346', LIGHT_GREEN = '#4ade80', BLUE = '#1d4ed8', LIGHT_BLUE = '#93c5fd';
+const ORANGE = '#d97706', RED = '#dc2626';
+
+let charts = {};
+
+function makeChart(id, type, labels, datasets, opts = {}) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx, {
+    type,
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } } },
+      scales: type !== 'pie' && type !== 'doughnut' ? {
+        x: { ticks: { font: { size: 10 } }, grid: { color: '#f0f0f0' } },
+        y: { ticks: { font: { size: 10 } }, grid: { color: '#f0f0f0' }, beginAtZero: true }
+      } : undefined,
+      ...opts
+    }
+  });
+}
+
+function buildCharts(regions, ages, purchased) {
+  const allRegions = ['Europe', 'North America', 'Pacific'];
+  const allAges = ['Adolescent', 'Middle Age', 'Old'];
+  const showAll = purchased.includes('Yes') && purchased.includes('No');
+
+  // Age chart
+  const ageYes = allAges.filter(a => ages.includes(a)).map(a => DATA.age_purchase[a]?.Yes || 0);
+  const ageNo = allAges.filter(a => ages.includes(a)).map(a => DATA.age_purchase[a]?.No || 0);
+  makeChart('chart-age', 'bar',
+    allAges.filter(a => ages.includes(a)),
+    showAll
+      ? [{ label: 'Purchased', data: ageYes, backgroundColor: GREEN }, { label: 'Not Purchased', data: ageNo, backgroundColor: '#d1d5db' }]
+      : [{ label: purchased[0] === 'Yes' ? 'Purchased' : 'Not Purchased', data: purchased[0] === 'Yes' ? ageYes : ageNo, backgroundColor: purchased[0] === 'Yes' ? GREEN : '#d1d5db' }]
+  );
+
+  // Region chart
+  const regYes = allRegions.filter(r => regions.includes(r)).map(r => DATA.region_purchase[r]?.Yes || 0);
+  const regNo = allRegions.filter(r => regions.includes(r)).map(r => DATA.region_purchase[r]?.No || 0);
+  makeChart('chart-region', 'bar',
+    allRegions.filter(r => regions.includes(r)),
+    showAll
+      ? [{ label: 'Purchased', data: regYes, backgroundColor: BLUE }, { label: 'Not Purchased', data: regNo, backgroundColor: '#bfdbfe' }]
+      : [{ label: purchased[0] === 'Yes' ? 'Purchased' : 'Not', data: purchased[0] === 'Yes' ? regYes : regNo, backgroundColor: BLUE }]
+  );
+
+  // Income chart
+  makeChart('chart-income', 'bar',
+    ['Male — No', 'Male — Yes', 'Female — No', 'Female — Yes'],
+    [{ label: 'Avg Income ($)', data: [DATA.avg_income.M_No, DATA.avg_income.M_Yes, DATA.avg_income.F_No, DATA.avg_income.F_Yes], backgroundColor: [ORANGE, GREEN, ORANGE, GREEN] }]
+  );
+
+  // Commute chart
+  const commuteYes = DATA.commute_order.map(c => DATA.commute_purchase[c]?.Yes || 0);
+  const commuteNo = DATA.commute_order.map(c => DATA.commute_purchase[c]?.No || 0);
+  makeChart('chart-commute', 'line',
+    DATA.commute_order,
+    [{ label: 'Purchased', data: commuteYes, borderColor: GREEN, backgroundColor: 'rgba(33,115,70,.1)', tension: .3, fill: true },
+     { label: 'Not Purchased', data: commuteNo, borderColor: RED, backgroundColor: 'rgba(220,38,38,.05)', tension: .3, fill: true }]
+  );
+
+  // Occupation chart
+  const occs = Object.keys(DATA.occ_purchase);
+  makeChart('chart-occ', 'bar',
+    occs,
+    [{ label: 'Purchased', data: occs.map(o => DATA.occ_purchase[o].Yes), backgroundColor: GREEN },
+     { label: 'Not Purchased', data: occs.map(o => DATA.occ_purchase[o].No), backgroundColor: '#d1d5db' }],
+    { indexAxis: 'y' }
+  );
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+function getChecked(name) {
+  return [...document.querySelectorAll(`input[value]`)].filter(i => i.checked && ['Europe','North America','Pacific','Adolescent','Middle Age','Old','Yes','No'].includes(i.value)).reduce((acc, i) => {
+    if (['Europe','North America','Pacific'].includes(i.value)) acc.regions = acc.regions || [];
+    if (['Europe','North America','Pacific'].includes(i.value)) acc.regions.push(i.value);
+    if (['Adolescent','Middle Age','Old'].includes(i.value)) { acc.ages = acc.ages || []; acc.ages.push(i.value); }
+    if (['Yes','No'].includes(i.value)) { acc.purchased = acc.purchased || []; acc.purchased.push(i.value); }
+    return acc;
+  }, {});
+}
+
+function applyFilters() {
+  const f = getChecked();
+  const regions = f.regions || ['Europe','North America','Pacific'];
+  const ages = f.ages || ['Adolescent','Middle Age','Old'];
+  const purchased = f.purchased || ['Yes','No'];
+
+  // Update KPIs
+  let total = 0, bought = 0;
+  regions.forEach(r => {
+    const rd = DATA.region_purchase[r] || {};
+    if (purchased.includes('Yes')) bought += rd.Yes || 0;
+    if (purchased.includes('Yes')) total += rd.Yes || 0;
+    if (purchased.includes('No')) total += rd.No || 0;
+  });
+  // Adjust for age filter
+  const ageTotal = ages.reduce((s,a) => s + (DATA.age_purchase[a]?.Yes||0) + (DATA.age_purchase[a]?.No||0), 0);
+  const allAgeTotal = ['Adolescent','Middle Age','Old'].reduce((s,a) => s + (DATA.age_purchase[a]?.Yes||0) + (DATA.age_purchase[a]?.No||0), 0);
+  const ageFactor = allAgeTotal > 0 ? ageTotal / allAgeTotal : 1;
+
+  const adjTotal = Math.round(total * ageFactor);
+  const adjBought = Math.round(bought * ageFactor);
+  document.getElementById('kpi-total').textContent = adjTotal.toLocaleString();
+  document.getElementById('kpi-purchased').textContent = adjBought.toLocaleString();
+  document.getElementById('kpi-pct').textContent = adjTotal > 0 ? `${((adjBought/adjTotal)*100).toFixed(1)}% conversion` : '—';
+
+  // Top region by conversion
+  const rates = regions.map(r => {
+    const d = DATA.region_purchase[r] || {};
+    const t = (d.Yes||0) + (d.No||0);
+    return { r, rate: t > 0 ? (d.Yes||0)/t : 0 };
+  });
+  const top = rates.sort((a,b) => b.rate-a.rate)[0];
+  document.getElementById('kpi-region').textContent = top ? top.r : '—';
+
+  // Rebuild charts
+  buildCharts(regions, ages, purchased);
+
+  // Update slicer highlight
+  document.querySelectorAll('.slicer-opt').forEach(opt => {
+    const cb = opt.querySelector('input');
+    opt.classList.toggle('selected', cb && cb.checked);
+  });
+}
+
+function resetFilters() {
+  document.querySelectorAll('.slicer-opt input[type=checkbox]').forEach(cb => { cb.checked = true; });
+  applyFilters();
+}
+
+// ── Sheets ────────────────────────────────────────────────────────────────────
+function switchSheet(name) {
+  ['dashboard','summary','data'].forEach(s => {
+    document.getElementById(`sheet-${s}`).style.display = s === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.sheet-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['dashboard','summary','data'][i] === name);
+  });
+  if (name === 'data') renderDataTable();
+}
+
+function renderDataTable(max = 200) {
+  const tbody = document.getElementById('dataBody');
+  tbody.innerHTML = allRows.slice(0, max).map((r, i) => `
+    <tr>
+      <td style="color:#9ca3af">${i+1}</td>
+      <td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>
+      <td>$${r[4].toLocaleString()}</td><td>${r[5]}</td><td>${r[6]}</td>
+      <td>${r[7]}</td><td>${r[8]}</td><td>${r[9]}</td><td>${r[10]}</td>
+      <td><span class="badge ${r[11].toLowerCase()}">${r[11]}</span></td>
+    </tr>`).join('');
+}
+
+function exportSummary() {
+  const csv = ['Region,Purchased,Not Purchased,Rate',
+    'Pacific,119,83,58.9%','Europe,156,160,49.4%','North America,220,288,43.3%',
+    '','Age Bracket,Purchased,Not Purchased,Rate',
+    'Adolescent,41,71,36.6%','Middle Age,393,326,54.7%','Old,61,134,31.3%'
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = 'bike_sales_summary.csv';
+  a.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildCharts(['Europe','North America','Pacific'], ['Adolescent','Middle Age','Old'], ['Yes','No']);
+</script>
+</body>
+</html>

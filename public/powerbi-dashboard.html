@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Analysis on a Survey of 630 Data Professionals - Power BI Case Study - Andre Weissmann</title>
+<meta name="description" content="A Power BI case study on the Data Professional Survey: 630 respondents, salary by role, language preference, career satisfaction, and what it means for hiring." />
+<link rel="preconnect" href="https://api.fontshare.com" />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#171614;
+    --surface:#1C1B19;
+    --border:#2E2D2B;
+    --text:#CDCCCA;
+    --muted:#797876;
+    --accent:#118DFF;
+    --accent-dim:rgba(17,141,255,0.12);
+    --white:#F2F1EE;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Satoshi',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  a{color:inherit;}
+
+  img{max-width:100%;display:block;}
+
+  ::selection{background:var(--accent-dim);color:var(--white);}
+
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
+  ::-webkit-scrollbar-thumb:hover{background:#3d3c39;}
+
+  /* ============ Sticky top bar ============ */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:100;
+    height:36px;
+    background:rgba(23,22,20,0.92);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 16px;
+    font-size:12px;
+    gap:12px;
+  }
+
+  .topbar-left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    min-width:0;
+  }
+
+  .back-link{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    color:var(--muted);
+    text-decoration:none;
+    font-weight:500;
+    flex-shrink:0;
+    transition:color .15s;
+  }
+  .back-link:hover{color:var(--white);}
+  .back-link svg{width:12px;height:12px;flex-shrink:0;}
+
+  .breadcrumb{
+    color:var(--muted);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:11.5px;
+  }
+  .breadcrumb .current{color:var(--text);}
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+
+  .badge-pbi{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    color:var(--accent);
+    background:var(--accent-dim);
+    border:1px solid rgba(17,141,255,0.35);
+    padding:3px 8px;
+    border-radius:4px;
+  }
+  .badge-pbi .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+
+  .gh-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--text);
+    text-decoration:none;
+    border:1px solid var(--border);
+    padding:4px 10px;
+    border-radius:5px;
+    transition:all .15s;
+    white-space:nowrap;
+  }
+  .gh-btn:hover{border-color:var(--accent);color:var(--white);background:var(--accent-dim);}
+  .gh-btn svg{width:13px;height:13px;}
+
+  /* ============ Layout ============ */
+  .page{
+    max-width:760px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  section{
+    padding:64px 0;
+    border-bottom:1px solid var(--border);
+  }
+  section:last-of-type{border-bottom:none;}
+
+  .eyebrow{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:20px;
+    height:1px;
+    background:var(--accent);
+  }
+
+  h1,h2,h3{
+    color:var(--white);
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+
+  h2{
+    font-size:28px;
+    margin-bottom:20px;
+    line-height:1.25;
+  }
+
+  p{
+    font-size:16px;
+    color:var(--text);
+    margin-bottom:16px;
+  }
+  p:last-child{margin-bottom:0;}
+
+  .lede{
+    font-size:18px;
+    color:var(--white);
+    line-height:1.65;
+  }
+
+  /* ============ Reveal-on-scroll ============ */
+  .reveal{
+    opacity:0;
+    transform:translateY(18px);
+    transition:opacity .7s ease, transform .7s ease;
+  }
+  .reveal.in-view{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+  /* ============ Hero ============ */
+  .hero{
+    padding:72px 0 56px;
+    border-bottom:1px solid var(--border);
+  }
+
+  .hero h1{
+    font-size:40px;
+    line-height:1.15;
+    margin-bottom:18px;
+  }
+
+  .hero .hook{
+    font-size:18px;
+    color:var(--muted);
+    max-width:600px;
+    margin-bottom:36px;
+  }
+
+  .stat-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+  }
+
+  .stat{
+    background:var(--surface);
+    padding:20px 16px;
+    text-align:center;
+  }
+  .stat .num{
+    font-size:26px;
+    font-weight:900;
+    color:var(--accent);
+    display:block;
+    margin-bottom:4px;
+    letter-spacing:-.02em;
+  }
+  .stat .label{
+    font-size:11.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+
+  /* ============ Dataset card ============ */
+  .data-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:28px;
+    margin-top:8px;
+  }
+
+  .data-card-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:20px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .data-card-head .dims{
+    font-size:14px;
+    color:var(--muted);
+    font-weight:600;
+  }
+  .data-card-head .dims strong{color:var(--accent);}
+
+  .col-list{
+    list-style:none;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px 20px;
+  }
+
+  .col-list li{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:14px;
+    color:var(--text);
+    padding:8px 10px;
+    background:rgba(255,255,255,0.02);
+    border:1px solid var(--border);
+    border-radius:7px;
+  }
+
+  .col-list .col-idx{
+    font-size:10px;
+    font-weight:700;
+    color:var(--accent);
+    background:var(--accent-dim);
+    width:20px;
+    height:20px;
+    border-radius:5px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    margin-top:1px;
+  }
+
+  .data-note{
+    margin-top:20px;
+    font-size:13px;
+    color:var(--muted);
+    font-style:italic;
+    padding-top:16px;
+    border-top:1px solid var(--border);
+  }
+
+  /* ============ Process timeline ============ */
+  .timeline{
+    position:relative;
+    margin-top:8px;
+  }
+
+  .tl-item{
+    display:grid;
+    grid-template-columns:40px 1fr;
+    gap:18px;
+    position:relative;
+    padding-bottom:36px;
+  }
+  .tl-item:last-child{padding-bottom:0;}
+
+  .tl-marker{
+    position:relative;
+    display:flex;
+    justify-content:center;
+  }
+  .tl-num{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:var(--surface);
+    border:1px solid var(--accent);
+    color:var(--accent);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:800;
+    z-index:2;
+  }
+  .tl-line{
+    position:absolute;
+    top:32px;
+    bottom:-36px;
+    left:50%;
+    transform:translateX(-50%);
+    width:1px;
+    background:var(--border);
+  }
+  .tl-item:last-child .tl-line{display:none;}
+
+  .tl-content h3{
+    font-size:17px;
+    margin-bottom:8px;
+  }
+  .tl-content p{
+    font-size:14.5px;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+
+  .code-block{
+    background:#131211;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:14px 16px;
+    font-family:'SF Mono','Fira Code','Consolas',monospace;
+    font-size:12.5px;
+    line-height:1.7;
+    color:#9fd3ff;
+    overflow-x:auto;
+    margin-top:10px;
+    white-space:pre;
+  }
+  .code-block .dax-fn{color:var(--accent);}
+  .code-block .dax-comment{color:var(--muted);}
+
+  /* ============ Findings grid ============ */
+  .findings-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:8px;
+  }
+
+  .finding-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+    transition:border-color .2s, transform .2s;
+  }
+  .finding-card:hover{
+    border-color:var(--accent);
+    transform:translateY(-2px);
+  }
+
+  .finding-card .fc-stat{
+    font-size:17px;
+    font-weight:800;
+    color:var(--white);
+    margin-bottom:10px;
+    line-height:1.35;
+  }
+  .finding-card .fc-stat .accent-num{
+    color:var(--accent);
+  }
+  .finding-card p{
+    font-size:13.5px;
+    color:var(--muted);
+    margin-bottom:0;
+  }
+
+  /* ============ Recommendation ============ */
+  .rec-card{
+    background:linear-gradient(155deg, rgba(17,141,255,0.10), rgba(17,141,255,0.02));
+    border:1px solid rgba(17,141,255,0.35);
+    border-radius:14px;
+    padding:32px;
+    position:relative;
+    overflow:hidden;
+  }
+  .rec-card::before{
+    content:'';
+    position:absolute;
+    top:-40px;
+    right:-40px;
+    width:160px;
+    height:160px;
+    background:radial-gradient(circle, rgba(17,141,255,0.18), transparent 70%);
+  }
+  .rec-label{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:16px;
+  }
+  .rec-card h3{
+    font-size:22px;
+    margin-bottom:14px;
+    position:relative;
+  }
+  .rec-card p{
+    font-size:15.5px;
+    color:var(--text);
+    position:relative;
+  }
+  .rec-card ul{
+    margin:16px 0 0 0;
+    padding-left:0;
+    list-style:none;
+    position:relative;
+  }
+  .rec-card li{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    font-size:14.5px;
+    color:var(--text);
+    margin-bottom:10px;
+  }
+  .rec-card li svg{
+    width:16px;
+    height:16px;
+    color:var(--accent);
+    flex-shrink:0;
+    margin-top:2px;
+  }
+
+  /* ============ Tools ============ */
+  .tools-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:8px;
+  }
+  .tool-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text);
+    background:var(--surface);
+    border:1px solid var(--border);
+    padding:8px 14px;
+    border-radius:8px;
+  }
+  .tool-badge .tb-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--accent);
+  }
+
+  /* ============ Download ============ */
+  .download-box{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:16px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px 28px;
+  }
+  .download-box .dl-text h3{
+    font-size:17px;
+    margin-bottom:4px;
+  }
+  .download-box .dl-text p{
+    font-size:13.5px;
+    color:var(--muted);
+    margin-bottom:0;
+  }
+  .dl-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--accent);
+    color:#08131f;
+    font-weight:700;
+    font-size:14px;
+    text-decoration:none;
+    padding:11px 20px;
+    border-radius:8px;
+    white-space:nowrap;
+    transition:filter .15s, transform .15s;
+  }
+  .dl-btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .dl-btn svg{width:16px;height:16px;}
+
+  /* ============ Footer ============ */
+  .page-footer{
+    padding:40px 0 64px;
+    text-align:center;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .page-footer a{
+    color:var(--accent);
+    text-decoration:none;
+  }
+  .page-footer a:hover{text-decoration:underline;}
+
+  /* ============ Responsive ============ */
+  @media (max-width:640px){
+    .hero h1{font-size:30px;}
+    .hero .hook{font-size:16px;}
+    .stat-row{grid-template-columns:repeat(2,1fr);}
+    .col-list{grid-template-columns:1fr;}
+    .findings-grid{grid-template-columns:1fr;}
+    section{padding:44px 0;}
+    .data-card,.rec-card{padding:20px;}
+    .download-box{flex-direction:column;align-items:flex-start;}
+    .breadcrumb{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="/#projects" class="back-link" aria-label="Back to projects">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </a>
+      <span class="breadcrumb">Projects <span style="opacity:.5">/</span> <span class="current">Power BI Survey</span></span>
+    </div>
+    <div class="topbar-right">
+      <span class="badge-pbi"><span class="dot"></span>POWER BI</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <section class="hero">
+      <h1 class="reveal">Analysis on a Survey of 630 Data Professionals</h1>
+      <p class="hook reveal">What people in data actually get paid, which tools they choose, and how they feel about the careers they're building, straight from the people living it.</p>
+      <div class="stat-row reveal">
+        <div class="stat">
+          <span class="num">630</span>
+          <span class="label">Respondents</span>
+        </div>
+        <div class="stat">
+          <span class="num">6</span>
+          <span class="label">Countries</span>
+        </div>
+        <div class="stat">
+          <span class="num">5</span>
+          <span class="label">Job Roles Analyzed</span>
+        </div>
+        <div class="stat">
+          <span class="num">1</span>
+          <span class="label">Industry Pattern Surfaced</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="question">
+      <div class="eyebrow reveal">The Question</div>
+      <h2 class="reveal">What do data professionals actually earn, use, and feel about their careers?</h2>
+      <p class="lede reveal">Job postings and salary aggregators tell you what companies say they pay. They don't tell you what the people already in the field report earning, what tools they reach for on their own, or whether they'd call the work worth it. This project uses <a href="https://github.com/Andre-Weissmann/andre-portfolio-content" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none;">Alex the Analyst's Data Professional Survey dataset</a> to answer that from the inside.</p>
+      <p class="reveal">The dataset matters for two audiences. For anyone hiring data talent, it is a reality check on what candidates expect and where they're likely to feel shortchanged. For anyone entering the field, it is a benchmark against inflated job-posting numbers and vague "growth opportunity" pitches. Power BI was used to model the survey responses, calculate role-level and country-level metrics with DAX, and surface patterns that a raw spreadsheet would hide.</p>
+    </section>
+
+    <section id="data">
+      <div class="eyebrow reveal">The Data</div>
+      <h2 class="reveal">630 rows, 9 columns of self-reported career data</h2>
+      <div class="data-card reveal">
+        <div class="data-card-head">
+          <span style="font-weight:700;color:var(--white);font-size:15px;">Data Professional Survey</span>
+          <span class="dims"><strong>630</strong> rows &times; <strong>9</strong> columns</span>
+        </div>
+        <ul class="col-list">
+          <li><span class="col-idx">1</span>Unique ID</li>
+          <li><span class="col-idx">2</span>Email (anonymized)</li>
+          <li><span class="col-idx">3</span>Date / Time of response</li>
+          <li><span class="col-idx">4</span>Country</li>
+          <li><span class="col-idx">5</span>Industry</li>
+          <li><span class="col-idx">6</span>Job Title</li>
+          <li><span class="col-idx">7</span>Favorite Programming Language</li>
+          <li><span class="col-idx">8</span>Salary (annual avg, USD)</li>
+          <li><span class="col-idx">9</span>Career Satisfaction (salary + work/life balance scores)</li>
+        </ul>
+        <div class="data-note">Self-reported survey data. Outliers present. Averages used with awareness of skew.</div>
+      </div>
+    </section>
+
+    <section id="process">
+      <div class="eyebrow reveal">The Process</div>
+      <h2 class="reveal">How it was built in Power BI</h2>
+      <div class="timeline">
+
+        <div class="tl-item reveal">
+          <div class="tl-marker"><div class="tl-num">1</div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <h3>Data import and type validation</h3>
+            <p>Survey exports came in with salary stored as a text range rather than a usable number. Before any modeling could happen, every column needed a validated type, and the salary field needed a conversion path from text to numeric.</p>
+          </div>
+        </div>
+
+        <div class="tl-item reveal">
+          <div class="tl-marker"><div class="tl-num">2</div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <h3>Salary range parsing in Power Query</h3>
+            <p>Respondents answered with ranges like "$60k-$80k" instead of exact figures. Power Query split each range into its low and high bound, then calculated the midpoint (in this example, 70) as a single numeric field usable in DAX measures.</p>
+          </div>
+        </div>
+
+        <div class="tl-item reveal">
+          <div class="tl-marker"><div class="tl-num">3</div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <h3>DAX measures for averages and filtered scores</h3>
+            <p>With a clean numeric salary column in place, DAX measures handled the aggregation: average salary overall, average salary sliced by role, row counts by country, and calculated satisfaction scores filtered per segment.</p>
+            <div class="code-block">Avg Salary = <span class="dax-fn">AVERAGE</span>('Survey'[Salary_Midpoint])
+
+Salary by Role = <span class="dax-fn">CALCULATE</span>(
+    [Avg Salary],
+    <span class="dax-fn">ALLEXCEPT</span>('Survey', 'Survey'[Job Title])
+)
+
+<span class="dax-comment">// Respondent count by country, ignoring other filters</span>
+Respondents by Country = <span class="dax-fn">CALCULATE</span>(
+    <span class="dax-fn">COUNTROWS</span>('Survey'),
+    <span class="dax-fn">ALLEXCEPT</span>('Survey', 'Survey'[Country])
+)</div>
+          </div>
+        </div>
+
+        <div class="tl-item reveal">
+          <div class="tl-marker"><div class="tl-num">4</div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <h3>Custom dark theme, color-coded by tool</h3>
+            <p>A custom Power BI theme replaced the default palette so that Python, R, and SQL each carry a consistent, distinguishable color across every visual on the page, making the language-preference story readable at a glance.</p>
+          </div>
+        </div>
+
+        <div class="tl-item reveal">
+          <div class="tl-marker"><div class="tl-num">5</div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <h3>Cross-filtering across all six visuals</h3>
+            <p>Relationships were enabled so that clicking any role, country, or language on one visual filters every other visual on the page. Selecting "Data Analyst" instantly narrows the satisfaction gauges and country breakdown to that group.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="findings">
+      <div class="eyebrow reveal">Key Findings</div>
+      <h2 class="reveal">Four patterns worth acting on</h2>
+      <div class="findings-grid">
+
+        <div class="finding-card reveal">
+          <div class="fc-stat"><span class="accent-num">$39k</span> gap between Data Scientist and Data Analyst salary</div>
+          <p>Data Scientists report an average of $94k against $55k for Data Analysts. It is the largest single-step compensation jump in the field, reflecting how distinct the role boundaries are in practice.</p>
+        </div>
+
+        <div class="finding-card reveal">
+          <div class="fc-stat">Python chosen by <span class="accent-num">59%</span> as favorite language</div>
+          <p>R (18%) and SQL (13%) trail by 41 points combined. SQL and R together trail Python by 41 points combined — the field has converged around a single dominant language.</p>
+        </div>
+
+        <div class="finding-card reveal">
+          <div class="fc-stat"><span class="accent-num">4.27/10</span> average salary satisfaction</div>
+          <p>Below the midpoint. Professionals feel underpaid relative to their expectations across nearly every role, despite reporting mid-career-level compensation on paper.</p>
+        </div>
+
+        <div class="finding-card reveal">
+          <div class="fc-stat"><span class="accent-num">43%</span> found breaking into data "Neither Easy nor Difficult"</div>
+          <p>The field is accessible but not easy. The field is accessible but demands persistence — the majority of survey respondents described entry as difficult regardless of their education level.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="recommendation">
+      <div class="eyebrow reveal">What the Data Reveals</div>
+      <div class="rec-card reveal">
+        <div class="rec-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          What the data reveals
+        </div>
+        <h3>A field defined by Python, low pay satisfaction, and a steep entry curve</h3>
+        <p>The survey captured a snapshot of 630 people actively working in data across five countries. Average age: 29.87. The dominant tool: Python, chosen by 59% as their preferred language. Salary satisfaction: 4.27 out of 10 — well below the midpoint, across nearly every role. Breaking into the field: rated difficult or very difficult by the majority of respondents.</p>
+        <ul>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            The $39k gap between Data Scientist and Data Analyst average salary is the largest single-step jump in the field.
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            R (18%) and SQL (13%) trail Python by a wide margin despite both being staples of formal data education.
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Work-life balance satisfaction scored higher than salary satisfaction across all roles — professionals value flexibility even when pay falls short.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+  <!-- ====== DASHBOARD BREAKDOWN ====== -->
+  <section id="dashboard">
+    <div class="eyebrow reveal">The Dashboard</div>
+    <h2 class="reveal">What each visual actually shows</h2>
+    <p class="reveal">The finished Power BI report is a single-page dashboard built around cross-filtering — clicking any one visual immediately updates all others. Here is what each element does and why it was built that way.</p>
+
+    <div class="data-card reveal" style="margin-top:8px;">
+      <div style="display:grid;gap:16px;">
+
+        <div style="padding:16px;border:1px solid var(--border);border-radius:9px;background:rgba(17,141,255,0.04);">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Card 1 + Card 2</div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;">630 total participants &middot; Average age 29.87</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Two KPI cards anchored at the top of the report. These give stakeholders an immediate sense of sample size and who the average respondent is, before they touch any filter.</p>
+        </div>
+
+        <div style="padding:16px;border:1px solid var(--border);border-radius:9px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Stacked Column Chart</div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;">Number of Participants by Gender</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Simple but necessary: most salary analyses skip gender breakdowns entirely. This chart shows whether the survey skews male-dominant and whether that skew should affect how you read the salary averages.</p>
+        </div>
+
+        <div style="padding:16px;border:1px solid var(--border);border-radius:9px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Funnel Chart</div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;">Survey Participants by Country</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Shows geographic distribution in ranked order. The United States dominates. Filtering to any country updates every other visual on the page — useful for HR teams looking at specific markets.</p>
+        </div>
+
+        <div style="padding:16px;border:1px solid var(--border);border-radius:9px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Stacked Bar Charts (×2)</div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;">Top 5 Occupations (Pre-selected + User-specified)</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">Two separate charts handle two different data quality realities: respondents who chose from a dropdown vs. those who typed their own title. The user-specified column required standardizing 86 job titles in Power Query before it could be charted.</p>
+        </div>
+
+        <div style="padding:16px;border:1px solid var(--border);border-radius:9px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Stacked Column Chart</div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;">Participants by Education Level</div>
+          <p style="font-size:13.5px;color:var(--muted);margin-bottom:0;">The central question this project was built to answer: does a degree matter? Bachelor's holders (329 participants) dominate the sample. Filtering this chart by education level updates the salary visuals, letting stakeholders see compensation differences by credential directly.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== EDUCATION vs SALARY FINDINGS ====== -->
+  <section id="education">
+    <div class="eyebrow reveal">Education vs. Salary</div>
+    <h2 class="reveal">The finding stakeholders actually asked for</h2>
+    <p class="reveal">The central business question was whether education level is a necessary qualifier for hiring data professionals. The data gave a nuanced answer: advanced degrees correlate with higher compensation in most roles, but the relationship is not linear and PhD-level salaries reflect a very small sample.</p>
+
+    <div class="findings-grid reveal" style="margin-top:24px;">
+      <div class="finding-card">
+        <div class="fc-stat">High school grads: <span class="accent-num">$85k avg</span> (Data Architects, US)</div>
+        <p>36 respondents. A surprising ceiling for a non-degree credential, suggesting data architecture skills are valued over formal education in some organizations.</p>
+      </div>
+      <div class="finding-card">
+        <div class="fc-stat">Associate's degree: <span class="accent-num">$115k avg</span> (Data Scientists, US)</div>
+        <p>16 respondents. The highest-performing credential by average salary at the Data Scientist level — a small sample, but notable.</p>
+      </div>
+      <div class="finding-card">
+        <div class="fc-stat">Bachelor's degree: <span class="accent-num">$93k avg</span> (Data Scientists, US)</div>
+        <p>329 respondents — the largest group. Most candidates and most job postings land here. Solid baseline salary, but not the highest in the dataset.</p>
+      </div>
+      <div class="finding-card">
+        <div class="fc-stat">Master's degree: <span class="accent-num">$104k avg</span> (Data Scientists, US)</div>
+        <p>192 respondents. A meaningful step up from bachelor's. Graduate credentials still carry a premium in data science roles specifically.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== WHAT I BUILT / LEARNED ====== -->
+  <section id="reflection">
+    <div class="eyebrow reveal">What I Built &middot; What I Learned</div>
+    <h2 class="reveal">Skills demonstrated in this project</h2>
+    <div class="tools-row reveal" style="margin-bottom:24px;">
+      <span class="tool-badge"><span class="tb-dot"></span>Power Query data cleaning</span>
+      <span class="tool-badge"><span class="tb-dot"></span>DAX measures and CALCULATE</span>
+      <span class="tool-badge"><span class="tb-dot"></span>Salary range parsing (text to numeric)</span>
+      <span class="tool-badge"><span class="tb-dot"></span>Cross-filter dashboard design</span>
+      <span class="tool-badge"><span class="tb-dot"></span>Custom theme and color coding</span>
+      <span class="tool-badge"><span class="tb-dot"></span>Survey data interpretation</span>
+      <span class="tool-badge"><span class="tb-dot"></span>Stakeholder business framing</span>
+    </div>
+    <div class="rec-card reveal">
+      <div class="rec-label">Key takeaway</div>
+      <h3>Cleaning survey data is harder than cleaning transactional data</h3>
+      <p>Salary came in as a text range ("$60k-$80k"), job titles came in as free text with 86 variations, and countries came in mixed between preselected dropdowns and typed responses. Each required a different Power Query approach before any DAX measure could run accurately. That preprocessing work — invisible in the final dashboard — is what made the analysis trustworthy.</p>
+    </div>
+  </section>
+
+
+    <section id="tools">
+      <div class="eyebrow reveal">Tools Used</div>
+      <div class="tools-row reveal">
+        <span class="tool-badge"><span class="tb-dot"></span>Power BI</span>
+        <span class="tool-badge"><span class="tb-dot"></span>DAX</span>
+        <span class="tool-badge"><span class="tb-dot"></span>Power Query</span>
+        <span class="tool-badge"><span class="tb-dot"></span>Survey Analysis</span>
+        <span class="tool-badge"><span class="tb-dot"></span>Data Modeling</span>
+      </div>
+    </section>
+
+    
+
+    
+
+  </div>
+
+  <script>
+    (function(){
+      var els = document.querySelectorAll('.reveal');
+      if(!('IntersectionObserver' in window)){
+        els.forEach(function(el){ el.classList.add('in-view'); });
+        return;
+      }
+      var obs = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('in-view');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      els.forEach(function(el){ obs.observe(el); });
+    })();
+  </script>
+
+</body>
+</html>
