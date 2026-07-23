@@ -9,11 +9,12 @@ import { SYSTEM_PROMPT } from "./chat-knowledge";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-// ─── Admin auth (email + password) ──────────────────────────────────────────
-const ADMIN_EMAIL    = process.env.ADMIN_EMAIL    || "andre_weissmann@icloud.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "swimstar35^";
+// ─── Admin auth (email + password via env only — never hardcode secrets) ─────
+const ADMIN_EMAIL    = process.env.ADMIN_EMAIL || "";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 // Session token is a random secret generated at boot — long-lived for this process
 const SESSION_TOKEN  = process.env.ADMIN_TOKEN_SECRET || crypto.randomBytes(32).toString("hex");
+const ADMIN_ENABLED  = Boolean(ADMIN_EMAIL && ADMIN_PASSWORD);
 
 function checkAdmin(req: Request): boolean {
   const token = req.headers["x-admin-token"] as string;
@@ -151,9 +152,19 @@ STRICT RULES:
     }
   });
 
-  app.post("/api/auth/login", (_req, res) => {
-    // No password required — admin panel is accessible to anyone who knows the URL
-    res.json({ token: SESSION_TOKEN, success: true });
+  app.post("/api/auth/login", (req, res) => {
+    if (!ADMIN_ENABLED) {
+      return res.status(503).json({ error: "Admin login is not configured." });
+    }
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const password = String(req.body?.password || "");
+    if (
+      email === ADMIN_EMAIL.trim().toLowerCase() &&
+      password === ADMIN_PASSWORD
+    ) {
+      return res.json({ token: SESSION_TOKEN, success: true });
+    }
+    return res.status(401).json({ error: "Invalid credentials" });
   });
 
   app.get("/api/auth/verify", (req, res) => {
@@ -425,7 +436,11 @@ STRICT RULES:
 
     res.json({ ok: true });
 
-    const resendKey = process.env.RESEND_API_KEY || "re_RGYqqvLD_2Rj5xuNZUeFLtDuZcFK4NY8c";
+    const resendKey = process.env.RESEND_API_KEY || "";
+    if (!resendKey) {
+      console.error("[Resend] RESEND_API_KEY not set — skipping email notification.");
+      return;
+    }
     const resend = new Resend(resendKey);
 
     const urgent = priorityLabel === PRIORITY_LABELS.followup;
