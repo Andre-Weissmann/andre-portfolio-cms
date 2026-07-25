@@ -499,6 +499,29 @@ function initSpine(panel) {
     panel.querySelectorAll('.brief-spine-dot').forEach(function(d, i) {
       d.classList.toggle('active', i === active);
     });
+    // Sticky mobile rail
+    var rail = panel.querySelector('.brief-mob-rail');
+    if (rail) {
+      var spine = rail._spineItems || [];
+      var total = Math.max(spine.length, targets.length, 1);
+      var countEl = rail.querySelector('.brief-mob-rail-count');
+      var titleEl = rail.querySelector('.brief-mob-rail-title');
+      var fillEl = rail.querySelector('.brief-mob-rail-fill');
+      if (countEl) countEl.textContent = (active + 1) + ' / ' + total;
+      if (titleEl) titleEl.textContent = (spine[active] && spine[active].title) || (items[active] && items[active].textContent) || ('Section ' + (active + 1));
+      if (fillEl) fillEl.style.width = (total <= 1 ? 100 : ((active + 1) / total) * 100) + '%';
+      rail.querySelectorAll('.brief-mob-sheet-item').forEach(function(c, i) {
+        c.classList.toggle('active', i === active);
+      });
+      rail.querySelectorAll('.brief-mob-dot').forEach(function(d, i) {
+        d.classList.toggle('active', i === active);
+      });
+      var prevBtn = rail.querySelector('.brief-mob-rail-prev');
+      var nextBtn = rail.querySelector('.brief-mob-rail-next');
+      if (prevBtn) prevBtn.disabled = active <= 0;
+      if (nextBtn) nextBtn.disabled = active >= total - 1;
+    }
+    // Legacy chips if present
     panel.querySelectorAll('.brief-mob-chip').forEach(function(c, i) {
       c.classList.toggle('active', i === active);
     });
@@ -1555,7 +1578,7 @@ function renderDrawer(key) {
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
         '<div class="brief-hdr-tools">' +
           (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="View on GitHub" title="View on GitHub">' + githubSvg + '<span class="brief-github-label">GitHub</span></a>' : '') +
-          '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Toggle light / dark" title="Toggle theme"><span id="dd-theme-icon" aria-hidden="true">&#9790;</span><span id="dd-theme-label" class="brief-theme-label">Dark</span></button>' +
+          '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Switch to light mode" title="Dark mode" data-mode="dark"><span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">&#127769;</span></button>' +
           '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" onclick="closeDD()" aria-label="Close deep dive" title="Close (Esc)">' +
             '<span class="brief-close-x" aria-hidden="true">&#x2715;</span>' +
             '<span class="brief-close-text">Close</span>' +
@@ -1594,35 +1617,97 @@ function renderDrawer(key) {
   scrollBody.className = 'brief-scroll-body';
 
   /* Same section list as spine — horizontal on phone/tablet so info is not lost */
-  var mobNav = document.createElement('nav');
-  mobNav.className = 'brief-mob-chapters';
-  mobNav.setAttribute('aria-label', 'Deep dive sections');
-  mobNav.innerHTML =
-    '<div class="brief-mob-chapters-label">On this page</div>' +
-    '<div class="brief-mob-chapters-track" role="list">' +
-    spineItems.map(function(ch, idx) {
-      return '<button type="button" class="brief-mob-chip" role="listitem" data-target="' + ch.id + '">' +
-        '<span class="brief-mob-chip-num">' + (idx + 1) + '</span>' +
-        '<span class="brief-mob-chip-label">' + ch.title + '</span>' +
-      '</button>';
-    }).join('') +
+  /* Sticky mobile chapter rail + expandable sheet (stays while scrolling) */
+  var mobRail = document.createElement('nav');
+  mobRail.className = 'brief-mob-rail';
+  mobRail.setAttribute('aria-label', 'Deep dive sections');
+  mobRail.innerHTML =
+    '<div class="brief-mob-rail-progress" aria-hidden="true"><div class="brief-mob-rail-fill"></div></div>' +
+    '<div class="brief-mob-rail-row">' +
+      '<button type="button" class="brief-mob-rail-btn brief-mob-rail-prev" aria-label="Previous section">&#8249;</button>' +
+      '<button type="button" class="brief-mob-rail-current" aria-expanded="false" aria-controls="dd-mob-sheet">' +
+        '<span class="brief-mob-rail-meta"><span class="brief-mob-rail-count">1 / ' + spineItems.length + '</span>' +
+        '<span class="brief-mob-rail-hint">Jump</span></span>' +
+        '<span class="brief-mob-rail-title">' + (spineItems[0] ? spineItems[0].title : 'Overview') + '</span>' +
+        '<span class="brief-mob-rail-chevron" aria-hidden="true">&#9662;</span>' +
+      '</button>' +
+      '<button type="button" class="brief-mob-rail-btn brief-mob-rail-next" aria-label="Next section">&#8250;</button>' +
+    '</div>' +
+    '<div class="brief-mob-sheet" id="dd-mob-sheet" hidden>' +
+      '<div class="brief-mob-sheet-head">' +
+        '<span>Jump to section</span>' +
+        '<button type="button" class="brief-mob-sheet-close" aria-label="Close section list">&#10005;</button>' +
+      '</div>' +
+      '<div class="brief-mob-sheet-list" role="list">' +
+      spineItems.map(function(ch, idx) {
+        return '<button type="button" class="brief-mob-sheet-item' + (idx === 0 ? ' active' : '') + '" role="listitem" data-target="' + ch.id + '" data-index="' + idx + '">' +
+          '<span class="brief-mob-sheet-num">' + (idx + 1) + '</span>' +
+          '<span class="brief-mob-sheet-label">' + ch.title + '</span>' +
+          '<span class="brief-mob-sheet-check" aria-hidden="true">&#10003;</span>' +
+        '</button>';
+      }).join('') +
+      '</div>' +
+      '<div class="brief-mob-sheet-dots" aria-hidden="true">' +
+      spineItems.map(function(_, idx) {
+        return '<span class="brief-mob-dot' + (idx === 0 ? ' active' : '') + '" data-index="' + idx + '"></span>';
+      }).join('') +
+      '</div>' +
     '</div>';
-  scrollBody.appendChild(mobNav);
-  try {
-    var trackNudge = mobNav.querySelector('.brief-mob-chapters-track');
-    if (trackNudge && trackNudge.scrollWidth > trackNudge.clientWidth + 8) {
-      mobNav.classList.add('has-overflow');
-      window.setTimeout(function() {
-        trackNudge.scrollTo({ left: 28, behavior: 'smooth' });
-        window.setTimeout(function() { trackNudge.scrollTo({ left: 0, behavior: 'smooth' }); }, 420);
-      }, 350);
-    }
-  } catch (eN) {}
-  mobNav.addEventListener('click', function(e) {
+
+  // Place rail after header so it sticks under it while body scrolls
+  if (hdr && hdr.parentNode) {
+    if (hdr.nextSibling) hdr.parentNode.insertBefore(mobRail, hdr.nextSibling);
+    else hdr.parentNode.appendChild(mobRail);
+  } else {
+    body.insertBefore(mobRail, body.firstChild);
+  }
+
+  function closeMobSheet() {
+    var sheet = mobRail.querySelector('.brief-mob-sheet');
+    var cur = mobRail.querySelector('.brief-mob-rail-current');
+    if (sheet) sheet.hidden = true;
+    if (cur) cur.setAttribute('aria-expanded', 'false');
+    mobRail.classList.remove('sheet-open');
+  }
+  function openMobSheet() {
+    var sheet = mobRail.querySelector('.brief-mob-sheet');
+    var cur = mobRail.querySelector('.brief-mob-rail-current');
+    if (sheet) sheet.hidden = false;
+    if (cur) cur.setAttribute('aria-expanded', 'true');
+    mobRail.classList.add('sheet-open');
+    var active = mobRail.querySelector('.brief-mob-sheet-item.active');
+    if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest' });
+  }
+  function goToSpineIndex(idx) {
+    if (idx < 0 || idx >= spineItems.length) return;
+    var id = spineItems[idx].id;
+    var t = document.getElementById(id);
+    closeMobSheet();
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  mobRail._spineItems = spineItems;
+  mobRail._goToSpineIndex = goToSpineIndex;
+
+  mobRail.querySelector('.brief-mob-rail-current').addEventListener('click', function() {
+    var sheet = mobRail.querySelector('.brief-mob-sheet');
+    if (sheet && !sheet.hidden) closeMobSheet();
+    else openMobSheet();
+  });
+  mobRail.querySelector('.brief-mob-sheet-close').addEventListener('click', closeMobSheet);
+  mobRail.querySelector('.brief-mob-rail-prev').addEventListener('click', function() {
+    var active = mobRail.querySelector('.brief-mob-sheet-item.active');
+    var idx = active ? parseInt(active.getAttribute('data-index'), 10) : 0;
+    goToSpineIndex(Math.max(0, idx - 1));
+  });
+  mobRail.querySelector('.brief-mob-rail-next').addEventListener('click', function() {
+    var active = mobRail.querySelector('.brief-mob-sheet-item.active');
+    var idx = active ? parseInt(active.getAttribute('data-index'), 10) : 0;
+    goToSpineIndex(Math.min(spineItems.length - 1, idx + 1));
+  });
+  mobRail.querySelector('.brief-mob-sheet-list').addEventListener('click', function(e) {
     var btn = e.target.closest('[data-target]');
     if (!btn) return;
-    var t = document.getElementById(btn.getAttribute('data-target'));
-    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    goToSpineIndex(parseInt(btn.getAttribute('data-index'), 10));
   });
 
   /* Overview anchor */
@@ -1951,16 +2036,43 @@ function renderDrawer(key) {
    PANEL OPEN / CLOSE
 ═══════════════════════════════════════════════════════════════════ */
 /* ── Deep dive theme toggle - delegates to main portfolio toggle ── */
+
+function ddThemeIconHtml(isLight) {
+  // Sun = light mode active, moon = dark mode active
+  if (isLight) {
+    return '<span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">\u2600\uFE0F</span>';
+  }
+  return '<span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">\uD83C\uDF19</span>';
+}
+function setDDThemeButton(isLight) {
+  var btn = document.getElementById('dd-theme-toggle');
+  if (!btn) return;
+  btn.innerHTML = ddThemeIconHtml(!!isLight);
+  btn.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+  btn.setAttribute('title', isLight ? 'Light mode' : 'Dark mode');
+  btn.setAttribute('data-mode', isLight ? 'light' : 'dark');
+}
+
 window.toggleDDTheme = function() {
-  /* Fire the main page toggle so both update together */
-  var mainToggle = document.querySelector('[data-theme-toggle]');
-  if (mainToggle) { mainToggle.click(); return; }
-  /* Fallback: toggle the panel directly if main toggle not found */
   var panel = document.getElementById('dd-panel');
-  var btn   = document.getElementById('dd-theme-toggle');
+  var mainToggle = document.querySelector('[data-theme-toggle]');
+  if (mainToggle) {
+    mainToggle.click();
+    // Sync icon after main page flips html[data-theme]
+    window.setTimeout(function() {
+      var t = document.documentElement.getAttribute('data-theme') || 'dark';
+      var light = t === 'light';
+      if (panel) {
+        if (light) panel.classList.add('brief-light');
+        else panel.classList.remove('brief-light');
+      }
+      setDDThemeButton(light);
+    }, 0);
+    return;
+  }
   if (!panel) return;
   var isLight = panel.classList.toggle('brief-light');
-  if (btn) btn.innerHTML = (isLight ? '<span id="dd-theme-icon" aria-hidden="true">\u2600</span><span id="dd-theme-label" class="brief-theme-label">Light</span>' : '<span id="dd-theme-icon" aria-hidden="true">\u263E</span><span id="dd-theme-label" class="brief-theme-label">Dark</span>');
+  setDDThemeButton(isLight);
 };
 
 
@@ -1990,14 +2102,12 @@ window.openDD = function(key) {
   renderDrawer(key);
   /* Mirror the main portfolio theme - deep dive never has its own independent state */
   var mainTheme = document.documentElement.getAttribute('data-theme') || 'light';
-  var themeBtn = document.getElementById('dd-theme-toggle');
   if (mainTheme === 'light') {
     panel.classList.add('brief-light');
-    if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon" aria-hidden="true">\u2600</span><span id="dd-theme-label" class="brief-theme-label">Light</span>';
   } else {
     panel.classList.remove('brief-light');
-    if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon" aria-hidden="true">\u263E</span><span id="dd-theme-label" class="brief-theme-label">Dark</span>';
   }
+  setDDThemeButton(mainTheme === 'light');
   panel.classList.add('open');
   document.body.classList.add('dd-open');
   if (overlay) overlay.classList.add('visible');
