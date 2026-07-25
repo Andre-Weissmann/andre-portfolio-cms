@@ -1,19 +1,54 @@
 # andre-portfolio-cms
 
-The admin CMS and live server for [andre-weissmann-portfolio.pplx.app](https://andre-weissmann-portfolio.pplx.app).
+Application code for my public data analytics portfolio.
 
-This repo is the **application layer** -- it reads content from [`andre-portfolio-content`](https://github.com/Andre-Weissmann/andre-portfolio-content) and serves the public portfolio site.
+**Live site:** [andre-weissmann-portfolio.pplx.app](https://andre-weissmann-portfolio.pplx.app)
 
-## What this repo contains
+**Content (JSON + dashboard files) lives separately:**
+[andre-portfolio-content](https://github.com/Andre-Weissmann/andre-portfolio-content)
 
-- `client/` -- React frontend (portfolio viewer, public-facing)
-- `server/` -- Express backend with owner-only admin routes
-- `shared/` -- Drizzle ORM schema shared between client and server
+## What this repo is
 
-## Content lives separately
+The website + API that:
 
-Project data, case studies, and datasets are version-controlled in [`andre-portfolio-content`](https://github.com/Andre-Weissmann/andre-portfolio-content). If you are looking for the actual portfolio projects (Nashville Housing, BMI/Risk Screening, Power BI Survey, etc.) that is where to go.
+- Serves the public portfolio pages (`public/portfolio.html` and related assets)
+- Loads project/about content from the content repo (GitHub raw / API)
+- Exposes owner-only admin routes for content updates when credentials are configured
+- Includes an Express backend and a Vite/React client for admin/app surfaces
 
-## Live site
+## What's inside
 
-[andre-weissmann-portfolio.pplx.app](https://andre-weissmann-portfolio.pplx.app)
+| Path | Role |
+|---|---|
+| `public/` | Public portfolio site (HTML/CSS/JS), the main visitor-facing experience |
+| `server/` | Express API (projects, about, contact, optional chat, admin auth) |
+| `client/` | Vite/React frontend surfaces |
+| `shared/` | Shared schema/types (Drizzle) |
+| `script/build.ts` | Production build that bundles server + static assets into `dist/` |
+
+## What this repo is not
+
+- Not where project narratives or dashboard source files are stored (see `andre-portfolio-content`)
+- Not DataGlow (that is a separate product: [dataglow](https://github.com/Andre-Weissmann/dataglow))
+
+## Local run (high level)
+
+```bash
+npm ci
+npm run dev     # development
+npm run build   # production bundle -> dist/
+NODE_ENV=production node dist/index.cjs
+```
+
+Admin login only works when `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in the environment. Contact email notify needs `RESEND_API_KEY`. Optional AI chat needs `PERPLEXITY_API_KEY`.
+
+## Related
+
+- Content layer: [andre-portfolio-content](https://github.com/Andre-Weissmann/andre-portfolio-content)
+- SQL scripts: [sql-data-projects](https://github.com/Andre-Weissmann/sql-data-projects)
+- Python scripts: [python-data-projects](https://github.com/Andre-Weissmann/python-data-projects)
+- Flagship product: [dataglow](https://github.com/Andre-Weissmann/dataglow)
+
+## Author
+
+**Andre Weissmann** · Chicago · Data analyst
