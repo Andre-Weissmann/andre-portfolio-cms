@@ -65,59 +65,12 @@
   /* ─── 1. NAV ROW COUNTS — removed ──────────────────────────── */
   function initNavCounts() { /* badges removed */ }
 
-  /* ─── 2. SCHEMA TREE SIDEBAR ─────────────────────────────────── */
+  /* ─── 2. SCHEMA TREE SIDEBAR — removed (top nav is enough) ───── */
   function buildSchemaTree() {
     const oldToc = document.getElementById('toc-sidebar');
     if (oldToc) oldToc.remove();
-
-    const tree = document.createElement('nav');
-    tree.id = 'pos-schema-tree';
-    tree.setAttribute('aria-label', 'Schema navigator');
-
-    const sections = SECTIONS.filter(s => s.id !== 'home');
-
-    tree.innerHTML = `
-      <div class="pos-tree-root">
-        <button class="pos-tree-db" id="pos-tree-db-btn" aria-expanded="true">
-          <span class="pos-tree-db-icon">🗄</span>
-          <span class="pos-tree-db-name">andre_weissmann_db</span>
-          <span class="pos-tree-chevron" id="pos-tree-chevron">▾</span>
-        </button>
-        <div class="pos-tree-children" id="pos-tree-children">
-          ${sections.map(s => `
-            <a class="pos-tree-item" data-section="${s.id}" href="#${s.id}">
-              <span class="pos-tree-icon">▤</span>
-              <span class="pos-tree-table">${s.id}</span>
-
-            </a>
-          `).join('')}
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(tree);
-
-    document.getElementById('pos-tree-db-btn').addEventListener('click', () => {
-      const children = document.getElementById('pos-tree-children');
-      const chevron = document.getElementById('pos-tree-chevron');
-      const btn = document.getElementById('pos-tree-db-btn');
-      const collapsed = children.classList.toggle('collapsed');
-      chevron.textContent = collapsed ? '▸' : '▾';
-      btn.setAttribute('aria-expanded', !collapsed);
-    });
-
-    tree.querySelectorAll('.pos-tree-item').forEach(item => {
-      item.addEventListener('click', e => {
-        e.preventDefault();
-        scrollTo(item.dataset.section);
-      });
-    });
-
-    window.addEventListener('pos-section-change', e => {
-      tree.querySelectorAll('.pos-tree-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.section === e.detail.id);
-      });
-    });
+    const oldTree = document.getElementById('pos-schema-tree');
+    if (oldTree) oldTree.remove();
   }
 
   /* ─── 3. COMMAND PALETTE ─────────────────────────────────────── */
@@ -349,7 +302,7 @@
   /* ─── INIT ───────────────────────────────────────────────────── */
   function init() {
     initNavCounts();
-    buildSchemaTree();
+    buildSchemaTree(); /* removes leftover left nav if present */
     buildPalette();
     buildMinimap();
     initKeyboard();

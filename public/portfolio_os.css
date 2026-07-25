@@ -22,26 +22,10 @@
   vertical-align: middle;
 }
 
-/* ─── SCHEMA TREE SIDEBAR ────────────────────────────────────── */
-#pos-schema-tree {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 90;
-  display: none;
-  flex-direction: column;
-  padding: 12px 0;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-left: none;
-  border-radius: 0 10px 10px 0;
-  min-width: 160px;
-  max-width: 160px;
-  box-shadow: 4px 0 20px rgba(0,0,0,0.07);
-}
-@media (min-width: 1280px) {
-  #pos-schema-tree { display: flex; }
+/* ─── SCHEMA TREE SIDEBAR — permanently removed ──────────────── */
+#pos-schema-tree,
+#toc-sidebar {
+  display: none !important;
 }
 
 .pos-tree-root { display: flex; flex-direction: column; }
