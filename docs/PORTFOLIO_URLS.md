@@ -2,9 +2,9 @@
 
 ## Canonical (use this everywhere)
 
-**https://andre-weissmann-data-portfolio-ready.pplx.app**
+**https://andre-weissmann-data-portfolio-show.pplx.app**
 
-- `site_id`: `40286310-f235-4d6f-a3b4-178a7a250648`
+- `site_id`: `a9fc07d7-78d5-4317-80e2-f5521df22cc7`
 - asset: `f4e9ff78-2d76-43ea-8fa4-5148552a9bd4`
 - Visibility should stay **Public**
 - Share / visibility UI: open the app asset → Publish → Visibility

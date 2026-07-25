@@ -55,6 +55,6 @@ Admin login only works when `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in the en
 
 ## Live URL
 
-Canonical public site: https://andre-weissmann-data-portfolio-ready.pplx.app
+Canonical public site: https://andre-weissmann-data-portfolio-show.pplx.app
 
 See [docs/PORTFOLIO_URLS.md](docs/PORTFOLIO_URLS.md) for subdomain history and publish rules.
