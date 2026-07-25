@@ -3751,3 +3751,12 @@ a.brief-tool-btn.brief-github-btn {
 .brief-mob-sheet-item.active ~ .brief-mob-sheet-item .brief-mob-sheet-num {
   /* upcoming stay muted; done handled via JS class if present */
 }
+
+
+/* Dynamic end spacer for fair section pinning (height set in JS) */
+.brief-scroll-spacer {
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: none;
+  height: 0;
+}
