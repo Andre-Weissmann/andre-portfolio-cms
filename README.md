@@ -2,7 +2,7 @@
 
 Application code for my public data analytics portfolio.
 
-**Live site:** [andre-weissmann-portfolio.pplx.app](https://andre-weissmann-portfolio.pplx.app)
+**Live site:** [andre-weissmann-data-portfolio.pplx.app](https://andre-weissmann-data-portfolio.pplx.app)
 
 **Content (JSON + dashboard files) lives separately:**
 [andre-portfolio-content](https://github.com/Andre-Weissmann/andre-portfolio-content)
