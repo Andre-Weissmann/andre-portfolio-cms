@@ -520,6 +520,8 @@ function initSpine(panel) {
     }
     r.querySelectorAll('.brief-mob-sheet-item').forEach(function(c, i) {
       c.classList.toggle('active', i === active);
+      c.classList.toggle('is-done', i < active);
+      c.classList.toggle('is-upcoming', i > active);
     });
     r.querySelectorAll('.brief-mob-dot').forEach(function(d, i) {
       d.classList.toggle('active', i === active);
@@ -542,10 +544,16 @@ function initSpine(panel) {
     var scrollH = Math.max(content.scrollHeight - viewH, 0);
     var pct = scrollH > 0 ? Math.min(Math.max(scrollTop / scrollH, 0), 1) : 0;
 
-    // Desktop left spine fill (vertical)
+    // Desktop left spine: horizontal progress under title (no line through numbers)
     if (spineEl) {
-      var fill = spineEl.querySelector('.brief-spine-fill');
-      if (fill) fill.style.height = (pct * 100) + '%';
+      var fill = spineEl.querySelector('.brief-spine-progress-fill') || spineEl.querySelector('.brief-spine-fill');
+      if (fill) {
+        fill.style.width = (pct * 100) + '%';
+        fill.style.height = '';
+      }
+      var pCount = spineEl.querySelector('.brief-spine-progress-count');
+      // count updated below with active index
+      spineEl._progressCountEl = pCount;
     }
 
     var active = 0;
@@ -567,10 +575,16 @@ function initSpine(panel) {
       }
     }
 
-    items.forEach(function(it, i) { it.classList.toggle('active', i === active); });
-    panel.querySelectorAll('.brief-spine-dot').forEach(function(d, i) {
-      d.classList.toggle('active', i === active);
+    items.forEach(function(it, i) {
+      it.classList.toggle('active', i === active);
+      it.classList.toggle('is-done', i < active);
+      it.classList.toggle('is-upcoming', i > active);
     });
+    if (spineEl) {
+      var pc = spineEl.querySelector('.brief-spine-progress-count');
+      var totalN = Math.max(items.length, targets.length, 1);
+      if (pc) pc.textContent = (active + 1) + ' / ' + totalN;
+    }
     panel.querySelectorAll('.brief-mob-chip').forEach(function(c, i) {
       c.classList.toggle('active', i === active);
     });
@@ -1666,15 +1680,21 @@ function renderDrawer(key) {
   if (p.context) {
     spineItems = spineItems.concat([{ id: 'ch-ask', title: 'Ask This Project' }]);
   }
-  spine.innerHTML = '<div class="brief-spine-title">On this page</div>' +
-    '<div class="brief-spine-fill"></div>' +
+  spine.innerHTML =
+    '<div class="brief-spine-head">' +
+      '<div class="brief-spine-title">Sections</div>' +
+      '<div class="brief-spine-progress" aria-hidden="true"><div class="brief-spine-progress-fill brief-spine-fill"></div></div>' +
+      '<div class="brief-spine-progress-meta"><span class="brief-spine-progress-count">1 / ' + spineItems.length + '</span></div>' +
+    '</div>' +
+    '<div class="brief-spine-list" role="list">' +
     spineItems.map(function(ch, idx) {
-      return '<button type="button" class="brief-spine-item" data-target="' + ch.id + '" title="' + ch.title + '">' +
-        '<span class="brief-spine-num" aria-hidden="true">' + (idx + 1) + '</span>' +
-        '<span class="brief-spine-dot" aria-hidden="true"></span>' +
+      return '<button type="button" class="brief-spine-item' + (idx === 0 ? ' active' : '') + '" role="listitem" data-target="' + ch.id + '" data-index="' + idx + '" title="' + ch.title + '">' +
+        '<span class="brief-spine-num" aria-hidden="true">' + (idx + 1 < 10 ? '0' : '') + (idx + 1) + '</span>' +
         '<span class="brief-spine-label">' + ch.title + '</span>' +
+        '<span class="brief-spine-mark" aria-hidden="true"></span>' +
       '</button>';
-    }).join('');
+    }).join('') +
+    '</div>';
   layout.appendChild(spine);
 
   var scrollBody = document.createElement('div');
