@@ -3035,3 +3035,144 @@ a.brief-tool-btn.brief-github-btn {
     height: 38px !important;
   }
 }
+
+
+/* AUDIT MOBILE PASS */
+.brief-conviction {
+  flex: 1 1 120px;
+  max-width: 160px;
+  min-width: 0;
+}
+.brief-conviction-label {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--dd-text-dim);
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  max-width: 100%;
+  padding: 0 4px;
+}
+.brief-conviction svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+.brief-mob-swipe-hint {
+  display: none;
+  margin-left: 6px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--dd-accent);
+  opacity: 0.9;
+}
+.brief-mob-chapters.has-overflow .brief-mob-swipe-hint {
+  display: inline;
+}
+.brief-mob-chapters-track,
+.sql-dash__lenses,
+.brief-morph-tbl {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.brief-mob-chapters.has-overflow .brief-mob-chapters-track,
+.sql-dash__lenses,
+.brief-morph-tbl {
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, #000 0%, #000 88%, transparent 100%);
+}
+.brief-sql__table td,
+.brief-sql__table th {
+  white-space: nowrap;
+}
+.brief-sql__table {
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .brief-tool-btn,
+  a.brief-tool-btn.brief-github-btn,
+  #dd-theme-toggle.brief-tool-btn,
+  #dd-close.brief-tool-btn,
+  #dd-close.brief-close-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+  }
+  .brief-hdr-tools { gap: 8px !important; }
+
+  .brief-hdr.is-compact .brief-hdr-sub { display: none !important; }
+  .brief-hdr.is-compact .brief-hdr-title {
+    font-size: 15px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brief-hdr.is-compact .brief-hdr-content {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    gap: 4px !important;
+  }
+
+  .brief-mob-chapters {
+    position: relative !important;
+    top: auto !important;
+    z-index: 3 !important;
+  }
+
+  .brief-morph-tbl {
+    overflow-x: auto !important;
+  }
+  .brief-morph-row {
+    grid-template-columns: minmax(5.5rem, 0.85fr) minmax(9rem, 1.4fr) minmax(5.5rem, 0.9fr) minmax(4.5rem, 0.7fr) !important;
+    min-width: 26rem !important;
+  }
+  .brief-morph-cell {
+    font-size: 11px !important;
+    padding: 8px 8px !important;
+  }
+  .brief-morph-table::after {
+    content: "Swipe table for all columns";
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--dd-text-faint);
+    padding: 6px 12px 8px;
+    background: var(--dd-surface);
+    border-top: 1px solid var(--dd-border);
+  }
+
+  .brief-conviction-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    justify-items: stretch !important;
+    padding: 0 4px !important;
+  }
+  .brief-conviction {
+    max-width: none;
+    flex: none;
+    width: 100%;
+  }
+  .brief-conviction-label {
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+  .brief-conviction svg {
+    width: 108px;
+    height: 70px;
+  }
+
+  .sql-dash__lenses {
+    padding-bottom: 4px;
+    gap: 6px;
+  }
+}
