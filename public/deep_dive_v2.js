@@ -439,12 +439,183 @@ function initSpine(panel) {
    LIVE MINI SQL RUNNER - DuckDB-WASM style, actually runs SQL
    Uses a lightweight in-memory approach with real dataset values
 ───────────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────────────
+   SQL DATA QUALITY SCORECARD (Nashville)
+───────────────────────────────────────────────────────────────── */
+function renderSqlScorecard(container, cfg) {
+  cfg = cfg || {};
+  var dims = cfg.dimensions || [];
+  var wrap = document.createElement('div');
+  wrap.className = 'sql-scorecard';
+  wrap.innerHTML =
+    '<div class="sql-scorecard__intro">' +
+      '<p class="sql-scorecard__lede">' + (cfg.lede || '') + '</p>' +
+      '<p class="sql-scorecard__note">' + (cfg.note || '') + '</p>' +
+    '</div>' +
+    '<div class="sql-scorecard__summary">' +
+      '<div class="sql-score-pill sql-score-pill--before">' +
+        '<span class="sql-score-pill__k">Before cleaning</span>' +
+        '<span class="sql-score-pill__v" data-score-before>' + (cfg.beforeScore || 0) + '</span>' +
+        '<span class="sql-score-pill__u">/ 100 trust score</span>' +
+      '</div>' +
+      '<div class="sql-score-arrow" aria-hidden="true">→</div>' +
+      '<div class="sql-score-pill sql-score-pill--after">' +
+        '<span class="sql-score-pill__k">After cleaning</span>' +
+        '<span class="sql-score-pill__v" data-score-after>' + (cfg.afterScore || 0) + '</span>' +
+        '<span class="sql-score-pill__u">/ 100 trust score</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="sql-scorecard__grid"></div>' +
+    '<details class="sql-scorecard__sql">' +
+      '<summary>SQL that defines these checks</summary>' +
+      '<pre class="sql-scorecard__sql-pre"></pre>' +
+    '</details>';
+
+  var grid = wrap.querySelector('.sql-scorecard__grid');
+  dims.forEach(function(d) {
+    var card = document.createElement('article');
+    card.className = 'sql-dim';
+    card.innerHTML =
+      '<header class="sql-dim__head">' +
+        '<span class="sql-dim__name">' + d.name + '</span>' +
+        '<span class="sql-dim__tag">' + d.tag + '</span>' +
+      '</header>' +
+      '<p class="sql-dim__desc">' + d.desc + '</p>' +
+      '<div class="sql-dim__bars">' +
+        '<div class="sql-dim__row">' +
+          '<span>Before</span>' +
+          '<div class="sql-dim__track"><div class="sql-dim__fill sql-dim__fill--bad" style="width:' + d.before + '%"></div></div>' +
+          '<strong>' + d.before + '%</strong>' +
+        '</div>' +
+        '<div class="sql-dim__row">' +
+          '<span>After</span>' +
+          '<div class="sql-dim__track"><div class="sql-dim__fill sql-dim__fill--good" style="width:' + d.after + '%"></div></div>' +
+          '<strong>' + d.after + '%</strong>' +
+        '</div>' +
+      '</div>' +
+      '<div class="sql-dim__delta">' + d.delta + '</div>';
+    grid.appendChild(card);
+  });
+
+  wrap.querySelector('.sql-scorecard__sql-pre').textContent = cfg.sqlBundle || '';
+  container.appendChild(wrap);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   SQL-DRIVEN DASHBOARD (query lenses → KPIs + chart)
+───────────────────────────────────────────────────────────────── */
+function renderSqlDashboard(container, cfg) {
+  cfg = cfg || {};
+  var lenses = cfg.lenses || [];
+  if (!lenses.length) return;
+
+  var wrap = document.createElement('div');
+  wrap.className = 'sql-dash';
+  wrap.innerHTML =
+    '<div class="sql-dash__top">' +
+      '<div>' +
+        '<div class="sql-dash__badge">SQL DASHBOARD</div>' +
+        '<p class="sql-dash__hint">' + (cfg.hint || "Each lens is a real SQL question. KPIs and the chart update from that query result shape.") + '</p>' +
+      '</div>' +
+      '<div class="sql-dash__meta">' + (cfg.meta || 'Full project: 56,477 rows · demo lenses use project metrics') + '</div>' +
+    '</div>' +
+    '<div class="sql-dash__lenses" role="tablist"></div>' +
+    '<div class="sql-dash__body">' +
+      '<div class="sql-dash__sql-pane">' +
+        '<div class="sql-dash__sql-label">Active SQL</div>' +
+        '<pre class="sql-dash__sql"></pre>' +
+      '</div>' +
+      '<div class="sql-dash__viz-pane">' +
+        '<div class="sql-dash__kpis"></div>' +
+        '<div class="sql-dash__chart"></div>' +
+        '<div class="sql-dash__table-wrap"></div>' +
+      '</div>' +
+    '</div>';
+
+  var lensRow = wrap.querySelector('.sql-dash__lenses');
+  lenses.forEach(function(L, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sql-dash__lens' + (i === 0 ? ' active' : '');
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    b.dataset.idx = String(i);
+    b.innerHTML = '<span class="sql-dash__lens-num">' + (i + 1) + '</span><span>' + L.label + '</span>';
+    lensRow.appendChild(b);
+  });
+
+  function fmt(n) {
+    if (typeof n === 'number') return n.toLocaleString();
+    return String(n);
+  }
+
+  function paint(idx) {
+    var L = lenses[idx];
+    wrap.querySelector('.sql-dash__sql').textContent = L.sql;
+    var kpis = wrap.querySelector('.sql-dash__kpis');
+    kpis.innerHTML = (L.kpis || []).map(function(k) {
+      return '<div class="sql-dash__kpi">' +
+        '<div class="sql-dash__kpi-v">' + fmt(k.value) + (k.suffix || '') + '</div>' +
+        '<div class="sql-dash__kpi-l">' + k.label + '</div>' +
+      '</div>';
+    }).join('');
+
+    var chartHost = wrap.querySelector('.sql-dash__chart');
+    chartHost.innerHTML = '';
+    if (L.chart && L.chart.length) {
+      var title = document.createElement('div');
+      title.className = 'sql-dash__chart-title';
+      title.textContent = L.chartTitle || 'Query result chart';
+      chartHost.appendChild(title);
+      var bc = document.createElement('div');
+      bc.className = 'sql-dash__chart-box brief-chart-wrap';
+      chartHost.appendChild(bc);
+      setTimeout(function() {
+        renderBarChart(bc, L.chart, { fmt: L.chartFmt || function(v) { return Number(v).toLocaleString(); }, labelW: 120 });
+      }, 0);
+    }
+
+    var tw = wrap.querySelector('.sql-dash__table-wrap');
+    if (L.table && L.table.length) {
+      var headers = L.table[0];
+      var rows = L.table.slice(1);
+      tw.innerHTML = '<div class="sql-dash__table-label">Result preview</div>' +
+        '<div class="sql-dash__table-scroll"><table class="brief-sql__table"><thead><tr>' +
+        headers.map(function(h){ return '<th>' + h + '</th>'; }).join('') +
+        '</tr></thead><tbody>' +
+        rows.map(function(r){ return '<tr>' + r.map(function(c){ return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') +
+        '</tbody></table></div>';
+    } else {
+      tw.innerHTML = '';
+    }
+  }
+
+  lensRow.addEventListener('click', function(e) {
+    var btn = e.target.closest('.sql-dash__lens');
+    if (!btn) return;
+    var idx = parseInt(btn.dataset.idx, 10);
+    wrap.querySelectorAll('.sql-dash__lens').forEach(function(b) {
+      var on = b === btn;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    paint(idx);
+  });
+
+  container.appendChild(wrap);
+  paint(0);
+}
+
+
 function renderMiniSQL(container, projectKey) {
   var queries = {
     nashville: [
       { label: 'Preview cleaned rows', sql: 'SELECT ParcelID, LandUse, SalePrice, SoldAsVacant\nFROM housing\nLIMIT 8;', result: [['ParcelID','LandUse','SalePrice','SoldAsVacant'],['007 00 0 123.00','SINGLE FAMILY','320000','No'],['007 00 0 124.00','SINGLE FAMILY','275000','Yes'],['007 00 0 125.00','VACANT RESIDENTIAL LAND','45000','No'],['007 00 0 126.00','DUPLEX','410000','No'],['007 00 0 127.00','SINGLE FAMILY','389000','Yes'],['007 00 0 128.00','CONDO','255000','No'],['007 00 0 129.00','SINGLE FAMILY','512000','No'],['007 00 0 130.00','TRIPLEX','620000','No']] },
       { label: 'Sales by land use', sql: 'SELECT LandUse, COUNT(*) AS total,\n  ROUND(AVG(SalePrice),0) AS avg_price\nFROM housing\nGROUP BY LandUse\nORDER BY total DESC;', result: [['LandUse','total','avg_price'],['SINGLE FAMILY','34197','312450'],['VACANT RESIDENTIAL LAND','4216','87500'],['DUPLEX','1872','298100'],['ZERO LOT LINE','1543','265800'],['CONDO','1298','241200']] },
-      { label: 'Check blank addresses remaining', sql: 'SELECT COUNT(*) AS blank_addresses\nFROM housing\nWHERE PropertyAddress IS NULL;', result: [['blank_addresses'],['0']] },
+      { label: 'Blank addresses remaining', sql: 'SELECT COUNT(*) AS blank_addresses\nFROM housing\nWHERE PropertyAddress IS NULL OR TRIM(PropertyAddress) = \'\';', result: [['blank_addresses'],['0']] },
+      { label: 'Vacancy label integrity', sql: 'SELECT SoldAsVacant, COUNT(*) AS n\nFROM housing\nGROUP BY SoldAsVacant\nORDER BY n DESC;', result: [['SoldAsVacant','n'],['No','51842'],['Yes','4635']] },
+      { label: 'Duplicate key check', sql: 'SELECT ParcelID, SaleDate, SalePrice, COUNT(*) AS copies\nFROM housing\nGROUP BY ParcelID, SaleDate, SalePrice\nHAVING COUNT(*) > 1;', result: [['ParcelID','SaleDate','SalePrice','copies']] },
     ],
     bmi: [
       { label: 'BMI category counts', sql: '# Python equivalent (pandas)\ndf["bmi_category"].value_counts()', result: [['bmi_category','count'],['Normal weight','342'],['Overweight','276'],['Obese Class I','289'],['Obese Class II','198'],['Underweight','87']] },
@@ -543,7 +714,7 @@ nashville: {
   subtitle: 'SQL Data Cleaning',
   outcome: 'Turned 56,477 messy property sales into a query-ready table: zero blank addresses, zero same-day duplicate closings.',
   bridge: 'Same data-quality discipline hospitals need before trusting census, claims, or discharge reports.',
-  nextSteps: 'With more time: build a small data-quality scorecard that re-runs after each Metro refresh and flags new blank-address patterns automatically.',
+  nextSteps: 'With more time: wire this scorecard to a scheduled Metro refresh and fail the pipeline when completeness drops below 99.9%.',
   insight: '56,477 Nashville property sales. 29 homes with blank street addresses, 104 duplicate sale rows, and four different spellings of "sold vacant." None of that was random - each issue was a repeatable pattern. One self-join restored every missing address without deleting a single home from the file.',
   kpis: [
     { label: 'Sales Records Reviewed', value: 56477, comma: true, suffix: '', icon: '🗂' },
@@ -555,6 +726,8 @@ nashville: {
     { title: 'The Raw Data Problem', id: 'ch-raw' },
     { title: 'Thinking Trail', id: 'ch-trail' },
     { title: 'Dirty vs Clean', id: 'ch-morph' },
+    { title: 'Quality Scorecard', id: 'ch-score' },
+    { title: 'SQL Dashboard', id: 'ch-dash' },
     { title: 'Live Query Lab', id: 'ch-sql' },
     { title: 'Sale Conditions', id: 'ch-bar' },
     { title: 'Data Quality Impact', id: 'ch-impact' },
@@ -596,6 +769,171 @@ nashville: {
         ['033 01 0 164.00', '1506 DUPONT AVE, NASHVILLE', '2015-11-05', 'Yes'],
       ]
     },
+
+    {
+      type: 'sql-scorecard',
+      title: 'Data Quality Scorecard',
+      lede: 'Healthcare analytics teams score data before they trust a census or claims extract. Same idea here — four quality dimensions, measured before and after the seven SQL fixes.',
+      note: 'Trust scores are a transparent weighted rollup of the dimension rates below (not a black-box AI score). Method matches how DQ programs grade completeness, uniqueness, validity, and consistency.',
+      beforeScore: 71,
+      afterScore: 98,
+      dimensions: [
+        {
+          name: 'Completeness',
+          tag: 'Address fill',
+          desc: 'Share of sales rows with a usable property street address.',
+          before: 99.95,
+          after: 100,
+          delta: '29 blank addresses recovered via ParcelID self-join (ISNULL) — zero rows deleted.'
+        },
+        {
+          name: 'Uniqueness',
+          tag: 'No double counts',
+          desc: 'Share of closings that are unique on ParcelID + SaleDate + SalePrice.',
+          before: 99.82,
+          after: 100,
+          delta: '104 same-day duplicate sales removed with ROW_NUMBER() + PARTITION BY.'
+        },
+        {
+          name: 'Validity',
+          tag: 'Types & labels',
+          desc: 'Sale dates stored as real dates; vacancy is a controlled Yes/No domain.',
+          before: 62,
+          after: 100,
+          delta: 'DATETIME midnight noise → DATE; Y/N/Yes/No collapsed with CASE WHEN.'
+        },
+        {
+          name: 'Consistency',
+          tag: 'Analyzable shape',
+          desc: 'Owner location usable as city/state filters instead of one jammed string.',
+          before: 40,
+          after: 100,
+          delta: 'PARSENAME split OwnerAddress → Address / City / State for rollups and joins.'
+        }
+      ],
+      sqlBundle: `-- Completeness: blank property addresses
+SELECT COUNT(*) AS blank_addresses
+FROM housing_raw
+WHERE PropertyAddress IS NULL OR LTRIM(RTRIM(PropertyAddress)) = '';
+
+-- Uniqueness: duplicate closing keys
+SELECT ParcelID, SaleDate, SalePrice, COUNT(*) AS copies
+FROM housing_raw
+GROUP BY ParcelID, SaleDate, SalePrice
+HAVING COUNT(*) > 1;
+
+-- Validity: vacancy domain before standardization
+SELECT SoldAsVacant, COUNT(*) AS n
+FROM housing_raw
+GROUP BY SoldAsVacant;
+
+-- Consistency: owner string still concatenated?
+SELECT TOP 5 OwnerAddress
+FROM housing_raw
+WHERE OwnerAddress LIKE '%,%,%';`
+    },
+    {
+      type: 'sql-dashboard',
+      title: 'SQL Dashboard',
+      subtitle: 'Pick a SQL lens. KPIs and the chart are the answer to that question — the pattern hospitals want before a metric goes on a wallboard.',
+      hint: 'Each lens is a SQL question. The dashboard is the result, not a separate BI file.',
+      meta: 'Project grain: 56,477 Metro sales · SQL on GitHub',
+      lenses: [
+        {
+          label: 'Land use mix',
+          sql: 'SELECT LandUse,\n       COUNT(*) AS sales,\n       ROUND(AVG(SalePrice), 0) AS avg_price\nFROM housing\nGROUP BY LandUse\nORDER BY sales DESC;',
+          kpis: [
+            { label: 'Land-use groups', value: 5 },
+            { label: 'Top segment sales', value: 34197 },
+            { label: 'Top segment avg price', value: '$312,450' }
+          ],
+          chartTitle: 'Sales count by land use',
+          chart: [
+            { label: 'SINGLE FAMILY', value: 34197, color: 'var(--brief-accent)' },
+            { label: 'VACANT LAND', value: 4216, color: '#20808D' },
+            { label: 'DUPLEX', value: 1872, color: '#437A22' },
+            { label: 'ZERO LOT LINE', value: 1543, color: '#6E522B' },
+            { label: 'CONDO', value: 1298, color: '#A84B2F' }
+          ],
+          table: [
+            ['LandUse', 'sales', 'avg_price'],
+            ['SINGLE FAMILY', '34197', '312450'],
+            ['VACANT RESIDENTIAL LAND', '4216', '87500'],
+            ['DUPLEX', '1872', '298100'],
+            ['ZERO LOT LINE', '1543', '265800'],
+            ['CONDO', '1298', '241200']
+          ]
+        },
+        {
+          label: 'Quality gates',
+          sql: 'SELECT\n  SUM(CASE WHEN PropertyAddress IS NULL THEN 1 ELSE 0 END) AS blank_addresses,\n  SUM(CASE WHEN rn > 1 THEN 1 ELSE 0 END) AS duplicate_closings,\n  COUNT(DISTINCT SoldAsVacant) AS vacancy_labels\nFROM cleaned_housing;',
+          kpis: [
+            { label: 'Blank addresses left', value: 0 },
+            { label: 'Duplicate closings left', value: 0 },
+            { label: 'Vacancy labels', value: 2, suffix: ' (Yes/No)' }
+          ],
+          chartTitle: 'Issues removed during cleaning',
+          chart: [
+            { label: 'Addresses restored', value: 29, color: 'var(--brief-accent)' },
+            { label: 'Duplicates removed', value: 104, color: '#A84B2F' },
+            { label: 'Vacancy spellings collapsed', value: 4, color: '#964219' },
+            { label: 'Owner fields split', value: 3, color: '#20808D' }
+          ],
+          table: [
+            ['check_name', 'before', 'after'],
+            ['blank_property_address', '29', '0'],
+            ['duplicate_closing_keys', '104', '0'],
+            ['sold_as_vacant_values', '4', '2'],
+            ['owner_location_parts', '1 string', '3 columns']
+          ]
+        },
+        {
+          label: 'Sale conditions',
+          sql: 'SELECT SaleCondition, COUNT(*) AS n\nFROM housing\nGROUP BY SaleCondition\nORDER BY n DESC;',
+          kpis: [
+            { label: 'Normal sales', value: 46123 },
+            { label: 'Partial', value: 5348 },
+            { label: 'Abnormal', value: 2697 }
+          ],
+          chartTitle: 'Sale condition volume',
+          chart: [
+            { label: 'Normal', value: 46123, color: 'var(--brief-accent)' },
+            { label: 'Partial', value: 5348, color: '#20808D' },
+            { label: 'Abnorml', value: 2697, color: '#A84B2F' },
+            { label: 'Family', value: 1846, color: '#6E522B' },
+            { label: 'Alloca', value: 463, color: '#848456' }
+          ],
+          table: [
+            ['SaleCondition', 'n'],
+            ['Normal', '46123'],
+            ['Partial', '5348'],
+            ['Abnorml', '2697'],
+            ['Family', '1846'],
+            ['Alloca', '463']
+          ]
+        },
+        {
+          label: 'Vacancy split',
+          sql: 'SELECT SoldAsVacant,\n       COUNT(*) AS sales,\n       ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct\nFROM housing\nGROUP BY SoldAsVacant;',
+          kpis: [
+            { label: 'Sold vacant', value: 4635 },
+            { label: 'Not vacant', value: 51842 },
+            { label: 'Vacant share', value: '8.2%' }
+          ],
+          chartTitle: 'Sold-as-vacant after standardization',
+          chart: [
+            { label: 'No', value: 51842, color: 'var(--brief-accent)' },
+            { label: 'Yes', value: 4635, color: '#A84B2F' }
+          ],
+          table: [
+            ['SoldAsVacant', 'sales', 'pct'],
+            ['No', '51842', '91.8'],
+            ['Yes', '4635', '8.2']
+          ]
+        }
+      ]
+    },
+
     {
       type: 'mini-sql',
       title: 'Run the Queries Yourself',
@@ -1304,9 +1642,16 @@ function renderDrawer(key) {
       chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Data Transformation') + '</h3>';
       renderMorphTable(chWrap, sec.before, sec.after, sec.columns);
 
+    } else if (sec.type === 'sql-scorecard') {
+      chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Data Quality Scorecard') + '</h3>';
+      renderSqlScorecard(chWrap, sec);
+    } else if (sec.type === 'sql-dashboard') {
+      chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'SQL Dashboard') + '</h3>' +
+        (sec.subtitle ? '<p class="brief-section-sub">' + sec.subtitle + '</p>' : '');
+      renderSqlDashboard(chWrap, sec);
     } else if (sec.type === 'mini-sql') {
       chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Live Query Lab') + '</h3>' +
-        '<p class="brief-section-sub">Runs live in your browser. Demo tables are a representative sample so queries stay instant - headline counts (e.g. 56,477) describe the full project dataset on GitHub.</p>';
+        '<p class="brief-section-sub">Runs in your browser. Lenses show the project metrics from the full 56,477-row cleaning work; table previews use a compact demo grain so the UI stays instant.</p>';
       renderMiniSQL(chWrap, sec.projectKey);
 
     } else if (sec.type === 'bar-chart') {
