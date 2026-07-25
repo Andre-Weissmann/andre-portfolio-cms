@@ -2,10 +2,10 @@
 
 ## Canonical (use this everywhere)
 
-**https://andre-weissmann-data-portfolio-live.pplx.app**
+**https://andre-weissmann-data-portfolio-ready.pplx.app**
 
-- `site_id`: `780c103c-bc01-4dae-952a-74571a427dd8`
-- asset: `97079517-4a1e-4fa9-bd46-2a6b9b22c0cf`
+- `site_id`: `40286310-f235-4d6f-a3b4-178a7a250648`
+- asset: `f4e9ff78-2d76-43ea-8fa4-5148552a9bd4`
 - Visibility should stay **Public**
 - Share / visibility UI: open the app asset → Publish → Visibility
 
@@ -22,6 +22,7 @@ These are leftover publishes from earlier sessions. They may still load HTML but
 | https://andre-weissmann-my-data-portfolio.pplx.app | Intermediate |
 | https://andre-weissmann-data-portfolio-updated.pplx.app | Intermediate |
 | https://andre-weissmann-data-portfolio-full.pplx.app | Prior canonical; may go private after updates |
+| https://andre-weissmann-data-portfolio-live.pplx.app | Prior canonical; may go private after updates |
 
 You cannot delete old `*.pplx.app` subdomains from the agent. Ignore them. Prefer unpublish in the preview UI if Perplexity shows an Unpublish control.
 
