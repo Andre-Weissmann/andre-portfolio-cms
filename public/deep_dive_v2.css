@@ -20,7 +20,9 @@
   --dd-red:           #c0614a;
   --dd-gold:          #d4a030;
   --dd-green:         #4d8c2a;
-  --dd-panel-w:       min(920px, 96vw);
+  --dd-panel-w:       min(1100px, 96vw);
+  --dd-panel-h:       min(920px, 96dvh);
+  --dd-stage-max:     1320px;
   --dd-radius:        12px;
   --dd-ease:          cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -100,22 +102,33 @@
 /* ── Panel ── */
 #dd-panel {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: var(--dd-panel-w);
-  height: 100dvh;
-  max-height: 100dvh;
+  /* Full-stage: centered reading surface, not a right drawer */
+  top: 50%;
+  left: 50%;
+  right: auto;
+  width: min(var(--dd-stage-max, 1320px), calc(100vw - 24px));
+  height: min(var(--dd-panel-h, 96dvh), calc(100dvh - 24px));
+  max-height: calc(100dvh - 24px);
   background: var(--dd-bg);
-  border-left: 1px solid var(--dd-border);
+  border: 1px solid var(--dd-border);
+  border-radius: 18px;
   z-index: 8100;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.4s var(--dd-ease);
+  transform: translate(-50%, -46%) scale(0.96);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.38s var(--dd-ease), opacity 0.28s ease;
   overflow: hidden;
-  box-shadow: -12px 0 60px rgba(0,0,0,0.45);
+  box-shadow:
+    0 28px 80px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.04) inset;
 }
-#dd-panel.open { transform: translateX(0); }
+#dd-panel.open {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
 
 /* ── Body (flex container) ── */
 #dd-body {
@@ -1178,12 +1191,23 @@
    max-width: 640px
 ═══════════════════════════════════ */
 @media (max-width: 640px) {
-  /* Panel: full-screen, no border, no shadow */
+  /* Panel: full-screen stage on phones */
   #dd-panel {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     width: 100vw !important;
-    border-left: none !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+    transform: translateY(100%) !important;
+    opacity: 1 !important;
+  }
+  #dd-panel.open {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
   }
 
   /* Body: becomes the scroll root */
@@ -1477,7 +1501,9 @@
 
 @media (min-width: 900px) {
   :root {
-    --dd-panel-w: min(1080px, 78vw);
+    --dd-stage-max: 1240px;
+    --dd-panel-h: min(900px, calc(100dvh - 32px));
+    --dd-panel-w: min(1240px, calc(100vw - 32px));
     --brief-panel-w: var(--dd-panel-w);
   }
 
@@ -1654,7 +1680,9 @@
 
 @media (min-width: 1280px) {
   :root {
-    --dd-panel-w: min(1180px, 68vw);
+    --dd-stage-max: 1360px;
+    --dd-panel-w: min(1360px, calc(100vw - 40px));
+    --dd-panel-h: min(940px, calc(100dvh - 36px));
   }
 
   .brief-spine {
@@ -1677,7 +1705,38 @@
 /* Very large desktops: almost a reading stage, not a skinny drawer */
 @media (min-width: 1600px) {
   :root {
-    --dd-panel-w: min(1280px, 62vw);
+    --dd-stage-max: 1440px;
+    --dd-panel-w: min(1440px, calc(100vw - 48px));
+  }
+}
+
+/* Stage layout: two-column content on large desktops inside chapters */
+@media (min-width: 1100px) {
+  .brief-chapter .brief-trail-wrap {
+    max-width: none;
+  }
+  .brief-sql-runner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  }
+  .brief-morph-table {
+    font-size: 13px;
+  }
+  .brief-decision {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+  .brief-decision-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    border-right: 1px solid var(--dd-border);
+    border-bottom: none !important;
+    min-height: 100%;
+    gap: 10px !important;
+  }
+  .brief-decision-row:last-child { border-right: none; }
+  .brief-decision-pill {
+    margin-bottom: 2px;
   }
 }
 
@@ -1734,5 +1793,38 @@
   }
   .brief-hdr-top-row {
     position: relative;
+  }
+}
+
+body.dd-open {
+  overflow: hidden;
+}
+#dd-overlay.visible {
+  background: rgba(4, 8, 12, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+/* stage chrome */
+#dd-panel.brief-light {
+  border-color: rgba(0,0,0,0.08);
+}
+@media (min-width: 900px) {
+  .brief-hdr-content {
+    padding: 20px 32px 18px;
+  }
+  .brief-scroll-body {
+    padding-bottom: 56px;
+  }
+  /* Wider spine labels on stage */
+  .brief-spine {
+    width: 200px;
+  }
+}
+@media (min-width: 1280px) {
+  .brief-spine {
+    width: 220px;
+  }
+  .brief-scroll-body {
+    padding: 0 36px 72px 28px;
   }
 }

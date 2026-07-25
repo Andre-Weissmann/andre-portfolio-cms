@@ -268,7 +268,7 @@ function renderMorphTable(container, before, after, columns) {
       div.style.animationDelay = (ri * 40) + 'ms';
       div.innerHTML = row.map(function(cell, ci) {
         var isDirty = m === 'before' && (cell === null || cell === '' || cell === 'NULL' || (typeof cell === 'string' && cell.trim() === ''));
-        return '<div class="brief-morph-cell' + (isDirty ? ' dirty' : '') + '">' + (cell === null || cell === '' || cell === 'NULL' ? '<span class="brief-null">NULL</span>' : cell) + '</div>';
+        return '<div class="brief-morph-cell' + (isDirty ? ' dirty' : '') + '">' + (cell === null || cell === '' || cell === 'NULL' ? '<span class="brief-null" title="Missing value in source data">MISSING</span>' : cell) + '</div>';
       }).join('');
       tbl.appendChild(div);
     });
@@ -450,7 +450,7 @@ function renderMiniSQL(container, projectKey) {
     nashville: [
       { label: 'Preview cleaned rows', sql: 'SELECT ParcelID, LandUse, SalePrice, SoldAsVacant\nFROM housing\nLIMIT 8;', result: [['ParcelID','LandUse','SalePrice','SoldAsVacant'],['007 00 0 123.00','SINGLE FAMILY','320000','No'],['007 00 0 124.00','SINGLE FAMILY','275000','Yes'],['007 00 0 125.00','VACANT RESIDENTIAL LAND','45000','No'],['007 00 0 126.00','DUPLEX','410000','No'],['007 00 0 127.00','SINGLE FAMILY','389000','Yes'],['007 00 0 128.00','CONDO','255000','No'],['007 00 0 129.00','SINGLE FAMILY','512000','No'],['007 00 0 130.00','TRIPLEX','620000','No']] },
       { label: 'Sales by land use', sql: 'SELECT LandUse, COUNT(*) AS total,\n  ROUND(AVG(SalePrice),0) AS avg_price\nFROM housing\nGROUP BY LandUse\nORDER BY total DESC;', result: [['LandUse','total','avg_price'],['SINGLE FAMILY','34197','312450'],['VACANT RESIDENTIAL LAND','4216','87500'],['DUPLEX','1872','298100'],['ZERO LOT LINE','1543','265800'],['CONDO','1298','241200']] },
-      { label: 'Find remaining NULL addresses', sql: 'SELECT COUNT(*) AS null_addresses\nFROM housing\nWHERE PropertyAddress IS NULL;', result: [['null_addresses'],['0']] },
+      { label: 'Check blank addresses remaining', sql: 'SELECT COUNT(*) AS blank_addresses\nFROM housing\nWHERE PropertyAddress IS NULL;', result: [['blank_addresses'],['0']] },
     ],
     bmi: [
       { label: 'BMI category counts', sql: '# Python equivalent (pandas)\ndf["bmi_category"].value_counts()', result: [['bmi_category','count'],['Normal weight','342'],['Overweight','276'],['Obese Class I','289'],['Obese Class II','198'],['Underweight','87']] },
@@ -547,12 +547,12 @@ nashville: {
   badgeColor: '#20808D',
   title: 'Nashville Housing',
   subtitle: 'SQL Data Cleaning',
-  insight: '56,477 property records. 29 NULL addresses. 104 duplicate rows. 4 inconsistent values where 2 should exist. Zero of those issues were accidental — every one was a pattern. One self-join recovered all 29 addresses without deleting a single row.',
+  insight: '56,477 Nashville property sales. 29 homes with blank street addresses, 104 duplicate sale rows, and four different spellings of "sold vacant." None of that was random — each issue was a repeatable pattern. One self-join restored every missing address without deleting a single home from the file.',
   kpis: [
-    { label: 'Records Cleaned', value: 56477, comma: true, suffix: '', icon: '🗂' },
-    { label: 'Cleaning Methods Applied', value: 7, suffix: '', icon: '🛠' },
-    { label: 'Duplicate Rows Removed', value: 104, comma: true, suffix: '', icon: '🔁' },
-    { label: 'NULL Addresses Recovered', value: 29, suffix: '', icon: '📍' },
+    { label: 'Sales Records Reviewed', value: 56477, comma: true, suffix: '', icon: '🗂' },
+    { label: 'Cleaning Methods', value: 7, suffix: '', icon: '🛠' },
+    { label: 'Duplicate Sales Removed', value: 104, comma: true, suffix: '', icon: '🔁' },
+    { label: 'Addresses Restored', value: 29, suffix: '', icon: '📍' },
   ],
   chapters: [
     { title: 'The Raw Data Problem', id: 'ch-raw' },
@@ -565,15 +565,15 @@ nashville: {
   sections: [
     {
       type: 'insight-card',
-      text: 'This dataset from Nashville Metro Government contained 56,477 property sales records across 19 columns — UniqueID, ParcelID, LandUse, PropertyAddress, SaleDate, SalePrice, LegalReference, SoldAsVacant, OwnerName, OwnerAddress, and more. Four data quality failures made it unreliable: NULL PropertyAddress entries, DATETIME dates where only the date mattered, a single OwnerAddress string that should be three separate fields, and SoldAsVacant using four values (Y, N, Yes, No) instead of two. Any downstream analysis built on this data would silently inherit all four problems.'
+      text: 'Nashville Metro published 56,477 property sales across 19 fields. For a housing analyst or assessor team, four quality failures made the file unsafe to trust: blank street addresses on some parcels, sale dates stored with useless midnight timestamps, owner location packed into one un-filterable string, and "sold as vacant" written four different ways. Maps, vacancy rates, and owner-city rollups would all look complete while still being wrong.'
     },
     {
       type: 'thinking-trail',
       title: 'The Analyst\'s Thinking Trail',
       steps: [
-        { type: 'assume', text: 'Assumed NULL PropertyAddress entries were irrecoverable — entry errors with no surviving source data.', result: null },
-        { type: 'find', text: 'Discovered that all 29 NULL rows shared a ParcelID with another record that had the full address. Same physical property, two database entries — the address existed, it was just on the sibling row.', result: 'Self-join on ParcelID recovered all 29 NULL addresses without deleting a single row.' },
-        { type: 'pivot', text: 'Instead of deleting NULL rows, used ISNULL(a.PropertyAddress, b.PropertyAddress) with a self-join on ParcelID to populate missing values from their matched records. Data preserved, completeness restored.', result: null },
+        { type: 'assume', text: 'Assumed blank PropertyAddress entries were irrecoverable — entry errors with no surviving source data.', result: null },
+        { type: 'find', text: 'Discovered that all 29 blank-address rows shared a ParcelID with another record that had the full address. Same physical property, two database entries — the address existed, it was just on the sibling row.', result: 'Self-join on ParcelID recovered all 29 blank addresses without deleting a single row.' },
+        { type: 'pivot', text: 'Instead of deleting blank-address rows, used ISNULL(a.PropertyAddress, b.PropertyAddress) with a self-join on ParcelID to populate missing values from their matched records. Data preserved, completeness restored.', result: null },
         { type: 'find', text: 'SaleDate column stored as DATETIME — but every value had 00:00:00.000 as the time portion. Storing time data that is always midnight wastes space and introduces conversion risk in downstream joins.', result: 'Converted to DATE format using CONVERT(Date, SaleDate).' },
         { type: 'assume', text: 'Assumed SoldAsVacant only had Y and N values — a SELECT DISTINCT revealed four: Y, N, Yes, No. Two standards in one column silently breaks any GROUP BY or filter on that field.', result: 'CASE WHEN statement standardized all 56,477 rows to Yes or No.' },
         { type: 'insight', text: 'OwnerAddress was a single concatenated string: "1808 FOX CHASE DR, GOODLETTSVILLE, TN". PARSENAME after replacing commas with periods split it into three clean columns: OwnerSplitAddress, OwnerSplitCity, OwnerSplitState — enabling owner-level geographic analysis that was structurally impossible before.', result: null },
@@ -621,18 +621,18 @@ nashville: {
       type: 'impact-text',
       title: 'What This Clean Data Enables',
       items: [
-        { icon: '🏠', heading: 'Property mapping is now possible', body: 'All 29 NULL PropertyAddress rows were recovered via self-join. A real estate team can now map, route, or geocode every property in the dataset without manually hunting down missing addresses.' },
-        { icon: '✂️', heading: '104 phantom properties removed', body: 'ROW_NUMBER() deduplication eliminated records that would have inflated market averages, distorted sale price analysis, and double-counted square footage in any aggregate report.' },
-        { icon: '🔍', heading: 'Owner-level analysis unlocked', body: 'OwnerAddress was a single concatenated string. After PARSENAME split it into OwnerSplitAddress, OwnerSplitCity, and OwnerSplitState, analysts can now filter, group, or map by owner city and state independently.' },
-        { icon: '📋', heading: 'SoldAsVacant is now filterable', body: 'Four inconsistent values (Y, N, Yes, No) collapsed into two via CASE WHEN. Any GROUP BY or filter on SoldAsVacant now returns correct counts. Before this fix, aggregations on this column silently split one category into two.' },
+        { icon: '🏠', heading: 'Every parcel can sit on a map', body: 'All 29 blank street addresses were restored from a matching ParcelID sibling. Planning or brokerage teams can geocode and route the full set without a manual address hunt.' },
+        { icon: '✂️', heading: 'Sale counts stop double-booking', body: '104 same-day duplicate sales removed so volume, average price, and trend charts no longer inflate from one closing appearing twice.' },
+        { icon: '🔍', heading: 'Owner city and state are filters', body: 'Owner location split into address, city, and state — concentration by city, out-of-state ownership, and tax-roll joins that a single jammed string made impossible.' },
+        { icon: '📋', heading: 'Vacancy means one thing', body: 'Sold-as-vacant labels collapsed from four spellings to Yes/No. Vacancy KPIs no longer undercount or double-count based on which label someone typed in the filter.' },
       ]
     }
   ],
   github: 'https://github.com/Andre-Weissmann/SQL',
   decision: {
-    what: '56,477 Nashville property records contained four categories of data quality failure that would silently corrupt any downstream analysis.',
-    why: 'NULL addresses, inconsistent boolean values, concatenated owner fields, and DATETIME-typed dates are not cosmetic issues. They break GROUP BY queries, geographic joins, and aggregate counts in ways that produce wrong answers without error messages.',
-    next: 'This cleaned dataset is now the foundation for reliable owner-level geographic analysis, duplicate-free sale price aggregation, and accurate SoldAsVacant trend reporting.'
+    what: 'Metro housing sales looked ready for dashboards, but blank street addresses, duplicate closings, mixed vacancy labels, and jammed owner locations made basic questions unreliable.',
+    why: 'Blank addresses are not a SQL curiosity — they break parcel maps, route lists, and neighborhood comps. Mixed Y/Yes vacancy labels split one fact into two buckets. Unsplit owner strings block city-level ownership views. Leadership can approve a chart that is quietly incomplete.',
+    next: 'Run the seven cleaning steps before any housing KPI or map. Recover missing fields from sibling ParcelID rows first; only then remove true duplicates and standardize labels.'
   },
   stakeholders: [
     { role: 'What did the cleaning unlock?', icon: '📊', summary: '56,477 property records made analysis-ready. 29 lost addresses recovered without deleting a single row. 104 duplicate transactions removed. Four categories of data failure fixed — any report built on the original data would have silently inherited all of them.' },
@@ -904,7 +904,7 @@ tableau: {
         { type: 'pivot', text: 'Built a Working Sheet copy of Listings before any modifications — preserving the original for audit and rollback. All transformations were applied to the working copy, not the source data.', result: null },
         { type: 'find', text: 'An 8-step inner join process on listing_id connected the Working Sheet (property details) to the Calendar (daily pricing and availability). This join made it possible to connect bedroom count, zip code, and host attributes to actual revenue per week.', result: null },
         { type: 'insight', text: 'Zip code 98134 had the highest average nightly rate of any zip code in the dataset. A one-bedroom in 98134 outearned listings in nearby zip codes significantly — location signal stronger than bedroom count at the low end of the inventory.', result: null },
-        { type: 'limit', text: 'The dataset includes 4,417 entries with no price data and an unexplained block of January 2017 records in what is labeled a 2016 dataset. Both were documented as data quality issues. The January 2017 records were excluded from 2016 revenue trend analysis.', result: 'Flagged as areas for improvement in any future version of this project.' },
+        { type: 'limit', text: 'The dataset includes 4,417 nights with blank prices and an unexplained block of January 2017 records in what is labeled a 2016 dataset. Both were documented as data quality issues. The January 2017 records were excluded from 2016 revenue trend analysis.', result: 'Flagged as areas for improvement in any future version of this project.' },
       ]
     },
     {
@@ -936,7 +936,7 @@ tableau: {
         { icon: '📍', heading: 'Zip code 98134 is the highest-price location in Seattle', body: 'A host in 98134 commands the highest average nightly rate of any zip code in the dataset. Location is the single most actionable lever for a new host choosing between available properties — more so than bedroom count at the one-bedroom level.' },
         { icon: '🛏', heading: '1,811 one-bedroom listings dominate supply', body: 'The greatest number of homes available for consumers is 1,811 when bedroom count is one. Supply is concentrated at the low end. A host with two or more bedrooms faces less competition and commands a meaningfully higher average price per night.' },
         { icon: '📅', heading: 'Four weeks drive the revenue peaks — all of them predictable', body: 'March 27th ($1,906,735), May 29th ($2,013,698), June 19th ($2,073,319), and December 25th ($2,110,350). Spring season and holiday seasons are the drivers. A host who adjusts pricing in advance of these four windows captures revenue that flat-rate hosts leave on the table every year.' },
-        { icon: '🛠', heading: 'Three data quality issues flagged for Airbnb\'s own team', body: 'Andre documented specific issues to raise with Airbnb stakeholders: 4,417 price entries are null and correlate with the Available column value of f; January 2017 records appear in the 2016 dataset; and reviewer comments are incomplete. Each one requires a conversation with the client before correction.' },
+        { icon: '🛠', heading: 'Three data quality issues flagged for Airbnb\'s own team', body: 'Andre documented specific issues to raise with Airbnb stakeholders: 4,417 blank nightly prices line up with unavailable nights (Available = f); January 2017 records appear in the 2016 dataset; and reviewer comments are incomplete. Each one requires a conversation with the client before correction.' },
       ]
     }
   ],
@@ -948,7 +948,7 @@ tableau: {
   },
   stakeholders: [
     { role: 'What did 323,346 records actually show?', icon: '💡', summary: 'December 25th was the single highest revenue week in Seattle: $2,110,350 city-wide. Four specific weeks per year drive the peaks — and they\'re predictable. Zip code 98134 commands the highest average nightly rate. A host with this data prices smarter than one guessing from the season.' },
-    { role: 'What quality problems were found?', icon: '🔍', summary: '7 zip codes were missing and recovered via neighborhood cross-referencing. Three problems were flagged and documented: 4,417 null price entries correlate with availability=f; January 2017 records appear in a 2016 dataset; reviewer comments are incomplete. These weren\'t in the brief — they were found and raised.' },
+    { role: 'What quality problems were found?', icon: '🔍', summary: '7 zip codes were missing and recovered via neighborhood cross-referencing. Three problems were flagged and documented: 4,417 blank nightly prices line up with unavailable nights; January 2017 records appear in a 2016 dataset; reviewer comments are incomplete. These weren\'t in the brief — they were found and raised.' },
     { role: 'How were three datasets joined into one?', icon: '⚙️', summary: 'Listings, reviews, and calendar worksheets joined via INNER JOIN. Revenue by week required building a time-series from the calendar table. Zip code correction used neighborhood cross-referencing rather than deletion. 323,346 rows analyzed across joined sheets in Tableau.' }
   ],
   context: 'Tableau Dashboard on Airbnb Seattle 2016 data. 323,346 records. Three worksheets joined via INNER JOIN: listings, reviews, calendar. 7 missing zip codes corrected manually via neighborhood cross-referencing. Key findings: highest revenue week December 25 = $2,110,350. Highest-price zip code: 98134. One-bedroom dominates supply at 1,811 listings. Four peak revenue weeks: March 27 ($1,906,735), May 29 ($2,013,698), June 19 ($2,073,319), December 25 ($2,110,350). Three data quality issues: 4417 null price entries correlate with available=f; January 2017 records appear in 2016 dataset; reviewer comments incomplete. Original .twbx not embedded; full methodology and findings documented.'
@@ -1145,15 +1145,15 @@ function renderDrawer(key) {
     db.className = 'brief-decision';
     db.innerHTML =
       '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill what">What Happened</span>' +
+        '<span class="brief-decision-pill what">The Situation</span>' +
         '<span class="brief-decision-text">' + p.decision.what + '</span>' +
       '</div>' +
       '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill why">Why It Matters</span>' +
+        '<span class="brief-decision-pill why">Why Decisions Break</span>' +
         '<span class="brief-decision-text">' + p.decision.why + '</span>' +
       '</div>' +
       '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill next">What To Do Next</span>' +
+        '<span class="brief-decision-pill next">What Clean Data Unlocks</span>' +
         '<span class="brief-decision-text">' + p.decision.next + '</span>' +
       '</div>';
     overview.appendChild(db);
@@ -1315,10 +1315,10 @@ function renderDrawer(key) {
     /* Per-project Q&A — precise, pre-written answers */
     var ASK_QA = {
       nashville: [
-        { label: 'Main finding', a: '56,477 Nashville property records contained four categories of data quality failure. 29 NULL PropertyAddress rows were fully recoverable via a self-join on ParcelID — the address existed on a sibling row. 104 duplicate transactions were removed with ROW_NUMBER(). SaleDate stored as DATETIME with all-zero time was converted to DATE. OwnerAddress as a single concatenated string was split into three fields via PARSENAME. SoldAsVacant had four values (Y, N, Yes, No) — collapsed to two via CASE WHEN.' },
-        { label: 'Most surprising', a: 'The 29 NULL PropertyAddress rows looked like missing data, but they were not — they were present on a sibling row sharing the same ParcelID. One property, two database entries. The distinction between "data is absent" and "data is elsewhere" is the difference between deleting 29 rows and recovering all 29 addresses without touching a single row.' },
+        { label: 'Main finding', a: '56,477 Nashville property records contained four categories of data quality failure. 29 blank PropertyAddress rows were fully recoverable via a self-join on ParcelID — the address existed on a sibling row. 104 duplicate transactions were removed with ROW_NUMBER(). SaleDate stored as DATETIME with all-zero time was converted to DATE. OwnerAddress as a single concatenated string was split into three fields via PARSENAME. SoldAsVacant had four values (Y, N, Yes, No) — collapsed to two via CASE WHEN.' },
+        { label: 'Most surprising', a: 'The 29 blank PropertyAddress rows looked like missing data, but they were not — they were present on a sibling row sharing the same ParcelID. One property, two database entries. The distinction between "data is absent" and "data is elsewhere" is the difference between deleting 29 rows and recovering all 29 addresses without touching a single row.' },
         { label: 'Tools used', a: 'SQL Server (T-SQL). Methods: self-join for NULL recovery, ROW_NUMBER() with PARTITION BY for duplicate detection, CONVERT(Date, SaleDate) for type correction, PARSENAME() and SUBSTRING() for string splitting, CASE WHEN for value standardization. Full source code is on GitHub.' },
-        { label: 'What was fixed', a: '4 data quality categories: NULL addresses (29 rows recovered), duplicate transactions (104 removed), DATETIME-typed sale dates (converted to DATE), and a concatenated owner address string (split into OwnerSplitAddress, OwnerSplitCity, OwnerSplitState). Any report built on the original data would have silently inherited all four problems.' }
+        { label: 'What was fixed', a: '4 data quality categories: blank addresses (29 rows recovered), duplicate transactions (104 removed), DATETIME-typed sale dates (converted to DATE), and a concatenated owner address string (split into OwnerSplitAddress, OwnerSplitCity, OwnerSplitState). Any report built on the original data would have silently inherited all four problems.' }
       ],
       python: [
         { label: 'What it does', a: 'The program takes a name, age, gender, height (inches), and weight (lbs) and calculates BMI using the CDC formula: weight / height\u00b2 \u00d7 703. It classifies the result as Underweight, Normal, Overweight, or Obese and returns a plain-English sentence — e.g. "Hello John, your BMI of 23.7 indicates you are at a healthy weight." An optional second step calculates Waist-to-Hip Ratio using WHO thresholds.' },
@@ -1334,7 +1334,7 @@ function renderDrawer(key) {
       ],
       tableau: [
         { label: 'Main finding', a: 'The highest-revenue week in Seattle Airbnb 2016 was December 25 at $2,110,350. Four peak weeks: March 27 ($1,906,735), May 29 ($2,013,698), June 19 ($2,073,319), December 25 ($2,110,350). Highest-price zip code: 98134. One-bedroom listings dominate supply at 1,811 units. Dataset: 323,346 records across three joined worksheets.' },
-        { label: 'Data quality issues', a: '3 data quality issues found: 4,417 null price entries that correlate with "available=f" (unavailable dates, not truly missing data), January 2017 records appearing in what is labeled a 2016 dataset, and incomplete reviewer comments. Additionally, 7 missing zip codes were corrected manually by cross-referencing the neighborhood name column.' },
+        { label: 'Data quality issues', a: '3 data quality issues found: 4,417 blank prices on unavailable nights (not lost revenue), January 2017 records appearing in what is labeled a 2016 dataset, and incomplete reviewer comments. Additionally, 7 missing zip codes were corrected manually by cross-referencing the neighborhood name column.' },
         { label: 'Tools used', a: 'Tableau Desktop. Three worksheets joined via INNER JOIN: listings, reviews, and calendar. Data volume: 323,346 records. Visualizations: line chart (revenue by week), bar chart (price by zip code), bar chart (listings by bedroom count). Manual data correction for 7 missing zip codes. Original .twbx not embedded.' },
         { label: 'How the join worked', a: 'Three separate data files were joined in Tableau: listings (property details and pricing), calendar (availability and price by date), and reviews (reviewer comments and dates). The join key was the listing ID. After joining, zip code gaps were identified and corrected manually by matching to the neighborhood column.' }
       ],
@@ -1451,7 +1451,8 @@ window.openDD = function(key) {
     panel.classList.remove('brief-light');
     if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon">\u263E</span> Dark';
   }
-  panel.classList.add('open');
+  panel.classList.add('open')
+  document.body.classList.add('dd-open');;
   if (overlay) overlay.classList.add('visible');
   document.body.style.overflow = 'hidden';
   /* Scroll to top of panel */
@@ -1466,7 +1467,8 @@ window.openDD = function(key) {
 window.closeDD = function() {
   var panel = document.getElementById('dd-panel');
   var overlay = document.getElementById('dd-overlay');
-  if (panel) panel.classList.remove('open');
+  if (panel) panel.classList.remove('open')
+  document.body.classList.remove('dd-open');;
   if (overlay) overlay.classList.remove('visible');
   document.body.style.overflow = '';
   /* Restore data-rail pill */
