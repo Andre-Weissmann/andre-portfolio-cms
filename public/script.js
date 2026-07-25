@@ -85,11 +85,15 @@ function updateCaseWhenSummary(caseVal) {
       panel.classList.remove('brief-light');
     }
     /* Update the theme toggle button label inside the panel */
-    var btn = document.getElementById('dd-theme-toggle');
-    if (btn) {
-      btn.innerHTML = theme === 'light'
-        ? '<span id="dd-theme-icon">\u2600</span> Light'
-        : '<span id="dd-theme-icon">\u263E</span> Dark';
+    if (typeof setDDThemeButton === 'function') {
+      setDDThemeButton(theme === 'light');
+    } else {
+      var btn = document.getElementById('dd-theme-toggle');
+      if (btn) {
+        btn.innerHTML = theme === 'light'
+          ? '<span id="dd-theme-icon" class="dd-theme-emoji">\u2600\uFE0F</span>'
+          : '<span id="dd-theme-icon" class="dd-theme-emoji">\uD83C\uDF19</span>';
+      }
     }
   };
 
