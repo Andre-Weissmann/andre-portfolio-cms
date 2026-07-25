@@ -537,6 +537,45 @@ function initSpine(panel) {
   panel._setRailUI = setRailUI;
   panel._spineOnScroll = null;
 
+  function visibleAmount(el, rootRect) {
+    var r = el.getBoundingClientRect();
+    var top = Math.max(r.top, rootRect.top);
+    var bot = Math.min(r.bottom, rootRect.bottom);
+    return Math.max(0, bot - top);
+  }
+
+  function ensureScrollRoom(targets) {
+    // Small spacer so the last section top can reach the reading line —
+    // without a giant empty desert after the last nav item.
+    if (!content || !targets || !targets.length) return;
+    var viewH = content.clientHeight || 0;
+    if (viewH < 120) return;
+    var last = targets[targets.length - 1];
+    var lastH = last.offsetHeight || last.getBoundingClientRect().height || 0;
+    var pinOff = Math.max(72, Math.min(Math.round(viewH * 0.25), 150));
+    // Enough room for last top to hit pin; also enough that second-to-last
+    // gets a real scroll window before last takes over.
+    var need = Math.round(viewH - pinOff - Math.min(lastH, viewH * 0.55));
+    need = Math.max(16, Math.min(need, Math.round(viewH * 0.36)));
+    var spacer = null;
+    var kids = content.children;
+    for (var si = 0; si < kids.length; si++) {
+      if (kids[si].classList && kids[si].classList.contains('brief-scroll-spacer')) {
+        spacer = kids[si];
+        break;
+      }
+    }
+    if (!spacer) {
+      spacer = document.createElement('div');
+      spacer.className = 'brief-scroll-spacer';
+      spacer.setAttribute('aria-hidden', 'true');
+      content.appendChild(spacer);
+    }
+    if (Math.abs((parseFloat(spacer.style.height) || 0) - need) > 2) {
+      spacer.style.height = need + 'px';
+    }
+  }
+
   function onScroll() {
     var targets = resolveTargets();
     var scrollTop = content.scrollTop;
@@ -544,51 +583,97 @@ function initSpine(panel) {
     var scrollH = Math.max(content.scrollHeight - viewH, 0);
     var pct = scrollH > 0 ? Math.min(Math.max(scrollTop / scrollH, 0), 1) : 0;
 
-    // Desktop left spine: horizontal progress under title (no line through numbers)
+    // Desktop left spine: horizontal progress under title
     if (spineEl) {
       var fill = spineEl.querySelector('.brief-spine-progress-fill') || spineEl.querySelector('.brief-spine-fill');
       if (fill) {
         fill.style.width = (pct * 100) + '%';
         fill.style.height = '';
       }
-      var pCount = spineEl.querySelector('.brief-spine-progress-count');
-      // count updated below with active index
-      spineEl._progressCountEl = pCount;
     }
 
-    var active = 0;
-    var bottomSlop = 48;
     if (!targets.length) {
       setRailUI(0, pct, 0);
       return;
     }
-    if (scrollH <= 0 || scrollTop + viewH >= content.scrollHeight - bottomSlop) {
-      active = targets.length - 1;
-    } else {
-      // Pin below sticky rail so the section under the rail counts as active
-      var railH = 0;
-      var rnow = panel.querySelector('.brief-mob-rail');
-      if (rnow) railH = rnow.getBoundingClientRect().height || 0;
-      var pin = scrollTop + Math.max(72, railH + 12);
-      for (var i = 0; i < targets.length; i++) {
-        if (sectionTop(targets[i]) <= pin) active = i;
+
+    ensureScrollRoom(targets);
+
+    var rootRect = content.getBoundingClientRect();
+    var railH = 0;
+    var rnow = panel.querySelector('.brief-mob-rail');
+    if (rnow) {
+      try {
+        var rs = window.getComputedStyle(rnow);
+        if (rs.display !== 'none' && rs.visibility !== 'hidden') {
+          railH = rnow.getBoundingClientRect().height || 0;
+        }
+      } catch (eR) { railH = 0; }
+    }
+
+    // Reading line below sticky chrome (~22% into viewport)
+    var pinOffset = Math.max(72, railH + 14, Math.min(Math.round(viewH * 0.22), 150));
+    var pinY = rootRect.top + pinOffset;
+
+    var active = 0;
+    var i, top, nextTop;
+    // Range ownership: section i owns [its top, next section top).
+    // Do not force-last when scroll hits bottom — that skipped second-to-last.
+    for (i = 0; i < targets.length; i++) {
+      top = targets[i].getBoundingClientRect().top;
+      if (i < targets.length - 1) {
+        nextTop = targets[i + 1].getBoundingClientRect().top;
+      } else {
+        nextTop = rootRect.bottom + 1;
+      }
+      if (top <= pinY && nextTop > pinY) {
+        active = i;
+        break;
+      }
+      if (top <= pinY) active = i;
+    }
+
+    // Near max scroll: if last heading is still below the reading line, keep
+    // the previous section unless the last block is clearly more visible.
+    if (scrollH > 0 && scrollTop + viewH >= content.scrollHeight - 4) {
+      var lastIdx = targets.length - 1;
+      var prevIdx = lastIdx - 1;
+      if (prevIdx >= 0) {
+        var lastTop = targets[lastIdx].getBoundingClientRect().top;
+        if (lastTop > pinY) {
+          var visPrev = visibleAmount(targets[prevIdx], rootRect);
+          var visLast = visibleAmount(targets[lastIdx], rootRect);
+          if (visLast > visPrev * 1.15 && visLast >= 96) {
+            active = lastIdx;
+          } else {
+            active = prevIdx;
+          }
+        }
       }
     }
 
-    items.forEach(function(it, i) {
-      it.classList.toggle('active', i === active);
-      it.classList.toggle('is-done', i < active);
-      it.classList.toggle('is-upcoming', i > active);
+    var activeId = targets[active] ? targets[active].id : '';
+    var activeItemIndex = active;
+    items.forEach(function(it, idx) {
+      var tid = it.getAttribute('data-target') || '';
+      var on = activeId ? tid === activeId : idx === active;
+      if (on) activeItemIndex = idx;
+      it.classList.toggle('active', on);
+    });
+    items.forEach(function(it, idx) {
+      it.classList.toggle('is-done', idx < activeItemIndex);
+      it.classList.toggle('is-upcoming', idx > activeItemIndex);
     });
     if (spineEl) {
       var pc = spineEl.querySelector('.brief-spine-progress-count');
       var totalN = Math.max(items.length, targets.length, 1);
-      if (pc) pc.textContent = (active + 1) + ' / ' + totalN;
+      if (pc) pc.textContent = (activeItemIndex + 1) + ' / ' + totalN;
     }
-    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, i) {
-      c.classList.toggle('active', i === active);
+    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, idx) {
+      var tid = c.getAttribute('data-target') || '';
+      c.classList.toggle('active', activeId ? tid === activeId : idx === activeItemIndex);
     });
-    setRailUI(active, pct, targets.length);
+    setRailUI(activeItemIndex, pct, Math.max(items.length, targets.length));
   }
 
   panel._spineOnScroll = onScroll;
