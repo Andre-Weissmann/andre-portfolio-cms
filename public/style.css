@@ -2677,8 +2677,20 @@ select.bmi-input {
     gap: var(--sp-2);
     background: var(--color-surface2);
   }
-  .pdm-sidebar-title { display: none; }
-  .pdm-sidebar-stat { display: none; }
+  .pdm-sidebar-title {
+    display: block;
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .pdm-sidebar-stat {
+    display: flex;
+    flex-direction: column;
+    min-width: 4.5rem;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
   .pdm-toc {
     flex-direction: row;
     gap: var(--sp-2);
@@ -12362,3 +12374,132 @@ body, .header, .qb-block, .cmp-card, .qb-input {
 
 /* If hero-right is hidden on tablet, its cards are decorative only —
    core identity + CTAs stay in hero-left on every breakpoint. */
+
+/* ── Projects jump strip + featured badges (content parity) ── */
+.projects-jump {
+  margin: 0 0 var(--sp-10);
+  padding: var(--sp-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl, 16px);
+  background: var(--color-surface2, #1a1a1a);
+}
+
+.projects-jump-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint, #888);
+  margin-bottom: var(--sp-4, 1rem);
+}
+
+.projects-jump-row,
+.all-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--sp-3, 0.75rem);
+}
+
+.all-proj-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface, #111);
+  text-decoration: none;
+  color: inherit;
+  min-height: 44px;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.all-proj-card:hover,
+.all-proj-card:focus-visible {
+  border-color: var(--color-primary, #2dd4bf);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.16);
+  outline: none;
+}
+
+.all-proj-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.all-proj-tier {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-faint, #888);
+}
+
+.all-proj-title {
+  font-family: var(--font-display, inherit);
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.25;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.all-proj-blurb {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-text-muted, #aaa);
+  flex: 1;
+}
+
+.all-proj-go {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-primary, #2dd4bf);
+}
+
+.proj-featured-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-primary, #2dd4bf);
+  border: 1px solid color-mix(in oklab, var(--color-primary, #2dd4bf) 40%, transparent);
+  background: color-mix(in oklab, var(--color-primary, #2dd4bf) 12%, transparent);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.project-block--featured-tier {
+  border: 1px solid color-mix(in oklab, var(--color-primary, #2dd4bf) 28%, var(--color-border));
+  border-radius: var(--radius-xl, 16px);
+  padding: var(--sp-4, 1rem);
+  background: color-mix(in oklab, var(--color-primary, #2dd4bf) 6%, transparent);
+}
+
+/* Content parity: never hide project bodies by viewport */
+.project-block,
+.project-block-demo,
+.project-block-desc,
+.project-block-info {
+  visibility: visible !important;
+}
+
+@media (max-width: 640px) {
+  .projects-jump-row,
+  .all-projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .project-block-desc {
+    font-size: 0.95rem;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .project-block--featured-tier {
+    padding: var(--sp-3, 0.75rem);
+  }
+}

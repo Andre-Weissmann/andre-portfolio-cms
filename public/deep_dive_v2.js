@@ -758,7 +758,7 @@ nashville: {
   subtitle: 'SQL Data Cleaning',
   outcome: 'Turned 56,477 messy property sales into a query-ready table: zero blank addresses, zero same-day duplicate closings.',
   bridge: 'Metro housing, assessor, and brokerage teams need the same thing: addresses you can map, sales you can count once, and labels that mean one thing.',
-  nextSteps: 'With more time: wire this scorecard to a scheduled Metro refresh and fail the pipeline when completeness drops below 99.9%.',
+  nextSteps: 'Next iteration: wire this scorecard to a scheduled Metro refresh and fail the pipeline when completeness drops below 99.9%.',
   insight: '56,477 Nashville property sales. 29 homes with blank street addresses, 104 duplicate sale rows, and four different spellings of "sold vacant." None of that was random - each issue was a repeatable pattern. One self-join restored every missing address without deleting a single home from the file.',
   kpis: [
     { label: 'Sales Records Reviewed', value: 56477, comma: true, suffix: '', icon: '🗂' },
@@ -1034,7 +1034,7 @@ python: {
   subtitle: 'Python + CDC Standards',
   outcome: 'A live BMI tool that updates as you move the sliders - transparent math, no submit button.',
   bridge: 'Interactive health metrics the way care teams want them: instant and explainable.',
-  nextSteps: 'With more time: add CDC risk bands and a plain-English what-this-means line for each range.',
+  nextSteps: 'Next iteration: pair each BMI band with a short plain-language screening note (not a diagnosis).',
   insight: 'BMI is a screening tool, not a diagnosis - the CDC says so explicitly. This program applies the CDC formula, then adds WHO waist-to-hip ratio thresholds as a second independent signal. A person can read Normal on BMI and still flag elevated cardiovascular risk on WHR. This tool shows both.',
   kpis: [
     { label: 'BMI Categories', value: 4, suffix: '', icon: '📊' },
@@ -1147,7 +1147,7 @@ powerbi: {
   title: 'Data Professionals Survey',
   outcome: 'Turned a multi-sheet professional survey into one interactive dashboard stakeholders can filter themselves.',
   bridge: 'Same pattern hospitals use for census, throughput, and revenue-cycle scorecards.',
-  nextSteps: 'With more time: lock certified metrics and add a one-page glossary so every chart uses the same definitions.',
+  nextSteps: 'Next iteration: publish a short stakeholder memo that ties each chart to one decision owner and a single recommended action.',
   subtitle: 'Power BI Dashboard',
   insight: 'Education level does not predict salary as cleanly as most people assume. PhD holders average $206K, but there are only 5 of them. Bachelor\'s degree data scientists average $93K across 329 participants. The real salary driver in this dataset is role, not credential.',
   kpis: [
@@ -1267,7 +1267,7 @@ tableau: {
   title: 'Airbnb Seattle Analysis',
   outcome: 'Joined Airbnb listing tables into one clear view of price, availability, and review patterns.',
   bridge: 'Join logic + visual hierarchy is how analytics teams keep clinical and finance views aligned.',
-  nextSteps: 'With more time: publish a parameter-driven “what if” view and document grain of every join.',
+  nextSteps: 'Next iteration: document join grain in a one-page data dictionary for hosts and analysts.',
   subtitle: 'Tableau Dashboard',
   insight: '323,346 Airbnb records. 7 missing zip codes manually corrected through neighborhood cross-referencing. One inner join across three worksheets. What came out: December 25th generated $2,110,350 in city-wide revenue - the single highest week of 2016. Gut-feel pricing missed it.',
   kpis: [
@@ -1354,7 +1354,7 @@ excel: {
   title: 'Bike Sales Analysis',
   outcome: 'Cleaned buyer data and isolated where demand concentrates - Pacific leads this sample.',
   bridge: 'Segment → prioritize → act is the same loop used in service-line and panel analytics.',
-  nextSteps: 'With more time: hold out a test slice and check whether Pacific still leads after controlling for income.',
+  nextSteps: 'Next iteration: hold out a test slice and check whether Pacific still leads after controlling for income.',
   subtitle: 'Excel Dashboard',
   insight: '13,351 records, 338 duplicates removed. Three regions surveyed. One clear answer: the Pacific region. The highest-income buyer profile, the farthest commutes, the strongest profit margins. North America and Europe are secondary. This is not a close call.',
   kpis: [
