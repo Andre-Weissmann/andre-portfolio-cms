@@ -3500,3 +3500,254 @@ a.brief-tool-btn.brief-github-btn {
     padding-bottom: 0;
   }
 }
+
+
+/* SPINE REDESIGN V3 — numbered section list, no line through numbers */
+.brief-spine {
+  width: 200px !important;
+  flex-shrink: 0 !important;
+  padding: 18px 12px 20px 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  position: relative !important;
+  border-right: 1px solid color-mix(in oklab, var(--dd-border) 85%, transparent) !important;
+  overflow: hidden auto !important;
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--dd-surface, #111827) 55%, transparent) 0%,
+      transparent 48px),
+    transparent !important;
+  scrollbar-width: thin;
+}
+
+/* Kill the old continuous vertical track that sliced through numbers */
+.brief-spine::before,
+.brief-spine::after {
+  content: none !important;
+  display: none !important;
+}
+.brief-spine > .brief-spine-fill:not(.brief-spine-progress-fill) {
+  display: none !important;
+}
+.brief-spine-dot {
+  display: none !important;
+}
+
+.brief-spine-head {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+  padding: 0 4px 12px;
+  border-bottom: 1px solid color-mix(in oklab, var(--dd-border) 70%, transparent);
+}
+.brief-spine-title {
+  display: block !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: var(--dd-text-faint) !important;
+  padding: 0 0 10px !important;
+  width: auto !important;
+}
+.brief-spine-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--dd-border) 70%, transparent);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.brief-spine-progress-fill,
+.brief-spine .brief-spine-fill {
+  display: block !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  width: 0%;
+  height: 100% !important;
+  min-height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--dd-accent), color-mix(in oklab, var(--dd-accent) 55%, #fff));
+  transition: none !important;
+  z-index: auto !important;
+}
+.brief-spine-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brief-spine-progress-count {
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--dd-accent);
+}
+
+.brief-spine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+
+.brief-spine-item {
+  display: grid !important;
+  grid-template-columns: 28px minmax(0, 1fr) 10px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--dd-text-dim) !important;
+  cursor: pointer !important;
+  padding: 9px 10px !important;
+  text-align: left !important;
+  position: relative !important;
+  z-index: 1 !important;
+  border-radius: 12px !important;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
+}
+.brief-spine-item:hover {
+  color: var(--dd-text) !important;
+  background: color-mix(in oklab, var(--dd-surface) 80%, transparent) !important;
+  border-color: color-mix(in oklab, var(--dd-border) 80%, transparent) !important;
+}
+.brief-spine-item:focus-visible {
+  outline: 2px solid var(--dd-accent);
+  outline-offset: 2px;
+}
+.brief-spine-num {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 999px;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--dd-text-dim) !important;
+  background: color-mix(in oklab, var(--dd-surface2, var(--dd-surface)) 90%, transparent);
+  border: 1px solid color-mix(in oklab, var(--dd-border) 85%, transparent);
+  line-height: 1;
+}
+.brief-spine-label {
+  display: block !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  line-height: 1.3 !important;
+  color: inherit !important;
+  white-space: normal !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.brief-spine-mark {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  justify-self: end;
+}
+.brief-spine-item.is-done {
+  color: var(--dd-text-dim) !important;
+  opacity: 0.88;
+}
+.brief-spine-item.is-done .brief-spine-num {
+  color: var(--dd-accent) !important;
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 12%, transparent);
+}
+.brief-spine-item.is-done .brief-spine-mark {
+  background: color-mix(in oklab, var(--dd-accent) 55%, transparent);
+}
+.brief-spine-item.active {
+  color: var(--dd-text) !important;
+  background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)) !important;
+  border-color: color-mix(in oklab, var(--dd-accent) 42%, transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 12%, transparent) inset;
+}
+.brief-spine-item.active .brief-spine-num {
+  color: #fff !important;
+  background: var(--dd-accent) !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--dd-accent) 18%, transparent);
+}
+.brief-spine-item.active .brief-spine-label {
+  font-weight: 750 !important;
+  color: var(--dd-text) !important;
+}
+.brief-spine-item.active .brief-spine-mark {
+  background: var(--dd-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--dd-accent) 22%, transparent);
+}
+
+@media (min-width: 1280px) {
+  .brief-spine {
+    width: 220px !important;
+    padding: 20px 14px 22px 16px !important;
+  }
+  .brief-spine-label {
+    font-size: 12.5px !important;
+  }
+}
+
+/* Keep spine hidden on small screens — mobile uses shared-language rail */
+@media (max-width: 899px) {
+  .brief-spine { display: none !important; }
+}
+
+/* MOBILE RAIL — same visual language as desktop spine */
+.brief-mob-rail-progress {
+  height: 4px !important;
+  background: color-mix(in oklab, var(--dd-border) 70%, transparent) !important;
+}
+.brief-mob-rail-fill {
+  background: linear-gradient(90deg, var(--dd-accent), color-mix(in oklab, var(--dd-accent) 55%, #fff)) !important;
+}
+.brief-mob-rail-current {
+  border-radius: 14px !important;
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 35%, var(--dd-border)) !important;
+  background: color-mix(in oklab, var(--dd-accent) 12%, var(--dd-surface)) !important;
+}
+.brief-mob-rail-count {
+  color: var(--dd-accent) !important;
+  font-weight: 800 !important;
+}
+.brief-mob-sheet-item {
+  border-radius: 12px !important;
+}
+.brief-mob-sheet-num {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 999px !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  border: 1px solid color-mix(in oklab, var(--dd-border) 85%, transparent);
+}
+.brief-mob-sheet-item.active {
+  background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)) !important;
+  border-color: color-mix(in oklab, var(--dd-accent) 42%, transparent) !important;
+}
+.brief-mob-sheet-item.active .brief-mob-sheet-num {
+  background: var(--dd-accent) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--dd-accent) 18%, transparent);
+}
+.brief-mob-sheet-item.is-done .brief-mob-sheet-num,
+.brief-mob-sheet-item.active ~ .brief-mob-sheet-item .brief-mob-sheet-num {
+  /* upcoming stay muted; done handled via JS class if present */
+}
