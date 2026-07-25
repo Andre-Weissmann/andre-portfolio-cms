@@ -3199,10 +3199,12 @@ a.brief-tool-btn.brief-github-btn {
 }
 .brief-mob-rail-fill {
   height: 100%;
-  width: 10%;
+  width: 0%;
   background: linear-gradient(90deg, var(--dd-accent, #0d9488), color-mix(in oklab, var(--dd-accent, #0d9488) 55%, #fff));
-  transition: width 0.25s ease;
+  /* No width transition — must track scroll in real time */
+  transition: none;
   border-radius: 0 2px 2px 0;
+  will-change: width;
 }
 .brief-mob-rail-row {
   display: grid;

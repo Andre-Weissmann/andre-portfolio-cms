@@ -444,52 +444,124 @@ function initMobileChrome(panel) {
 }
 
 function initSpine(panel) {
-  var spine = panel.querySelector('.brief-spine');
-  var content = panel.querySelector('.brief-scroll-body');
-  // On phone CSS, #dd-body is the real scroll root; spine must listen there.
+  var spineEl = panel.querySelector('.brief-spine');
+  var scrollBody = panel.querySelector('.brief-scroll-body');
   var bodyEl = document.getElementById('dd-body');
-  var isPhoneScroll = false;
-  try {
-    isPhoneScroll = !!(bodyEl && window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
-  } catch (e) { isPhoneScroll = false; }
-  if (isPhoneScroll && bodyEl) content = bodyEl;
-  if (!spine || !content) return;
+  var rail = panel.querySelector('.brief-mob-rail');
 
-  // Prefer spine targets (same order as left nav). Fall back to chapter nodes.
+  // Prefer the element that actually scrolls. On phones #dd-body is the root;
+  // rail is shown up to 899px, so use the same breakpoint for scroll listening.
+  var content = scrollBody;
+  var isNarrow = false;
+  try {
+    isNarrow = !!(window.matchMedia && window.matchMedia('(max-width: 899px)').matches);
+  } catch (e) { isNarrow = false; }
+  if (isNarrow && bodyEl) {
+    var bodyScrolls = bodyEl.scrollHeight > bodyEl.clientHeight + 4;
+    var innerScrolls = scrollBody && scrollBody.scrollHeight > scrollBody.clientHeight + 4
+      && window.getComputedStyle(scrollBody).overflowY !== 'visible';
+    content = (!innerScrolls && bodyEl) ? bodyEl : (scrollBody || bodyEl);
+    if (bodyScrolls) content = bodyEl;
+  }
+  if (!content) return;
+
+  // Nav items: desktop spine buttons, else mobile sheet items, else rail spine data
   var items = Array.prototype.slice.call(panel.querySelectorAll('.brief-spine-item'));
-  if (!items.length) return;
+  if (!items.length) {
+    items = Array.prototype.slice.call(panel.querySelectorAll('.brief-mob-sheet-item'));
+  }
+  var spineMeta = (rail && rail._spineItems) ? rail._spineItems.slice() : [];
+  if (!items.length && !spineMeta.length) return;
 
   function resolveTargets() {
-    return items.map(function(it) {
-      var id = it.getAttribute('data-target');
-      return id ? content.querySelector('#' + id) || document.getElementById(id) : null;
+    var ids = [];
+    if (items.length) {
+      ids = items.map(function(it) { return it.getAttribute('data-target'); });
+    } else {
+      ids = spineMeta.map(function(ch) { return ch.id; });
+    }
+    return ids.map(function(id) {
+      if (!id) return null;
+      return document.getElementById(id) || (content && content.querySelector('#' + id));
     }).filter(Boolean);
   }
 
   function sectionTop(el) {
-    // Position of section relative to the scroll container (not offsetParent quirks)
     return el.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop;
   }
 
+  function setRailUI(active, scrollPct, targetsLen) {
+    var r = panel.querySelector('.brief-mob-rail');
+    if (!r) return;
+    var meta = r._spineItems || spineMeta || [];
+    var total = Math.max(meta.length, items.length, targetsLen || 0, 1);
+    if (active < 0) active = 0;
+    if (active > total - 1) active = total - 1;
+
+    var countEl = r.querySelector('.brief-mob-rail-count');
+    var titleEl = r.querySelector('.brief-mob-rail-title');
+    var fillEl = r.querySelector('.brief-mob-rail-fill');
+    if (countEl) countEl.textContent = (active + 1) + ' / ' + total;
+    if (titleEl) {
+      var label = (meta[active] && meta[active].title)
+        || (items[active] && (items[active].getAttribute('title') || items[active].textContent))
+        || ('Section ' + (active + 1));
+      titleEl.textContent = String(label).replace(/\s+/g, ' ').trim();
+    }
+    // Real-time bar follows scroll position; section steps still drive labels
+    if (fillEl) {
+      var w;
+      if (typeof scrollPct === 'number' && !isNaN(scrollPct)) {
+        w = Math.min(100, Math.max(0, scrollPct * 100));
+      } else {
+        w = total <= 1 ? 100 : ((active + 1) / total) * 100;
+      }
+      fillEl.style.width = w + '%';
+    }
+    r.querySelectorAll('.brief-mob-sheet-item').forEach(function(c, i) {
+      c.classList.toggle('active', i === active);
+    });
+    r.querySelectorAll('.brief-mob-dot').forEach(function(d, i) {
+      d.classList.toggle('active', i === active);
+    });
+    var prevBtn = r.querySelector('.brief-mob-rail-prev');
+    var nextBtn = r.querySelector('.brief-mob-rail-next');
+    if (prevBtn) prevBtn.disabled = active <= 0;
+    if (nextBtn) nextBtn.disabled = active >= total - 1;
+    r._activeIndex = active;
+  }
+
+  // Expose for arrow/jump handlers (optimistic UI before scroll settles)
+  panel._setRailUI = setRailUI;
+  panel._spineOnScroll = null;
+
   function onScroll() {
     var targets = resolveTargets();
-    if (!targets.length) return;
-
     var scrollTop = content.scrollTop;
-    var viewH = content.clientHeight;
-    var scrollH = content.scrollHeight - viewH;
+    var viewH = content.clientHeight || 1;
+    var scrollH = Math.max(content.scrollHeight - viewH, 0);
     var pct = scrollH > 0 ? Math.min(Math.max(scrollTop / scrollH, 0), 1) : 0;
-    var fill = spine.querySelector('.brief-spine-fill');
-    if (fill) fill.style.height = (pct * 100) + '%';
+
+    // Desktop left spine fill (vertical)
+    if (spineEl) {
+      var fill = spineEl.querySelector('.brief-spine-fill');
+      if (fill) fill.style.height = (pct * 100) + '%';
+    }
 
     var active = 0;
     var bottomSlop = 48;
-    // Classic short last-section bug: last block never reaches the top pin line.
-    // When the user is at (or near) the bottom, force the last nav item active.
+    if (!targets.length) {
+      setRailUI(0, pct, 0);
+      return;
+    }
     if (scrollH <= 0 || scrollTop + viewH >= content.scrollHeight - bottomSlop) {
       active = targets.length - 1;
     } else {
-      var pin = scrollTop + 64; // a little below the top of the scroll body
+      // Pin below sticky rail so the section under the rail counts as active
+      var railH = 0;
+      var rnow = panel.querySelector('.brief-mob-rail');
+      if (rnow) railH = rnow.getBoundingClientRect().height || 0;
+      var pin = scrollTop + Math.max(72, railH + 12);
       for (var i = 0; i < targets.length; i++) {
         if (sectionTop(targets[i]) <= pin) active = i;
       }
@@ -499,42 +571,34 @@ function initSpine(panel) {
     panel.querySelectorAll('.brief-spine-dot').forEach(function(d, i) {
       d.classList.toggle('active', i === active);
     });
-    // Sticky mobile rail
-    var rail = panel.querySelector('.brief-mob-rail');
-    if (rail) {
-      var spine = rail._spineItems || [];
-      var total = Math.max(spine.length, targets.length, 1);
-      var countEl = rail.querySelector('.brief-mob-rail-count');
-      var titleEl = rail.querySelector('.brief-mob-rail-title');
-      var fillEl = rail.querySelector('.brief-mob-rail-fill');
-      if (countEl) countEl.textContent = (active + 1) + ' / ' + total;
-      if (titleEl) titleEl.textContent = (spine[active] && spine[active].title) || (items[active] && items[active].textContent) || ('Section ' + (active + 1));
-      if (fillEl) fillEl.style.width = (total <= 1 ? 100 : ((active + 1) / total) * 100) + '%';
-      rail.querySelectorAll('.brief-mob-sheet-item').forEach(function(c, i) {
-        c.classList.toggle('active', i === active);
-      });
-      rail.querySelectorAll('.brief-mob-dot').forEach(function(d, i) {
-        d.classList.toggle('active', i === active);
-      });
-      var prevBtn = rail.querySelector('.brief-mob-rail-prev');
-      var nextBtn = rail.querySelector('.brief-mob-rail-next');
-      if (prevBtn) prevBtn.disabled = active <= 0;
-      if (nextBtn) nextBtn.disabled = active >= total - 1;
-    }
-    // Legacy chips if present
     panel.querySelectorAll('.brief-mob-chip').forEach(function(c, i) {
       c.classList.toggle('active', i === active);
     });
+    setRailUI(active, pct, targets.length);
   }
 
-  content.addEventListener('scroll', onScroll, { passive: true });
-  // Re-run after layout settles (charts/images change scrollHeight)
+  panel._spineOnScroll = onScroll;
+
+  // Listen on every plausible scroll root so we never miss events
+  var roots = [];
+  function watch(el) {
+    if (!el || roots.indexOf(el) !== -1) return;
+    roots.push(el);
+    el.addEventListener('scroll', onScroll, { passive: true });
+  }
+  watch(content);
+  watch(bodyEl);
+  watch(scrollBody);
+  watch(panel);
+
   window.setTimeout(onScroll, 50);
   window.setTimeout(onScroll, 300);
+  window.setTimeout(onScroll, 800);
   if (typeof ResizeObserver !== 'undefined') {
     try {
       var ro = new ResizeObserver(function() { onScroll(); });
       ro.observe(content);
+      if (scrollBody && scrollBody !== content) ro.observe(scrollBody);
     } catch (e) { /* ignore */ }
   }
   onScroll();
@@ -1683,7 +1747,36 @@ function renderDrawer(key) {
     var id = spineItems[idx].id;
     var t = document.getElementById(id);
     closeMobSheet();
-    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Optimistic rail update so arrows/progress feel instant
+    var total = spineItems.length;
+    var pct = total <= 1 ? 1 : (idx + 0.5) / total;
+    if (panel && typeof panel._setRailUI === 'function') {
+      panel._setRailUI(idx, pct, total);
+    } else {
+      var countEl = mobRail.querySelector('.brief-mob-rail-count');
+      var titleEl = mobRail.querySelector('.brief-mob-rail-title');
+      var fillEl = mobRail.querySelector('.brief-mob-rail-fill');
+      if (countEl) countEl.textContent = (idx + 1) + ' / ' + total;
+      if (titleEl) titleEl.textContent = spineItems[idx].title;
+      if (fillEl) fillEl.style.width = ((idx + 1) / total * 100) + '%';
+      mobRail.querySelectorAll('.brief-mob-sheet-item').forEach(function(c, i) {
+        c.classList.toggle('active', i === idx);
+      });
+      mobRail.querySelectorAll('.brief-mob-dot').forEach(function(d, i) {
+        d.classList.toggle('active', i === idx);
+      });
+      var prevBtn = mobRail.querySelector('.brief-mob-rail-prev');
+      var nextBtn = mobRail.querySelector('.brief-mob-rail-next');
+      if (prevBtn) prevBtn.disabled = idx <= 0;
+      if (nextBtn) nextBtn.disabled = idx >= total - 1;
+    }
+    if (t) {
+      t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Re-sync after smooth scroll settles
+      window.setTimeout(function() {
+        if (panel && typeof panel._spineOnScroll === 'function') panel._spineOnScroll();
+      }, 420);
+    }
   }
   mobRail._spineItems = spineItems;
   mobRail._goToSpineIndex = goToSpineIndex;
