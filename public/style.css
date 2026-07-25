@@ -12285,3 +12285,37 @@ body, .header, .qb-block, .cmp-card, .qb-input {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* Live interactive status chips */
+.bmi-live-status,
+.sql-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+.bmi-live-status::before,
+.sql-live-status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: live-dot-pulse 1.8s ease-out infinite;
+}
+@keyframes live-dot-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-primary) 40%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.sql-ex.active {
+  background: color-mix(in oklab, var(--color-primary) 16%, transparent);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.bmi-run-btn { display: none !important; }

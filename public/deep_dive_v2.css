@@ -1388,3 +1388,160 @@
   #dd-bottom-bar { display: none !important; }
 }
 /* ── end mobile ── */
+
+/* ══════════════════════════════════════════════════════════════
+   DESKTOP DEEP DIVE OPTIMIZATION
+   ══════════════════════════════════════════════════════════════ */
+.brief-sql__live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+}
+.brief-sql__live-status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dd-accent);
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--dd-accent) 50%, transparent);
+  animation: brief-live-pulse 1.8s ease-out infinite;
+}
+@keyframes brief-live-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--dd-accent) 45%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.brief-sql__run { display: none !important; }
+
+@media (min-width: 1024px) {
+  :root {
+    --dd-panel-w: min(1040px, 90vw);
+    --brief-panel-w: var(--dd-panel-w);
+  }
+
+  #dd-panel {
+    box-shadow: -24px 0 80px rgba(0,0,0,0.4);
+  }
+
+  .brief-scroll-body {
+    padding: 8px 36px 72px;
+  }
+
+  .brief-chapter {
+    padding: 28px 8px 20px;
+  }
+
+  .brief-section-title {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    margin-bottom: 14px;
+  }
+
+  .brief-insight-block {
+    font-size: 15.5px;
+    line-height: 1.7;
+    padding: 20px 22px;
+    border-radius: 14px;
+  }
+
+  .brief-impact-text-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .brief-impact-text-card {
+    height: 100%;
+    padding: 16px 18px;
+    border-radius: 12px;
+  }
+
+  .bitc-heading {
+    font-size: 14px;
+  }
+
+  .bitc-text {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .brief-impact-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .brief-whatif {
+    padding: 22px 24px;
+    border-radius: 14px;
+  }
+
+  .brief-whatif__question {
+    font-size: 15px;
+    margin-bottom: 18px;
+  }
+
+  .brief-whatif__slabel {
+    min-width: 150px;
+    font-size: 12px;
+  }
+
+  .brief-whatif__result {
+    margin-top: 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dd-border);
+  }
+
+  .brief-sql-runner {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .brief-sql__tabs {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .brief-sql__editor {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .brief-sql__table {
+    font-size: 12.5px;
+  }
+
+  .brief-conviction-row {
+    gap: 22px;
+  }
+
+  .brief-headline-text {
+    font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+    line-height: 1.45;
+    max-width: 52rem;
+  }
+
+  .brief-trail__text {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --dd-panel-w: min(1180px, 70vw);
+  }
+
+  .brief-scroll-body {
+    padding: 12px 44px 80px;
+  }
+
+  .brief-impact-text-grid {
+    gap: 16px;
+  }
+}

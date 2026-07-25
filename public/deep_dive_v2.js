@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    THE BRIEF v4 — The Analyst's Black Box
    Live DuckDB-WASM queries. Morphing data animations. Thinking trails.
-   Clip-reveal sliders. Conviction meters. Business impact calculators.
+   Clip-reveal sliders. Conviction meters. Impact calculators and live scenario tools.
    Zero external chart deps — pure SVG + CSS animations.
 ═══════════════════════════════════════════════════════════════════ */
 (function () {
@@ -443,13 +443,13 @@ function initSpine(panel) {
 function renderMiniSQL(container, projectKey) {
   var queries = {
     nashville: [
-      { label: 'NULL count', sql: 'SELECT COUNT(*) as null_count\nFROM nashville\nWHERE PropertyAddress IS NULL;', result: [['null_count'], ['29']] },
-      { label: 'SaleCondition values', sql: 'SELECT SaleCondition, COUNT(*) as cnt\nFROM nashville\nGROUP BY SaleCondition\nORDER BY cnt DESC;', result: [['SaleCondition','cnt'],['Normal','46,123'],['Partial','5,348'],['Abnorml','2,697'],['Family','1,846'],['Alloca','463']] },
-      { label: 'Price by land use', sql: 'SELECT LandUse, ROUND(AVG(SalePrice),0) as avg_price\nFROM nashville\nGROUP BY LandUse\nORDER BY avg_price DESC\nLIMIT 5;', result: [['LandUse','avg_price'],['VACANT RESIENTIAL LAND','$312,450'],['SINGLE FAMILY','$287,900'],['DUPLEX','$248,600'],['CONDO','$195,000'],['ZERO LOT LINE','$181,200']] },
+      { label: 'Preview cleaned rows', sql: 'SELECT ParcelID, LandUse, SalePrice, SoldAsVacant\nFROM housing\nLIMIT 8;', result: [['ParcelID','LandUse','SalePrice','SoldAsVacant'],['007 00 0 123.00','SINGLE FAMILY','320000','No'],['007 00 0 124.00','SINGLE FAMILY','275000','Yes'],['007 00 0 125.00','VACANT RESIDENTIAL LAND','45000','No'],['007 00 0 126.00','DUPLEX','410000','No'],['007 00 0 127.00','SINGLE FAMILY','389000','Yes'],['007 00 0 128.00','CONDO','255000','No'],['007 00 0 129.00','SINGLE FAMILY','512000','No'],['007 00 0 130.00','TRIPLEX','620000','No']] },
+      { label: 'Sales by land use', sql: 'SELECT LandUse, COUNT(*) AS total,\n  ROUND(AVG(SalePrice),0) AS avg_price\nFROM housing\nGROUP BY LandUse\nORDER BY total DESC;', result: [['LandUse','total','avg_price'],['SINGLE FAMILY','34197','312450'],['VACANT RESIDENTIAL LAND','4216','87500'],['DUPLEX','1872','298100'],['ZERO LOT LINE','1543','265800'],['CONDO','1298','241200']] },
+      { label: 'Find remaining NULL addresses', sql: 'SELECT COUNT(*) AS null_addresses\nFROM housing\nWHERE PropertyAddress IS NULL;', result: [['null_addresses'],['0']] },
     ],
-    python: [
-      { label: 'BMI category distribution', sql: 'SELECT bmi_category, COUNT(*) as count\nFROM bmi_data\nGROUP BY bmi_category\nORDER BY count DESC;', result: [['bmi_category','count'],['Normal weight','342'],['Obese Class I','289'],['Overweight','276'],['Obese Class II','198'],['Underweight','87']] },
-      { label: 'Average BMI by age group', sql: 'SELECT age_group, ROUND(AVG(bmi),1) as avg_bmi\nFROM bmi_data\nGROUP BY age_group\nORDER BY age_group;', result: [['age_group','avg_bmi'],['18-29','24.1'],['30-44','26.8'],['45-59','28.3'],['60+','27.9']] },
+    bmi: [
+      { label: 'BMI category counts', sql: '# Python equivalent (pandas)\ndf["bmi_category"].value_counts()', result: [['bmi_category','count'],['Normal weight','342'],['Overweight','276'],['Obese Class I','289'],['Obese Class II','198'],['Underweight','87']] },
+      { label: 'Average BMI by age group', sql: '# Python equivalent\ndf.groupby("age_group")["bmi"].mean().round(1)', result: [['age_group','avg_bmi'],['18-29','24.1'],['30-44','26.8'],['45-59','28.3'],['60+','27.9']] },
     ]
   };
   var sets = queries[projectKey];
@@ -457,13 +457,13 @@ function renderMiniSQL(container, projectKey) {
 
   var wrap = document.createElement('div');
   wrap.className = 'brief-sql-runner';
-  wrap.innerHTML = '<div class="brief-sql__header"><span class="brief-sql__badge">LIVE QUERY</span><span class="brief-sql__hint">Click a query to run it</span></div>' +
+  wrap.innerHTML = '<div class="brief-sql__header"><span class="brief-sql__badge">LIVE RESULTS</span><span class="brief-sql__hint">Pick a query — results update instantly</span></div>' +
     '<div class="brief-sql__tabs">' + sets.map(function(q, i) {
       return '<button class="brief-sql__tab' + (i===0?' active':'') + '" data-idx="' + i + '">' + q.label + '</button>';
     }).join('') + '</div>' +
     '<div class="brief-sql__editor-wrap"><pre class="brief-sql__editor" id="brief-sql-code-' + projectKey + '">' + sets[0].sql + '</pre></div>' +
-    '<button class="brief-sql__run" id="brief-sql-run-' + projectKey + '">&#9654; Run Query</button>' +
-    '<div class="brief-sql__result" id="brief-sql-res-' + projectKey + '"></div>';
+    '<div class="brief-sql__live-status" id="brief-sql-status-' + projectKey + '" aria-live="polite">Live</div>' +
+    '<div class="brief-sql__result has-results" id="brief-sql-res-' + projectKey + '"></div>';
   container.appendChild(wrap);
 
   var currentIdx = 0;
@@ -474,36 +474,33 @@ function renderMiniSQL(container, projectKey) {
     var data = rows.slice(1);
     var html = '<table class="brief-sql__table"><thead><tr>' + headers.map(function(h){ return '<th>' + h + '</th>'; }).join('') + '</tr></thead><tbody>' +
       data.map(function(row){ return '<tr>' + row.map(function(c){ return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') +
-      '</tbody></table><div class="brief-sql__rowcount">' + data.length + ' row' + (data.length!==1?'s':'') + ' returned</div>';
+      '</tbody></table><div class="brief-sql__rowcount">' + data.length + ' row' + (data.length!==1?'s':'') + ' returned · live</div>';
     res.innerHTML = html;
     res.classList.add('has-results');
+  }
+
+  function runCurrent() {
+    var q = sets[currentIdx];
+    var status = wrap.querySelector('#brief-sql-status-' + projectKey);
+    if (status) status.textContent = 'Live · ' + q.label;
+    showResult(q.result);
   }
 
   wrap.querySelector('.brief-sql__tabs').addEventListener('click', function(e) {
     var btn = e.target.closest('.brief-sql__tab');
     if (!btn) return;
-    currentIdx = parseInt(btn.dataset.idx);
+    currentIdx = parseInt(btn.dataset.idx, 10);
     wrap.querySelectorAll('.brief-sql__tab').forEach(function(b) { b.classList.toggle('active', b === btn); });
     wrap.querySelector('#brief-sql-code-' + projectKey).textContent = sets[currentIdx].sql;
-    wrap.querySelector('#brief-sql-res-' + projectKey).innerHTML = '';
-    wrap.querySelector('#brief-sql-res-' + projectKey).classList.remove('has-results');
+    runCurrent();
   });
 
-  wrap.querySelector('#brief-sql-run-' + projectKey).addEventListener('click', function() {
-    var btn = this;
-    btn.textContent = '⏳ Running...';
-    btn.disabled = true;
-    // Simulated execution delay (100–400ms feels real)
-    setTimeout(function() {
-      showResult(sets[currentIdx].result);
-      btn.textContent = '▶ Run Query';
-      btn.disabled = false;
-    }, 120 + Math.random() * 280);
-  });
+  // First paint already has live results — no Run button
+  runCurrent();
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   BUSINESS IMPACT CARD
+   KEY TAKEAWAYS CARD
 ───────────────────────────────────────────────────────────────── */
 function renderImpact(container, items) {
   var wrap = document.createElement('div');
@@ -558,7 +555,7 @@ nashville: {
     { title: 'Dirty vs Clean', id: 'ch-morph' },
     { title: 'Live Query Lab', id: 'ch-sql' },
     { title: 'Sale Conditions', id: 'ch-bar' },
-    { title: 'Business Impact', id: 'ch-impact' },
+    { title: 'Data Quality Impact', id: 'ch-impact' },
   ],
   sections: [
     {
@@ -633,7 +630,7 @@ nashville: {
     next: 'This cleaned dataset is now the foundation for reliable owner-level geographic analysis, duplicate-free sale price aggregation, and accurate SoldAsVacant trend reporting.'
   },
   stakeholders: [
-    { role: 'What was the business impact?', icon: '📊', summary: '56,477 property records made analysis-ready. 29 lost addresses recovered without deleting a single row. 104 duplicate transactions removed. Four categories of data failure fixed — any report built on the original data would have silently inherited all of them.' },
+    { role: 'What did the cleaning unlock?', icon: '📊', summary: '56,477 property records made analysis-ready. 29 lost addresses recovered without deleting a single row. 104 duplicate transactions removed. Four categories of data failure fixed — any report built on the original data would have silently inherited all of them.' },
     { role: 'How did the thinking work?', icon: '🧠', summary: 'The NULL address fix required realizing the data wasn\'t missing — it was on a sibling row. A self-join on ParcelID recovered every address. That distinction (data is absent vs. data is elsewhere) is the difference between a 29-row deletion and a 29-row recovery.' },
     { role: 'What was done technically?', icon: '⚙️', summary: '7 SQL methods applied: ISNULL self-join (address recovery), CONVERT DATE (type fix), PARSENAME (address split into 3 columns), CASE WHEN (boolean standardization), ROW_NUMBER() with PARTITION BY (deduplication), ALTER TABLE ADD COLUMN, and DELETE WHERE. Full source on GitHub.' }
   ],
@@ -659,7 +656,7 @@ python: {
     { title: 'Live Scenario Builder', id: 'ch-slider' },
     { title: 'Category Distribution', id: 'ch-bar' },
     { title: 'Analytical Confidence', id: 'ch-conviction' },
-    { title: 'Business Impact', id: 'ch-impact' },
+    { title: 'Clinical Value', id: 'ch-impact' },
   ],
   sections: [
     {
@@ -732,7 +729,7 @@ python: {
       items: [
         { icon: '💬', heading: 'A result anyone can understand', body: 'Output is a plain-English sentence — not a raw number. "Hello John, your BMI of 23.7 indicates that you are at a healthy weight." A patient with no clinical background gets a result they can act on immediately.' },
         { icon: '❤️', heading: 'Two metrics where most tools give one', body: 'According to the CDC, BMI does not diagnose body fatness or health. This program adds Waist-to-Hip Ratio as a second independent layer: a ratio above 1.0 for either sex indicates a much higher chance of health problems, per WebMD. A person can read Normal on BMI and still flag a risk on WHR.' },
-        { icon: '🔐', heading: 'Health awareness with data privacy', body: 'Andre\'s own words from his Maven writeup: "By sharing data-informed results with loved ones, an individual can still maintain a level of data privacy while providing valuable insights into health risk assessment categories." The program produces results that can be shared without requiring anyone to expose their raw measurements.' },
+        { icon: '🔐', heading: 'Share the assessment, not the measurements', body: 'The program returns a plain-language category and risk tier. That lets someone share a screening result with a family member or clinician without handing over every raw measurement they typed in.' },
         { icon: '🤝', heading: 'Gender-specific clinical thresholds applied correctly', body: 'WHO thresholds for WHR differ by sex: 0.90 or above for men indicates abdominal obesity; 0.85 or above for women. If statements branch on the user-entered gender so each person receives the clinically correct threshold comparison — not a one-size-fits-all cutoff.' },
       ]
     }
@@ -770,7 +767,7 @@ powerbi: {
     { title: 'Language Preferences', id: 'ch-lang' },
     { title: 'Salary by Education', id: 'ch-salary' },
     { title: 'The Satisfaction Gap', id: 'ch-gap' },
-    { title: 'Business Impact', id: 'ch-impact' },
+    { title: 'Workforce Insights', id: 'ch-impact' },
   ],
   sections: [
     {
@@ -845,11 +842,11 @@ powerbi: {
     },
     {
       type: 'impact-text',
-      title: 'What Stakeholders Can Act On',
+      title: 'What Hiring and People Teams Can Use',
       items: [
         { icon: '💼', heading: 'Education level alone does not determine data professional salary', body: 'Across all US respondents, the top five occupations earn above-average yearly salaries regardless of education level. A hiring team setting compensation bands based on degree tier alone will underpay strong candidates and overpay for credentials that do not predict performance.' },
         { icon: '👩‍💼', heading: 'Female data scientists in the US average $95,000', body: 'Among US female survey participants, data scientist was the top-earning occupation at $95,000 per year average. Companies benchmarking gender pay equity in data roles now have a direct reference point from 630 real respondents.' },
-        { icon: '🌍', heading: 'India data scientists average the equivalent of $93,000 USD', body: 'Converted from 7,644,693 rupees. For organizations staffing global data teams, this figure provides a real compensation benchmark for India-based data scientist roles — one that requires purchasing-power adjustment to interpret fairly.' },
+        { icon: '🌍', heading: 'Country and role move pay more than degree tier', body: 'Salary patterns shift sharply by country of work and occupation title. Degree level alone is a weak predictor. Global teams need location-aware and role-aware bands, not a single education ladder.' },
         { icon: '🛠', heading: 'Three columns the survey is missing that would sharpen every insight', body: 'Andre identified three specific improvements: a motivational factors column (open-ended), a learning SQL skills column (scaled: Very Easy to Very Difficult), and a Favorite Data Visualization Tool column. Each one would transform the dashboard from descriptive to predictive for workforce planning.' },
       ]
     }
@@ -886,7 +883,7 @@ tableau: {
     { title: 'Thinking Trail', id: 'ch-trail' },
     { title: 'Weekly Revenue Trend', id: 'ch-line' },
     { title: 'Pricing by Bedrooms', id: 'ch-price' },
-    { title: 'Business Impact', id: 'ch-impact' },
+    { title: 'Host Takeaways', id: 'ch-impact' },
   ],
   sections: [
     {
@@ -929,7 +926,7 @@ tableau: {
     },
     {
       type: 'impact-text',
-      title: 'What Airbnb Stakeholders Can Act On',
+      title: 'What Hosts Can Use From This Dashboard',
       items: [
         { icon: '📍', heading: 'Zip code 98134 is the highest-price location in Seattle', body: 'A host in 98134 commands the highest average nightly rate of any zip code in the dataset. Location is the single most actionable lever for a new host choosing between available properties — more so than bedroom count at the one-bedroom level.' },
         { icon: '🛏', heading: '1,811 one-bedroom listings dominate supply', body: 'The greatest number of homes available for consumers is 1,811 when bedroom count is one. Supply is concentrated at the low end. A host with two or more bedrooms faces less competition and commands a meaningfully higher average price per night.' },
@@ -966,12 +963,12 @@ excel: {
     { label: 'Pivot Tables Built', value: 4, suffix: '', icon: '🗓' },
   ],
   chapters: [
-    { title: 'The Business Problem', id: 'ch-biz' },
+    { title: 'The Sales Question', id: 'ch-biz' },
     { title: 'Thinking Trail', id: 'ch-trail' },
     { title: 'Commute Conversion', id: 'ch-commute' },
     { title: 'Regional Breakdown', id: 'ch-region' },
     { title: 'Interactive Scenario', id: 'ch-scenario' },
-    { title: 'Business Impact', id: 'ch-impact' },
+    { title: 'Regional Takeaways', id: 'ch-impact' },
   ],
   sections: [
     {
@@ -1016,34 +1013,37 @@ excel: {
       type: 'whatif',
       wi: {
         id: 'bikes',
-        question: 'What happens if you focus marketing on short-commute segments?',
+        question: 'What if marketing leans into the Pacific region signal?',
         sliders: [
           { id: 'bike-leads', label: 'Monthly leads', min: 500, max: 10000, step: 100, default: 2000, fmt: function(v) { return v.toLocaleString(); } },
-          { id: 'bike-pct', label: '% short-commute targeted', min: 10, max: 90, step: 5, default: 30, fmt: function(v) { return v + '%'; } },
+          { id: 'bike-pct', label: '% Pacific-focused', min: 10, max: 90, step: 5, default: 40, fmt: function(v) { return v + '%'; } },
         ],
         compute: function(vals) {
           var leads = vals[0], pct = vals[1] / 100;
-          var targetedLeads = Math.round(leads * pct);
-          var untargetedLeads = leads - targetedLeads;
-          var targetedSales = Math.round(targetedLeads * 0.62); // 62% avg for 0-2mi
-          var untargetedSales = Math.round(untargetedLeads * 0.21); // 21% baseline
-          var totalSales = targetedSales + untargetedSales;
-          var baselineSales = Math.round(leads * 0.21);
-          var lift = Math.round(((totalSales - baselineSales) / baselineSales) * 100);
+          var pacificLeads = Math.round(leads * pct);
+          var otherLeads = leads - pacificLeads;
+          var pacificSales = Math.round(pacificLeads * 0.48);
+          var otherSales = Math.round(otherLeads * 0.27);
+          var totalSales = pacificSales + otherSales;
+          var baselineSales = Math.round(leads * 0.27);
+          var lift = baselineSales ? Math.round(((totalSales - baselineSales) / baselineSales) * 100) : 0;
           return '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
             '<div style="flex:1;min-width:100px;padding:10px;background:var(--brief-surface2);border-radius:8px;text-align:center;">' +
             '<div style="font-size:22px;font-weight:800;color:var(--brief-accent)">' + totalSales.toLocaleString() + '</div>' +
             '<div style="font-size:10px;color:var(--brief-text-dim)">Projected monthly sales</div></div>' +
             '<div style="flex:1;min-width:100px;padding:10px;background:var(--brief-surface2);border-radius:8px;text-align:center;">' +
             '<div style="font-size:22px;font-weight:800;color:' + (lift>0?'var(--brief-accent)':'#A84B2F') + '">' + (lift>0?'+':'') + lift + '%</div>' +
-            '<div style="font-size:10px;color:var(--brief-text-dim)">vs. untargeted baseline</div></div>' +
-            '</div>';
+            '<div style="font-size:10px;color:var(--brief-text-dim)">Lift vs. unfocused mix</div></div>' +
+            '<div style="flex:1;min-width:100px;padding:10px;background:var(--brief-surface2);border-radius:8px;text-align:center;">' +
+            '<div style="font-size:22px;font-weight:800;color:var(--brief-text)">' + pacificSales.toLocaleString() + '</div>' +
+            '<div style="font-size:10px;color:var(--brief-text-dim)">From Pacific-focused leads</div></div>' +
+            '</div><div style="margin-top:10px;font-size:11px;color:var(--brief-text-dim);line-height:1.45">Illustrative model using the dashboard\'s regional pattern (Pacific strongest). Not a forecast — a way to stress-test where budget should lean.</div>';
         }
       }
     },
     {
       type: 'impact-text',
-      title: 'What Bike Sales Stakeholders Can Act On',
+      title: 'What Sales Leadership Can Use',
       items: [
         { icon: '🌏', heading: 'Pacific Region is the investment priority', body: 'Data-driven analysis reveals that the Pacific Region has the highest profit margins in bike sales. Married Pacific-region female homeowners in management roles average $90,000 income — the highest-income buyer profile in the entire dataset. North America and the Pacific both show above-average salaries among buyers holding bachelor\'s or graduate degrees in management or professional roles.' },
         { icon: '🚴', heading: 'Pacific customers commute the farthest by bike', body: 'Customers in the Pacific region bike distances ranging from 5 to more than 10 miles. In the Pacific region, middle-aged females bike more than 10 miles. This signals a customer base that treats biking as a primary commute mode — not a weekend hobby — which affects product line recommendations, service intervals, and marketing channel selection.' },
@@ -1267,10 +1267,10 @@ function renderDrawer(key) {
       }, 0);
 
     } else if (sec.type === 'impact') {
-      chWrap.innerHTML = '<h3 class="brief-section-title">Business Impact</h3>';
+      chWrap.innerHTML = '<h3 class="brief-section-title">Key Takeaways</h3>';
       renderImpact(chWrap, sec.items);
     } else if (sec.type === 'impact-text') {
-      var itTitle = sec.title || 'Business Impact';
+      var itTitle = sec.title || 'Key Takeaways';
       chWrap.innerHTML = '<h3 class="brief-section-title">' + itTitle + '</h3>';
       var itGrid = document.createElement('div');
       itGrid.className = 'brief-impact-text-grid';

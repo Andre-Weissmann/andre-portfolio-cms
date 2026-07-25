@@ -397,6 +397,8 @@ function updateCaseWhenSummary(caseVal) {
   // Wire up SQL sandbox buttons — promise-based init ensures first-click always works
   document.querySelectorAll('.sql-ex').forEach(btn => {
     btn.addEventListener('click', async () => {
+      document.querySelectorAll('.sql-ex').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       const query = btn.dataset.query;
       const editor = document.getElementById('sql-editor-nashville');
       if (editor) editor.value = query;
@@ -461,54 +463,64 @@ function updateCaseWhenSummary(caseVal) {
     block.appendChild(btn);
   });
 
-  // initSQL() is now called lazily when the Nashville SQL preset is first used
-  // (triggered by .sql-ex button clicks, wired below)
+  // Prefetch SQL engine and auto-run the first preset so results are live immediately
+  (async function bootstrapSQLSandbox() {
+    const resultsEl = document.getElementById('sql-results-nashville');
+    const firstBtn = document.querySelector('.sql-ex');
+    if (!firstBtn) return;
+    if (resultsEl) resultsEl.innerHTML = '<div class="sql-loading-msg">Loading SQL engine…</div>';
+    try {
+      await getSQL();
+      firstBtn.classList.add('active');
+      const query = firstBtn.dataset.query;
+      const editor = document.getElementById('sql-editor-nashville');
+      if (editor) editor.value = query;
+      showSQLCode(query);
+      runSQL(query, 'nashville');
+    } catch (e) {
+      if (resultsEl) resultsEl.innerHTML = '<div class="sql-error">Could not load SQL engine. Refresh to try again.</div>';
+    }
+  })();
+
+  // Live editor: debounced re-run as you type (no Run button required)
+  (function wireLiveSQLEditor() {
+    const editor = document.getElementById('sql-editor-nashville');
+    if (!editor) return;
+    let t = null;
+    const schedule = () => {
+      clearTimeout(t);
+      t = setTimeout(async () => {
+        const q = editor.value.trim();
+        if (!q) return;
+        showSQLCode(q);
+        try { await getSQL(); } catch (e) { return; }
+        runSQL(q, 'nashville');
+      }, 280);
+    };
+    editor.addEventListener('input', schedule);
+  })();
+
 
   /* ─────────────────────────────────────────────────
-     5. BMI / WAIST-TO-HIP CALCULATOR (Python logic in JS)
+     5. BMI / WAIST-TO-HIP CALCULATOR (live / real-time)
   ───────────────────────────────────────────────── */
 
-  // Preset scenario buttons — use mousedown + preventDefault to stop
-  // the browser treating the button as an anchor and scrolling the page
-  document.querySelectorAll('.bmi-preset-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const feetEl   = document.getElementById('bmi-feet');
-      const inchesEl = document.getElementById('bmi-inches');
-      const weightEl = document.getElementById('bmi-weight');
-      if (feetEl)   feetEl.value   = btn.dataset.feet;
-      if (inchesEl) inchesEl.value = btn.dataset.inches;
-      if (weightEl) weightEl.value = btn.dataset.weight;
-      // Run calculation without triggering any scroll side-effects
-      const runBtn = document.getElementById('bmi-run-btn');
-      if (runBtn) runBtn.dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: false }));
-    });
-  });
-
-  const whrToggle = document.getElementById('bmi-whr-toggle');
-  const whrFields = document.getElementById('bmi-whr-fields');
-  if (whrToggle && whrFields) {
-    whrToggle.addEventListener('change', () => {
-      whrFields.style.display = whrToggle.checked ? 'block' : 'none';
-    });
-  }
-
-  document.getElementById('bmi-run-btn')?.addEventListener('click', () => {
+  function runBmiAnalysis() {
     const feet = parseFloat(document.getElementById('bmi-feet')?.value);
     const inches = parseFloat(document.getElementById('bmi-inches')?.value) || 0;
     const weight = parseFloat(document.getElementById('bmi-weight')?.value);
     const output = document.getElementById('bmi-output');
+    const status = document.getElementById('bmi-live-status');
     if (!output) return;
 
     const totalInches = (feet * 12) + inches;
     if (!feet || isNaN(feet) || !weight || isNaN(weight) || weight < 50 || weight > 500) {
       output.style.display = 'block';
-      output.innerHTML = `<div class="bmi-result-error">Please select a height and enter a valid weight (50–500 lbs).</div>`;
+      output.innerHTML = `<div class="bmi-result-error">Enter height and a weight between 50–500 lbs to see live results.</div>`;
+      if (status) status.textContent = 'Waiting for inputs';
       return;
     }
 
-    // BMI formula: (weight in lbs × 703) / (height in inches²)
     const bmi = (weight * 703) / (totalInches * totalInches);
     let bmiCategory, bmiColor, bmiAdvice;
     if (bmi < 18.5) {
@@ -531,8 +543,8 @@ function updateCaseWhenSummary(caseVal) {
       bmiAdvice = 'Class III (severe) obesity carries substantial health risk. Please consult a healthcare professional for a comprehensive plan.';
     }
 
-    // BMI gauge fill: map 10–50 to 0–100%
     const gaugePercent = Math.min(100, Math.max(0, ((bmi - 10) / 40) * 100));
+    const whrToggle = document.getElementById('bmi-whr-toggle');
 
     let whrHtml = '';
     if (whrToggle?.checked) {
@@ -558,6 +570,8 @@ function updateCaseWhenSummary(caseVal) {
             <div class="bmi-metric-badge" style="background:color-mix(in oklab,${whrColor} 15%,transparent);color:${whrColor}">${whrRisk}</div>
             <div class="bmi-metric-note">${sex === 'male' ? 'Male thresholds: Low &lt;0.90, Moderate 0.90–0.99, High ≥1.00' : 'Female thresholds: Low &lt;0.80, Moderate 0.80–0.84, High ≥0.85'}</div>
           </div>`;
+      } else {
+        whrHtml = `<div class="bmi-metric-card"><div class="bmi-metric-label">Waist-to-Hip Ratio</div><div class="bmi-metric-note">Enter waist and hip to see WHR live.</div></div>`;
       }
     }
 
@@ -586,7 +600,47 @@ function updateCaseWhenSummary(caseVal) {
         ${whrHtml}
       </div>
       <p class="bmi-disclaimer">⚕ This tool is for informational purposes only and does not constitute medical advice. Consult a healthcare professional for personalized guidance.</p>`;
+    if (status) status.textContent = 'Live · updates as you type';
+  }
+
+  // Preset scenarios fill inputs; live calc follows automatically
+  document.querySelectorAll('.bmi-preset-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const feetEl   = document.getElementById('bmi-feet');
+      const inchesEl = document.getElementById('bmi-inches');
+      const weightEl = document.getElementById('bmi-weight');
+      if (feetEl)   feetEl.value   = btn.dataset.feet;
+      if (inchesEl) inchesEl.value = btn.dataset.inches;
+      if (weightEl) weightEl.value = btn.dataset.weight;
+      runBmiAnalysis();
+    });
   });
+
+  const whrToggle = document.getElementById('bmi-whr-toggle');
+  const whrFields = document.getElementById('bmi-whr-fields');
+  if (whrToggle && whrFields) {
+    whrToggle.addEventListener('change', () => {
+      whrFields.style.display = whrToggle.checked ? 'block' : 'none';
+      runBmiAnalysis();
+    });
+  }
+
+  ['bmi-feet','bmi-inches','bmi-weight','bmi-waist','bmi-hip','bmi-sex'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', runBmiAnalysis);
+    el.addEventListener('change', runBmiAnalysis);
+  });
+
+  // Hide legacy run button if present; calculate immediately on load
+  const runBtn = document.getElementById('bmi-run-btn');
+  if (runBtn) {
+    runBtn.style.display = 'none';
+    runBtn.setAttribute('aria-hidden', 'true');
+  }
+  runBmiAnalysis();
 
   /* ─────────────────────────────────────────────────
      6. CHART.JS DASHBOARDS
