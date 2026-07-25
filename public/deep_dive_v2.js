@@ -429,6 +429,7 @@ function initSpine(panel) {
     });
     items.forEach(function(it, i) { it.classList.toggle('active', i === active); });
     dots.forEach(function(d, i) { d.classList.toggle('active', i === active); });
+    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, i) { c.classList.toggle('active', i === active); });
   }
   content.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -1152,6 +1153,28 @@ function renderDrawer(key) {
 
   var scrollBody = document.createElement('div');
   scrollBody.className = 'brief-scroll-body';
+
+  /* Same section list as spine — horizontal on phone/tablet so info is not lost */
+  var mobNav = document.createElement('nav');
+  mobNav.className = 'brief-mob-chapters';
+  mobNav.setAttribute('aria-label', 'Deep dive sections');
+  mobNav.innerHTML =
+    '<div class="brief-mob-chapters-label">On this page</div>' +
+    '<div class="brief-mob-chapters-track" role="list">' +
+    spineItems.map(function(ch, idx) {
+      return '<button type="button" class="brief-mob-chip" role="listitem" data-target="' + ch.id + '">' +
+        '<span class="brief-mob-chip-num">' + (idx + 1) + '</span>' +
+        '<span class="brief-mob-chip-label">' + ch.title + '</span>' +
+      '</button>';
+    }).join('') +
+    '</div>';
+  scrollBody.appendChild(mobNav);
+  mobNav.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-target]');
+    if (!btn) return;
+    var t = document.getElementById(btn.getAttribute('data-target'));
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   /* Overview anchor */
   var overview = document.createElement('div');
