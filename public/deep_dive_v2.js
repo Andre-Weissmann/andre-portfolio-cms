@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════
-   THE BRIEF v4 — The Analyst's Black Box
+   THE BRIEF v4 - The Analyst's Black Box
    Live DuckDB-WASM queries. Morphing data animations. Thinking trails.
    Clip-reveal sliders. Conviction meters. Impact calculators and live scenario tools.
-   Zero external chart deps — pure SVG + CSS animations.
+   Zero external chart deps - pure SVG + CSS animations.
 ═══════════════════════════════════════════════════════════════════ */
 (function () {
 'use strict';
@@ -29,100 +29,93 @@ function showTip(html, x, y) {
 function hideTip() { if (_tip) _tip.classList.remove('visible'); }
 
 /* ─────────────────────────────────────────────────────────────────
-   SVG BAR CHART — animated, interactive
+   SVG BAR CHART - animated, interactive
 ───────────────────────────────────────────────────────────────── */
 function renderBarChart(container, data, opts) {
   opts = opts || {};
-  var W = container.clientWidth || 540;
-  var labelW = opts.labelW || 150;
-  var barH = opts.barH || 22;
-  var gap = opts.gap || 10;
-  var padT = 8, padB = 18, padR = 72;
-  var areaW = W - labelW - padR;
-  var H = padT + data.length * (barH + gap) - gap + padB;
-  var maxV = Math.max.apply(null, data.map(function(d){ return d.value; }));
-  var ns = 'http://www.w3.org/2000/svg';
-  var svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', H);
-  svg.className.baseVal = 'brief-svg-chart';
+  container.innerHTML = '';
+  function paint() {
+    container.innerHTML = '';
+    var W = Math.max(container.clientWidth || 0, 320);
+    var labelW = opts.labelW || 150;
+    var barH = opts.barH || 22;
+    var gap = opts.gap || 10;
+    var padT = 8, padB = 18, padR = 78;
+    var areaW = Math.max(W - labelW - padR, 80);
+    var H = padT + data.length * (barH + gap) - gap + padB;
+    var maxV = Math.max.apply(null, data.map(function(d){ return Number(d.value) || 0; }));
+    if (!maxV || !isFinite(maxV)) maxV = 1;
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', String(H));
+    svg.setAttribute('class', 'brief-svg-chart');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', opts.ariaLabel || 'Bar chart');
 
-  data.forEach(function(d, i) {
-    var y = padT + i * (barH + gap);
-    var fullW = (d.value / maxV) * areaW;
-    var color = d.color || 'var(--brief-accent)';
-    // Label
-    var txt = document.createElementNS(ns, 'text');
-    txt.setAttribute('x', labelW - 8);
-    txt.setAttribute('y', y + barH / 2 + 4);
-    txt.setAttribute('text-anchor', 'end');
-    txt.setAttribute('font-size', '11.5');
-    txt.setAttribute('fill', 'var(--brief-text-dim)');
-    txt.textContent = d.label;
-    svg.appendChild(txt);
-    // Bar bg
-    var bg = document.createElementNS(ns, 'rect');
-    bg.setAttribute('x', labelW);
-    bg.setAttribute('y', y);
-    bg.setAttribute('width', areaW);
-    bg.setAttribute('height', barH);
-    bg.setAttribute('rx', 4);
-    bg.setAttribute('fill', 'var(--brief-surface2)');
-    svg.appendChild(bg);
-    // Bar fill (starts at 0, animates)
-    var bar = document.createElementNS(ns, 'rect');
-    bar.setAttribute('x', labelW);
-    bar.setAttribute('y', y);
-    bar.setAttribute('width', 0);
-    bar.setAttribute('height', barH);
-    bar.setAttribute('rx', 4);
-    bar.setAttribute('fill', color);
-    bar.setAttribute('data-w', fullW);
-    svg.appendChild(bar);
-    // Value label
-    var val = document.createElementNS(ns, 'text');
-    val.setAttribute('x', labelW + areaW + 8);
-    val.setAttribute('y', y + barH / 2 + 4);
-    val.setAttribute('font-size', '11.5');
-    val.setAttribute('font-weight', '700');
-    val.setAttribute('fill', 'var(--brief-text)');
-    val.textContent = opts.fmt ? opts.fmt(d.value) : d.value;
-    svg.appendChild(val);
-    // Tooltip
-    bar.addEventListener('mouseenter', function(e) { showTip('<strong>' + d.label + '</strong><br>' + (opts.fmt ? opts.fmt(d.value) : d.value), e.clientX, e.clientY); });
-    bar.addEventListener('mouseleave', hideTip);
-  });
+    data.forEach(function(d, i) {
+      var y = padT + i * (barH + gap);
+      var ratio = (Number(d.value) || 0) / maxV;
+      var fullW = Math.max(ratio * areaW, d.value > 0 ? 4 : 0);
+      var color = d.color || 'var(--brief-accent)';
+      var txt = document.createElementNS(ns, 'text');
+      txt.setAttribute('x', String(labelW - 10));
+      txt.setAttribute('y', String(y + barH / 2 + 4));
+      txt.setAttribute('text-anchor', 'end');
+      txt.setAttribute('class', 'brief-chart-label');
+      txt.setAttribute('fill', 'currentColor');
+      txt.setAttribute('font-size', '12');
+      txt.textContent = d.label;
+      svg.appendChild(txt);
 
-  container.appendChild(svg);
+      var track = document.createElementNS(ns, 'rect');
+      track.setAttribute('x', String(labelW));
+      track.setAttribute('y', String(y));
+      track.setAttribute('width', String(areaW));
+      track.setAttribute('height', String(barH));
+      track.setAttribute('rx', '4');
+      track.setAttribute('fill', 'currentColor');
+      track.setAttribute('opacity', '0.08');
+      svg.appendChild(track);
 
-  // Animate bars on intersection
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(en) {
-      if (!en.isIntersecting) return;
-      svg.querySelectorAll('rect[data-w]').forEach(function(bar, i) {
-        var target = parseFloat(bar.getAttribute('data-w'));
-        var delay = i * 80;
-        setTimeout(function() {
-          var start = null;
-          function step(ts) {
-            if (!start) start = ts;
-            var p = Math.min((ts - start) / 600, 1);
-            var e = 1 - Math.pow(1 - p, 3);
-            bar.setAttribute('width', target * e);
-            if (p < 1) requestAnimationFrame(step);
-          }
-          requestAnimationFrame(step);
-        }, delay);
-      });
-      observer.disconnect();
+      var bar = document.createElementNS(ns, 'rect');
+      bar.setAttribute('x', String(labelW));
+      bar.setAttribute('y', String(y));
+      bar.setAttribute('width', String(fullW));
+      bar.setAttribute('height', String(barH));
+      bar.setAttribute('rx', '4');
+      bar.setAttribute('fill', color);
+      bar.setAttribute('data-value', String(d.value));
+      bar.setAttribute('data-ratio', String(Math.round(ratio * 1000) / 1000));
+      svg.appendChild(bar);
+
+      var val = document.createElementNS(ns, 'text');
+      val.setAttribute('x', String(labelW + fullW + 8));
+      val.setAttribute('y', String(y + barH / 2 + 4));
+      val.setAttribute('class', 'brief-chart-val');
+      val.setAttribute('fill', 'currentColor');
+      val.setAttribute('font-size', '12');
+      val.setAttribute('font-weight', '600');
+      var fmt = opts.fmt || function(v) {
+        return Number(v).toLocaleString();
+      };
+      val.textContent = fmt(d.value);
+      svg.appendChild(val);
     });
-  }, { threshold: 0.3 });
-  observer.observe(svg);
+    container.appendChild(svg);
+  }
+  paint();
+  if (typeof ResizeObserver !== 'undefined') {
+    var ro = new ResizeObserver(function() { paint(); });
+    ro.observe(container);
+  } else {
+    setTimeout(paint, 80);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   SVG LINE CHART — animated draw
+   SVG LINE CHART - animated draw
 ───────────────────────────────────────────────────────────────── */
 function renderLineChart(container, datasets, opts) {
   opts = opts || {};
@@ -239,7 +232,7 @@ function countUp(el, target, duration, opts) {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   MORPHING TABLE — rows animate from dirty to clean state
+   MORPHING TABLE - rows animate from dirty to clean state
 ───────────────────────────────────────────────────────────────── */
 function renderMorphTable(container, before, after, columns) {
   var wrap = document.createElement('div');
@@ -291,7 +284,7 @@ function renderMorphTable(container, before, after, columns) {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   CONVICTION METER — animated arc gauge
+   CONVICTION METER - animated arc gauge
 ───────────────────────────────────────────────────────────────── */
 function renderConviction(container, label, pct, color) {
   var ns = 'http://www.w3.org/2000/svg';
@@ -391,7 +384,7 @@ function renderWhatIf(container, wi) {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   THINKING TRAIL — decision log with branching paths
+   THINKING TRAIL - decision log with branching paths
 ───────────────────────────────────────────────────────────────── */
 function renderThinkingTrail(container, steps) {
   var wrap = document.createElement('div');
@@ -442,7 +435,7 @@ function initSpine(panel) {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   LIVE MINI SQL RUNNER — DuckDB-WASM style, actually runs SQL
+   LIVE MINI SQL RUNNER - DuckDB-WASM style, actually runs SQL
    Uses a lightweight in-memory approach with real dataset values
 ───────────────────────────────────────────────────────────────── */
 function renderMiniSQL(container, projectKey) {
@@ -462,7 +455,7 @@ function renderMiniSQL(container, projectKey) {
 
   var wrap = document.createElement('div');
   wrap.className = 'brief-sql-runner';
-  wrap.innerHTML = '<div class="brief-sql__header"><span class="brief-sql__badge">LIVE RESULTS</span><span class="brief-sql__hint">Pick a query — results update instantly</span></div>' +
+  wrap.innerHTML = '<div class="brief-sql__header"><span class="brief-sql__badge">LIVE RESULTS</span><span class="brief-sql__hint">Pick a query - results update instantly</span></div>' +
     '<div class="brief-sql__tabs">' + sets.map(function(q, i) {
       return '<button class="brief-sql__tab' + (i===0?' active':'') + '" data-idx="' + i + '">' + q.label + '</button>';
     }).join('') + '</div>' +
@@ -500,7 +493,7 @@ function renderMiniSQL(container, projectKey) {
     runCurrent();
   });
 
-  // First paint already has live results — no Run button
+  // First paint already has live results - no Run button
   runCurrent();
 }
 
@@ -537,17 +530,20 @@ function renderImpact(container, items) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   PROJECT DATA — The Analyst's Black Box
+   PROJECT DATA - The Analyst's Black Box
 ═══════════════════════════════════════════════════════════════════ */
 var PROJECTS = {
 
-/* ─── NASHVILLE HOUSING — SQL DATA CLEANING ─── */
+/* ─── NASHVILLE HOUSING - SQL DATA CLEANING ─── */
 nashville: {
   badge: 'SQL',
   badgeColor: '#20808D',
   title: 'Nashville Housing',
   subtitle: 'SQL Data Cleaning',
-  insight: '56,477 Nashville property sales. 29 homes with blank street addresses, 104 duplicate sale rows, and four different spellings of "sold vacant." None of that was random — each issue was a repeatable pattern. One self-join restored every missing address without deleting a single home from the file.',
+  outcome: 'Turned 56,477 messy property sales into a query-ready table: zero blank addresses, zero same-day duplicate closings.',
+  bridge: 'Same data-quality discipline hospitals need before trusting census, claims, or discharge reports.',
+  nextSteps: 'With more time: build a small data-quality scorecard that re-runs after each Metro refresh and flags new blank-address patterns automatically.',
+  insight: '56,477 Nashville property sales. 29 homes with blank street addresses, 104 duplicate sale rows, and four different spellings of "sold vacant." None of that was random - each issue was a repeatable pattern. One self-join restored every missing address without deleting a single home from the file.',
   kpis: [
     { label: 'Sales Records Reviewed', value: 56477, comma: true, suffix: '', icon: '🗂' },
     { label: 'Cleaning Methods', value: 7, suffix: '', icon: '🛠' },
@@ -571,13 +567,13 @@ nashville: {
       type: 'thinking-trail',
       title: 'The Analyst\'s Thinking Trail',
       steps: [
-        { type: 'assume', text: 'Assumed blank PropertyAddress entries were irrecoverable — entry errors with no surviving source data.', result: null },
-        { type: 'find', text: 'Discovered that all 29 blank-address rows shared a ParcelID with another record that had the full address. Same physical property, two database entries — the address existed, it was just on the sibling row.', result: 'Self-join on ParcelID recovered all 29 blank addresses without deleting a single row.' },
+        { type: 'assume', text: 'Assumed blank PropertyAddress entries were irrecoverable - entry errors with no surviving source data.', result: null },
+        { type: 'find', text: 'Discovered that all 29 blank-address rows shared a ParcelID with another record that had the full address. Same physical property, two database entries - the address existed, it was just on the sibling row.', result: 'Self-join on ParcelID recovered all 29 blank addresses without deleting a single row.' },
         { type: 'pivot', text: 'Instead of deleting blank-address rows, used ISNULL(a.PropertyAddress, b.PropertyAddress) with a self-join on ParcelID to populate missing values from their matched records. Data preserved, completeness restored.', result: null },
-        { type: 'find', text: 'SaleDate column stored as DATETIME — but every value had 00:00:00.000 as the time portion. Storing time data that is always midnight wastes space and introduces conversion risk in downstream joins.', result: 'Converted to DATE format using CONVERT(Date, SaleDate).' },
-        { type: 'assume', text: 'Assumed SoldAsVacant only had Y and N values — a SELECT DISTINCT revealed four: Y, N, Yes, No. Two standards in one column silently breaks any GROUP BY or filter on that field.', result: 'CASE WHEN statement standardized all 56,477 rows to Yes or No.' },
-        { type: 'insight', text: 'OwnerAddress was a single concatenated string: "1808 FOX CHASE DR, GOODLETTSVILLE, TN". PARSENAME after replacing commas with periods split it into three clean columns: OwnerSplitAddress, OwnerSplitCity, OwnerSplitState — enabling owner-level geographic analysis that was structurally impossible before.', result: null },
-        { type: 'limit', text: 'Duplicate detection used ROW_NUMBER() partitioned by ParcelID, SaleDate, and SalePrice. This catches exact-date duplicates — but two records for the same property sold on slightly different dates will survive the filter. Flagged in documentation; 104 rows removed with high confidence.', result: null },
+        { type: 'find', text: 'SaleDate column stored as DATETIME - but every value had 00:00:00.000 as the time portion. Storing time data that is always midnight wastes space and introduces conversion risk in downstream joins.', result: 'Converted to DATE format using CONVERT(Date, SaleDate).' },
+        { type: 'assume', text: 'Assumed SoldAsVacant only had Y and N values - a SELECT DISTINCT revealed four: Y, N, Yes, No. Two standards in one column silently breaks any GROUP BY or filter on that field.', result: 'CASE WHEN statement standardized all 56,477 rows to Yes or No.' },
+        { type: 'insight', text: 'OwnerAddress was a single concatenated string: "1808 FOX CHASE DR, GOODLETTSVILLE, TN". PARSENAME after replacing commas with periods split it into three clean columns: OwnerSplitAddress, OwnerSplitCity, OwnerSplitState - enabling owner-level geographic analysis that was structurally impossible before.', result: null },
+        { type: 'limit', text: 'Duplicate detection used ROW_NUMBER() partitioned by ParcelID, SaleDate, and SalePrice. This catches exact-date duplicates - but two records for the same property sold on slightly different dates will survive the filter. Flagged in documentation; 104 rows removed with high confidence.', result: null },
       ]
     },
     {
@@ -623,7 +619,7 @@ nashville: {
       items: [
         { icon: '🏠', heading: 'Every parcel can sit on a map', body: 'All 29 blank street addresses were restored from a matching ParcelID sibling. Planning or brokerage teams can geocode and route the full set without a manual address hunt.' },
         { icon: '✂️', heading: 'Sale counts stop double-booking', body: '104 same-day duplicate sales removed so volume, average price, and trend charts no longer inflate from one closing appearing twice.' },
-        { icon: '🔍', heading: 'Owner city and state are filters', body: 'Owner location split into address, city, and state — concentration by city, out-of-state ownership, and tax-roll joins that a single jammed string made impossible.' },
+        { icon: '🔍', heading: 'Owner city and state are filters', body: 'Owner location split into address, city, and state - concentration by city, out-of-state ownership, and tax-roll joins that a single jammed string made impossible.' },
         { icon: '📋', heading: 'Vacancy means one thing', body: 'Sold-as-vacant labels collapsed from four spellings to Yes/No. Vacancy KPIs no longer undercount or double-count based on which label someone typed in the filter.' },
       ]
     }
@@ -631,24 +627,27 @@ nashville: {
   github: 'https://github.com/Andre-Weissmann/SQL',
   decision: {
     what: 'Metro housing sales looked ready for dashboards, but blank street addresses, duplicate closings, mixed vacancy labels, and jammed owner locations made basic questions unreliable.',
-    why: 'Blank addresses are not a SQL curiosity — they break parcel maps, route lists, and neighborhood comps. Mixed Y/Yes vacancy labels split one fact into two buckets. Unsplit owner strings block city-level ownership views. Leadership can approve a chart that is quietly incomplete.',
+    why: 'Blank addresses are not a SQL curiosity - they break parcel maps, route lists, and neighborhood comps. Mixed Y/Yes vacancy labels split one fact into two buckets. Unsplit owner strings block city-level ownership views. Leadership can approve a chart that is quietly incomplete.',
     next: 'Run the seven cleaning steps before any housing KPI or map. Recover missing fields from sibling ParcelID rows first; only then remove true duplicates and standardize labels.'
   },
   stakeholders: [
-    { role: 'What did the cleaning unlock?', icon: '📊', summary: '56,477 property records made analysis-ready. 29 lost addresses recovered without deleting a single row. 104 duplicate transactions removed. Four categories of data failure fixed — any report built on the original data would have silently inherited all of them.' },
-    { role: 'How did the thinking work?', icon: '🧠', summary: 'The NULL address fix required realizing the data wasn\'t missing — it was on a sibling row. A self-join on ParcelID recovered every address. That distinction (data is absent vs. data is elsewhere) is the difference between a 29-row deletion and a 29-row recovery.' },
+    { role: 'What did the cleaning unlock?', icon: '📊', summary: '56,477 property records made analysis-ready. 29 lost addresses recovered without deleting a single row. 104 duplicate transactions removed. Four categories of data failure fixed - any report built on the original data would have silently inherited all of them.' },
+    { role: 'How did the thinking work?', icon: '🧠', summary: 'The NULL address fix required realizing the data wasn\'t missing - it was on a sibling row. A self-join on ParcelID recovered every address. That distinction (data is absent vs. data is elsewhere) is the difference between a 29-row deletion and a 29-row recovery.' },
     { role: 'What was done technically?', icon: '⚙️', summary: '7 SQL methods applied: ISNULL self-join (address recovery), CONVERT DATE (type fix), PARSENAME (address split into 3 columns), CASE WHEN (boolean standardization), ROW_NUMBER() with PARTITION BY (deduplication), ALTER TABLE ADD COLUMN, and DELETE WHERE. Full source on GitHub.' }
   ],
   context: 'Nashville Housing SQL project. Dataset: Nashville Metro Government property sales records, 56477 rows, 19 columns. Problems fixed: 29 NULL PropertyAddress rows recovered via self-join on ParcelID; 104 duplicate rows removed via ROW_NUMBER(); SaleDate converted from DATETIME to DATE; OwnerAddress split into OwnerSplitAddress/OwnerSplitCity/OwnerSplitState via PARSENAME; SoldAsVacant standardized from Y/N/Yes/No to Yes/No via CASE WHEN. 7 cleaning methods total. Source code on GitHub.'
 },
 
-/* ─── BMI CALCULATOR — PYTHON ─── */
+/* ─── BMI CALCULATOR - PYTHON ─── */
 python: {
   badge: 'Python',
   badgeColor: '#A84B2F',
   title: 'Health & BMI Analysis',
   subtitle: 'Python + CDC Standards',
-  insight: 'BMI is a screening tool, not a diagnosis — the CDC says so explicitly. This program applies the CDC formula, then adds WHO waist-to-hip ratio thresholds as a second independent signal. A person can read Normal on BMI and still flag elevated cardiovascular risk on WHR. This tool shows both.',
+  outcome: 'A live BMI tool that updates as you move the sliders - transparent math, no submit button.',
+  bridge: 'Interactive health metrics the way care teams want them: instant and explainable.',
+  nextSteps: 'With more time: add CDC risk bands and a plain-English what-this-means line for each range.',
+  insight: 'BMI is a screening tool, not a diagnosis - the CDC says so explicitly. This program applies the CDC formula, then adds WHO waist-to-hip ratio thresholds as a second independent signal. A person can read Normal on BMI and still flag elevated cardiovascular risk on WHR. This tool shows both.',
   kpis: [
     { label: 'BMI Categories', value: 4, suffix: '', icon: '📊' },
     { label: 'WHR Risk Tiers', value: 3, suffix: '', icon: '📏' },
@@ -660,23 +659,23 @@ python: {
     { title: 'Thinking Trail', id: 'ch-trail' },
     { title: 'Live Scenario Builder', id: 'ch-slider' },
     { title: 'Category Distribution', id: 'ch-bar' },
-    { title: 'Analytical Confidence', id: 'ch-conviction' },
+    { title: 'Analytical Confidence (self-assessed)', id: 'ch-conviction' },
     { title: 'Clinical Value', id: 'ch-impact' },
   ],
   sections: [
     {
       type: 'insight-card',
-      text: 'The CDC defines BMI as a screening tool that "does not diagnose the body fatness or health of an individual." Yet most calculators stop there. This 8-step Python program follows the CDC formula exactly — BMI = weight(lb) / height(in)² × 703 — classifies the result against four clinical categories, then offers an optional second layer: Waist-to-Hip Ratio calculated to two decimal places against WHO sex-specific thresholds (0.90 for men, 0.85 for women). Output is a named, plain-English assessment: not a number to look up, but a sentence a patient can read and act on.'
+      text: 'The CDC defines BMI as a screening tool that "does not diagnose the body fatness or health of an individual." Yet most calculators stop there. This 8-step Python program follows the CDC formula exactly - BMI = weight(lb) / height(in)² × 703 - classifies the result against four clinical categories, then offers an optional second layer: Waist-to-Hip Ratio calculated to two decimal places against WHO sex-specific thresholds (0.90 for men, 0.85 for women). Output is a named, plain-English assessment: not a number to look up, but a sentence a patient can read and act on.'
     },
     {
       type: 'thinking-trail',
       title: 'The Analyst\'s Thinking Trail',
       steps: [
-        { type: 'assume', text: 'Started with BMI only — it requires just height and weight, it is the standard clinical screening metric, and the CDC formula is publicly documented.', result: null },
+        { type: 'assume', text: 'Started with BMI only - it requires just height and weight, it is the standard clinical screening metric, and the CDC formula is publicly documented.', result: null },
         { type: 'find', text: 'The CDC website itself states BMI "does not diagnose the body fatness or health of an individual." A person with high muscle mass can register Obese on BMI and be metabolically healthy. A thin person with high visceral fat can register Normal and be at elevated cardiovascular risk.', result: 'Added WHR as an optional second metric to catch what BMI misses.' },
         { type: 'pivot', text: 'Structured the program as 8 sequential steps, each testable independently: greet user, collect name and gender, explain prompts, calculate BMI, classify BMI, prompt for WHR, collect waist and hip measurements, classify WHR. A while loop on the yes/no WHR prompt allows up to 6 retry attempts before exiting gracefully.', result: null },
         { type: 'insight', text: 'WHO thresholds for WHR are sex-specific: 0.90+ for men indicates abdominal obesity, 0.85+ for women. A ratio above 1.0 for either sex signals a much higher probability of health complications. The program applies gender-specific if/else logic to produce the correct threshold comparison.', result: null },
-        { type: 'limit', text: 'Input is self-reported. Studies consistently show people over-report height by 2–3 cm and under-report weight by 2–3 kg. Both errors shift BMI downward. The output is labeled as an estimate and encourages clinical verification for any health decision.', result: null },
+        { type: 'limit', text: 'Input is self-reported. Studies consistently show people over-report height by 2-3 cm and under-report weight by 2-3 kg. Both errors shift BMI downward. The output is labeled as an estimate and encourages clinical verification for any health decision.', result: null },
       ]
     },
     {
@@ -720,7 +719,7 @@ python: {
     },
     {
       type: 'conviction-meters',
-      title: 'Analytical Confidence Breakdown',
+      title: 'Analytical Confidence (self-assessed)',
       meters: [
         { label: 'CDC Formula Accuracy', pct: 97, color: 'var(--brief-accent)' },
         { label: 'BMI Category Reliability', pct: 84, color: '#20808D' },
@@ -732,10 +731,10 @@ python: {
       type: 'impact-text',
       title: 'What This Program Delivers',
       items: [
-        { icon: '💬', heading: 'A result anyone can understand', body: 'Output is a plain-English sentence — not a raw number. "Hello John, your BMI of 23.7 indicates that you are at a healthy weight." A patient with no clinical background gets a result they can act on immediately.' },
+        { icon: '💬', heading: 'A result anyone can understand', body: 'Output is a plain-English sentence - not a raw number. "Hello John, your BMI of 23.7 indicates that you are at a healthy weight." A patient with no clinical background gets a result they can act on immediately.' },
         { icon: '❤️', heading: 'Two metrics where most tools give one', body: 'According to the CDC, BMI does not diagnose body fatness or health. This program adds Waist-to-Hip Ratio as a second independent layer: a ratio above 1.0 for either sex indicates a much higher chance of health problems, per WebMD. A person can read Normal on BMI and still flag a risk on WHR.' },
         { icon: '🔐', heading: 'Share the assessment, not the measurements', body: 'The program returns a plain-language category and risk tier. That lets someone share a screening result with a family member or clinician without handing over every raw measurement they typed in.' },
-        { icon: '🤝', heading: 'Gender-specific clinical thresholds applied correctly', body: 'WHO thresholds for WHR differ by sex: 0.90 or above for men indicates abdominal obesity; 0.85 or above for women. If statements branch on the user-entered gender so each person receives the clinically correct threshold comparison — not a one-size-fits-all cutoff.' },
+        { icon: '🤝', heading: 'Gender-specific clinical thresholds applied correctly', body: 'WHO thresholds for WHR differ by sex: 0.90 or above for men indicates abdominal obesity; 0.85 or above for women. If statements branch on the user-entered gender so each person receives the clinically correct threshold comparison - not a one-size-fits-all cutoff.' },
       ]
     }
   ],
@@ -746,18 +745,21 @@ python: {
     next: 'This program gives individuals two clinically grounded metrics with plain-English results they can share with a doctor or a family member without exposing their raw measurements.'
   },
   stakeholders: [
-    { role: 'What was the real-world problem?', icon: '💡', summary: 'BMI alone can say \"healthy weight\" while a person\u2019s waist-to-hip ratio signals high cardiovascular risk. The CDC explicitly states BMI does not diagnose body fatness or health. This program gives two clinically grounded measurements together — something most free health calculators still don\u2019t do.' },
-    { role: 'How was the decision made?', icon: '🧠', summary: 'The program started as BMI only. The decision to add WHR came from reading CDC documentation and recognizing the limitation. The extension was not technically required — it was driven by asking what the health question actually needed, not what was technically easiest to code.' },
+    { role: 'What was the real-world problem?', icon: '💡', summary: 'BMI alone can say \"healthy weight\" while a person\u2019s waist-to-hip ratio signals high cardiovascular risk. The CDC explicitly states BMI does not diagnose body fatness or health. This program gives two clinically grounded measurements together - something most free health calculators still don\u2019t do.' },
+    { role: 'How was the decision made?', icon: '🧠', summary: 'The program started as BMI only. The decision to add WHR came from reading CDC documentation and recognizing the limitation. The extension was not technically required - it was driven by asking what the health question actually needed, not what was technically easiest to code.' },
     { role: 'What is the math behind it?', icon: '🔢', summary: 'BMI = (weight ÷ height²) × 703, CDC formula. WHR = waist ÷ hip, rounded to 2 decimals. Male high risk: WHR ≥ 0.90. Female high risk: WHR ≥ 0.85. Sources: CDC, WHO, WebMD. Up to 6 input attempts per field with advisory on attempt 5.' }
   ],
   context: 'Python BMI and Waist-to-Hip Ratio calculator. User inputs name, age, gender, height (inches), weight (lbs). Program calculates BMI using CDC formula (weight/height squared x 703), classifies into Underweight/Normal/Overweight/Obese using standard thresholds, and outputs personalized plain-English result: e.g. Hello John, your BMI of 23.7 indicates you are at a healthy weight. Optional second step: user inputs waist and hip measurements, program calculates WHR (waist/hip), applies gender-specific WHO thresholds (male: 0.90+ = high risk, female: 0.85+ = high risk), and outputs result. Up to 6 input attempts per prompt with advisory on attempt 5. Source code on GitHub.'
 },
 
-/* ─── POWER BI — DATA PROFESSIONALS SURVEY ─── */
+/* ─── POWER BI - DATA PROFESSIONALS SURVEY ─── */
 powerbi: {
   badge: 'Power BI',
   badgeColor: '#1B474D',
   title: 'Data Professionals Survey',
+  outcome: 'Turned a multi-sheet professional survey into one interactive dashboard stakeholders can filter themselves.',
+  bridge: 'Same pattern hospitals use for census, throughput, and revenue-cycle scorecards.',
+  nextSteps: 'With more time: lock certified metrics and add a one-page glossary so every chart uses the same definitions.',
   subtitle: 'Power BI Dashboard',
   insight: 'Education level does not predict salary as cleanly as most people assume. PhD holders average $206K, but there are only 5 of them. Bachelor\'s degree data scientists average $93K across 329 participants. The real salary driver in this dataset is role, not credential.',
   kpis: [
@@ -777,16 +779,16 @@ powerbi: {
   sections: [
     {
       type: 'insight-card',
-      text: '630 data professionals across the US, India, Canada, and the UK completed this survey across 28 columns and 13 questions. The central hypothesis was that education level predicts salary. After cleaning 9 empty columns, recoding 86 user-specified job titles, computing salary midpoints via DAX, and filtering country data to four preselected regions, the answer is more nuanced: education correlates with salary, but the highest-volume education tier (bachelor\'s, 329 participants) produces data scientists averaging $93K — above master\'s holders in two role categories. The real pay driver in this data is the job title, not the diploma on the wall.'
+      text: '630 data professionals across the US, India, Canada, and the UK completed this survey across 28 columns and 13 questions. The central hypothesis was that education level predicts salary. After cleaning 9 empty columns, recoding 86 user-specified job titles, computing salary midpoints via DAX, and filtering country data to four preselected regions, the answer is more nuanced: education correlates with salary, but the highest-volume education tier (bachelor\'s, 329 participants) produces data scientists averaging $93K - above master\'s holders in two role categories. The real pay driver in this data is the job title, not the diploma on the wall.'
     },
     {
       type: 'thinking-trail',
       title: 'The Analyst\'s Thinking Trail',
       steps: [
         { type: 'assume', text: 'Assumed education level would clearly predict salary, with PhD holders at the top and high school graduates at the bottom in a clean linear relationship.', result: null },
-        { type: 'find', text: 'Q3 (salary range) was a free-text field, not structured data. Respondents wrote ranges like "60k-80k" or "$75,000 to $100,000" — not a usable number. Required a 6-step DAX formula to split, clean, and average the low and high ends of each range into a single comparable value.', result: 'Created a calculated salary column using DAX to make the field analytically usable.' },
+        { type: 'find', text: 'Q3 (salary range) was a free-text field, not structured data. Respondents wrote ranges like "60k-80k" or "$75,000 to $100,000" - not a usable number. Required a 6-step DAX formula to split, clean, and average the low and high ends of each range into a single comparable value.', result: 'Created a calculated salary column using DAX to make the field analytically usable.' },
         { type: 'pivot', text: 'Q1 (job title) also had 86 user-specified entries beyond the standard options. Applied a 6-step Power Query process to consolidate those into existing categories, keeping the data representative without inflating category counts.', result: null },
-        { type: 'insight', text: 'Education level is not the salary driver most people assume. Across all US respondents, bachelor\'s degree data scientists (329 participants) average $93K. Masters holders average $104K. But only 5 PhDs exist in the dataset and they average $206K — a sample too small to generalize. The real salary predictor is role, not credential.', result: null },
+        { type: 'insight', text: 'Education level is not the salary driver most people assume. Across all US respondents, bachelor\'s degree data scientists (329 participants) average $93K. Masters holders average $104K. But only 5 PhDs exist in the dataset and they average $206K - a sample too small to generalize. The real salary predictor is role, not credential.', result: null },
         { type: 'find', text: 'India respondents averaged $93,000 USD equivalent (₹7,644,693 rupees) for data scientist roles. A direct USD-to-rupee comparison reveals global compensation benchmarking requires purchasing-power adjustment, not just currency conversion.', result: null },
         { type: 'limit', text: 'Country filtering was restricted to four preselected options: Canada, India, United Kingdom, United States. User-specified country entries were excluded. This removed potentially meaningful data from other markets and limits global generalizability.', result: 'Documented as an area for improvement: future versions should include all country entries.' },
       ]
@@ -807,7 +809,7 @@ powerbi: {
     {
       type: 'bar-chart',
       title: 'Top Data Scientist Salary by Education (US)',
-      subtitle: 'From the actual survey data — role held constant at Data Scientist',
+      subtitle: 'From the actual survey data - role held constant at Data Scientist',
       data: [
         { label: 'PhD (n=5)', value: 206000, color: '#20808D' },
         { label: "Master's (n=192)", value: 104000, color: 'var(--brief-accent)' },
@@ -863,20 +865,23 @@ powerbi: {
     next: 'Compensation benchmarks exist in the data for US female data scientists ($95K avg), India-based data scientists ($93K USD equivalent), and Python as the most-used programming language across all occupation categories.'
   },
   stakeholders: [
-    { role: 'What did the data actually reveal?', icon: '💡', summary: 'Education level does not predict salary. The top five occupations earn above-average pay regardless of degree level. 42.7% of respondents found breaking into data difficult. Work-life balance satisfaction averaged 5.74 out of 10 — well below neutral. These are findings, not confirmations of assumptions.' },
+    { role: 'What did the data actually reveal?', icon: '💡', summary: 'Education level does not predict salary. The top five occupations earn above-average pay regardless of degree level. 42.7% of respondents found breaking into data difficult. Work-life balance satisfaction averaged 5.74 out of 10 - well below neutral. These are findings, not confirmations of assumptions.' },
     { role: 'What would make this analysis sharper?', icon: '🔍', summary: 'Three columns are missing from the survey that would change every insight: a motivational factors field (why people chose data), a SQL difficulty scale (how hard entry-level really is), and a favorite visualization tool (beyond just the programming language). Identified and documented before the dashboard was finished.' },
     { role: 'How was it built?', icon: '⚙️', summary: '630 survey responses across 40+ countries. Power BI dashboard with DAX calculations, cross-filtering slicers, KPI cards, and 8 tracked metrics including salary by job title, Python vs. R adoption, and satisfaction scores by bracket. Screenshots embedded above.' }
   ],
   context: 'Power BI Dashboard on Data Professionals Survey. 630 real survey respondents across 40+ countries. Key metrics: average salary by job title, favorite programming language (Python #1), work-life balance satisfaction (5.74/10), career satisfaction by salary bracket (4.27/10), difficulty breaking into data field (42.7% found it difficult). Key finding: education level alone does not determine salary. US female data scientists: $95,000 avg. India data scientists: 7,644,693 rupees (~$93K USD). Survey missing 3 columns: motivational factors (open-ended), learning SQL difficulty (scaled), favorite data visualization tool. Original .pbix not embedded; Power BI embedding requires Azure AD app registration and Premium capacity. Full analysis documented.'
 },
 
-/* ─── TABLEAU — AIRBNB ANALYSIS ─── */
+/* ─── TABLEAU - AIRBNB ANALYSIS ─── */
 tableau: {
   badge: 'Tableau',
   badgeColor: '#E97424',
   title: 'Airbnb Seattle Analysis',
+  outcome: 'Joined Airbnb listing tables into one clear view of price, availability, and review patterns.',
+  bridge: 'Join logic + visual hierarchy is how analytics teams keep clinical and finance views aligned.',
+  nextSteps: 'With more time: publish a parameter-driven “what if” view and document grain of every join.',
   subtitle: 'Tableau Dashboard',
-  insight: '323,346 Airbnb records. 7 missing zip codes manually corrected through neighborhood cross-referencing. One inner join across three worksheets. What came out: December 25th generated $2,110,350 in city-wide revenue — the single highest week of 2016. Gut-feel pricing missed it.',
+  insight: '323,346 Airbnb records. 7 missing zip codes manually corrected through neighborhood cross-referencing. One inner join across three worksheets. What came out: December 25th generated $2,110,350 in city-wide revenue - the single highest week of 2016. Gut-feel pricing missed it.',
   kpis: [
     { label: 'Records Analyzed', value: 323346, comma: true, icon: '🏠' },
     { label: 'Peak Revenue (Dec 25 wk)', value: 2110350, prefix: '$', comma: true, icon: '📈' },
@@ -893,23 +898,23 @@ tableau: {
   sections: [
     {
       type: 'insight-card',
-      text: '323,346 records across three linked worksheets: Reviews, Listings, and Calendar. The Listings sheet contained 7 entries with missing zip codes — each one manually corrected by cross-referencing the neighbourhood column against publicly available Seattle geographic data. A working copy of Listings was created to preserve the source. An inner join on listing_id connected property attributes to calendar revenue data. The resulting dataset revealed four high-revenue weeks in 2016, with December 25th at the top ($2,110,350 in city-wide revenue), followed by June 19th ($2,073,319), May 29th ($2,013,698), and March 27th ($1,906,735). Spring and holiday seasons drove the peaks. January was the floor.'
+      text: '323,346 records across three linked worksheets: Reviews, Listings, and Calendar. The Listings sheet contained 7 entries with missing zip codes - each one manually corrected by cross-referencing the neighbourhood column against publicly available Seattle geographic data. A working copy of Listings was created to preserve the source. An inner join on listing_id connected property attributes to calendar revenue data. The resulting dataset revealed four high-revenue weeks in 2016, with December 25th at the top ($2,110,350 in city-wide revenue), followed by June 19th ($2,073,319), May 29th ($2,013,698), and March 27th ($1,906,735). Spring and holiday seasons drove the peaks. January was the floor.'
     },
     {
       type: 'thinking-trail',
       title: 'The Analyst\'s Thinking Trail',
       steps: [
-        { type: 'assume', text: 'Assumed all zip codes in the Listings sheet were complete and accurate — the dataset was sourced from a published Airbnb archive.', result: null },
+        { type: 'assume', text: 'Assumed all zip codes in the Listings sheet were complete and accurate - the dataset was sourced from a published Airbnb archive.', result: null },
         { type: 'find', text: 'Found 7 entries with no zip code. Each one was corrected manually using the neighbourhood column as a geographic reference, cross-checked against Seattle neighborhood boundary data. Entries 164, 481, 990, 1674, 1919, 2523, and 2673 were assigned zip codes 98107, 98119, 98122, 98104, 98119, 98102, and 98102.', result: 'All 7 corrected. No rows dropped.' },
-        { type: 'pivot', text: 'Built a Working Sheet copy of Listings before any modifications — preserving the original for audit and rollback. All transformations were applied to the working copy, not the source data.', result: null },
+        { type: 'pivot', text: 'Built a Working Sheet copy of Listings before any modifications - preserving the original for audit and rollback. All transformations were applied to the working copy, not the source data.', result: null },
         { type: 'find', text: 'An 8-step inner join process on listing_id connected the Working Sheet (property details) to the Calendar (daily pricing and availability). This join made it possible to connect bedroom count, zip code, and host attributes to actual revenue per week.', result: null },
-        { type: 'insight', text: 'Zip code 98134 had the highest average nightly rate of any zip code in the dataset. A one-bedroom in 98134 outearned listings in nearby zip codes significantly — location signal stronger than bedroom count at the low end of the inventory.', result: null },
+        { type: 'insight', text: 'Zip code 98134 had the highest average nightly rate of any zip code in the dataset. A one-bedroom in 98134 outearned listings in nearby zip codes significantly - location signal stronger than bedroom count at the low end of the inventory.', result: null },
         { type: 'limit', text: 'The dataset includes 4,417 nights with blank prices and an unexplained block of January 2017 records in what is labeled a 2016 dataset. Both were documented as data quality issues. The January 2017 records were excluded from 2016 revenue trend analysis.', result: 'Flagged as areas for improvement in any future version of this project.' },
       ]
     },
     {
       type: 'line-chart',
-      title: 'City-Wide Weekly Revenue — Seattle Airbnb 2016',
+      title: 'City-Wide Weekly Revenue - Seattle Airbnb 2016',
       subtitle: 'Four peak weeks identified. Dec 25 was the single highest week: $2,110,350.',
       values: [1580000,1620000,1906735,1700000,1720000,1680000,1640000,1700000,1750000,1800000,1820000,1840000,1860000,1880000,1920000,1940000,1980000,2013698,2020000,2040000,2073319,2060000,2040000,2020000,1980000,1960000,1940000,1920000,1900000,1880000,1860000,1840000,1820000,1800000,1780000,1760000,1740000,1720000,1700000,1680000,1660000,1640000,1620000,1600000,1620000,1650000,1700000,1750000,1800000,1900000,2050000,2110350],
       peaks: [2, 17, 20, 51],
@@ -918,7 +923,7 @@ tableau: {
     {
       type: 'bar-chart',
       title: 'Average Weekly Revenue by Bedroom Count',
-      subtitle: 'Clear premium at 5-6 bedrooms — the luxury event group effect',
+      subtitle: 'Clear premium at 5-6 bedrooms - the luxury event group effect',
       data: [
         { label: '1 bedroom', value: 1500, color: '#BCE2E7' },
         { label: '2 bedrooms', value: 1920, color: '#20808D' },
@@ -933,9 +938,9 @@ tableau: {
       type: 'impact-text',
       title: 'What Hosts Can Use From This Dashboard',
       items: [
-        { icon: '📍', heading: 'Zip code 98134 is the highest-price location in Seattle', body: 'A host in 98134 commands the highest average nightly rate of any zip code in the dataset. Location is the single most actionable lever for a new host choosing between available properties — more so than bedroom count at the one-bedroom level.' },
+        { icon: '📍', heading: 'Zip code 98134 is the highest-price location in Seattle', body: 'A host in 98134 commands the highest average nightly rate of any zip code in the dataset. Location is the single most actionable lever for a new host choosing between available properties - more so than bedroom count at the one-bedroom level.' },
         { icon: '🛏', heading: '1,811 one-bedroom listings dominate supply', body: 'The greatest number of homes available for consumers is 1,811 when bedroom count is one. Supply is concentrated at the low end. A host with two or more bedrooms faces less competition and commands a meaningfully higher average price per night.' },
-        { icon: '📅', heading: 'Four weeks drive the revenue peaks — all of them predictable', body: 'March 27th ($1,906,735), May 29th ($2,013,698), June 19th ($2,073,319), and December 25th ($2,110,350). Spring season and holiday seasons are the drivers. A host who adjusts pricing in advance of these four windows captures revenue that flat-rate hosts leave on the table every year.' },
+        { icon: '📅', heading: 'Four weeks drive the revenue peaks - all of them predictable', body: 'March 27th ($1,906,735), May 29th ($2,013,698), June 19th ($2,073,319), and December 25th ($2,110,350). Spring season and holiday seasons are the drivers. A host who adjusts pricing in advance of these four windows captures revenue that flat-rate hosts leave on the table every year.' },
         { icon: '🛠', heading: 'Three data quality issues flagged for Airbnb\'s own team', body: 'Andre documented specific issues to raise with Airbnb stakeholders: 4,417 blank nightly prices line up with unavailable nights (Available = f); January 2017 records appear in the 2016 dataset; and reviewer comments are incomplete. Each one requires a conversation with the client before correction.' },
       ]
     }
@@ -947,18 +952,21 @@ tableau: {
     next: 'A host in zip code 98134 with advance pricing adjustments for the four peak weeks (March 27, May 29, June 19, December 25) can directly act on these findings. A Tableau dashboard makes these patterns visible to any host without SQL access.'
   },
   stakeholders: [
-    { role: 'What did 323,346 records actually show?', icon: '💡', summary: 'December 25th was the single highest revenue week in Seattle: $2,110,350 city-wide. Four specific weeks per year drive the peaks — and they\'re predictable. Zip code 98134 commands the highest average nightly rate. A host with this data prices smarter than one guessing from the season.' },
-    { role: 'What quality problems were found?', icon: '🔍', summary: '7 zip codes were missing and recovered via neighborhood cross-referencing. Three problems were flagged and documented: 4,417 blank nightly prices line up with unavailable nights; January 2017 records appear in a 2016 dataset; reviewer comments are incomplete. These weren\'t in the brief — they were found and raised.' },
+    { role: 'What did 323,346 records actually show?', icon: '💡', summary: 'December 25th was the single highest revenue week in Seattle: $2,110,350 city-wide. Four specific weeks per year drive the peaks - and they\'re predictable. Zip code 98134 commands the highest average nightly rate. A host with this data prices smarter than one guessing from the season.' },
+    { role: 'What quality problems were found?', icon: '🔍', summary: '7 zip codes were missing and recovered via neighborhood cross-referencing. Three problems were flagged and documented: 4,417 blank nightly prices line up with unavailable nights; January 2017 records appear in a 2016 dataset; reviewer comments are incomplete. These weren\'t in the brief - they were found and raised.' },
     { role: 'How were three datasets joined into one?', icon: '⚙️', summary: 'Listings, reviews, and calendar worksheets joined via INNER JOIN. Revenue by week required building a time-series from the calendar table. Zip code correction used neighborhood cross-referencing rather than deletion. 323,346 rows analyzed across joined sheets in Tableau.' }
   ],
   context: 'Tableau Dashboard on Airbnb Seattle 2016 data. 323,346 records. Three worksheets joined via INNER JOIN: listings, reviews, calendar. 7 missing zip codes corrected manually via neighborhood cross-referencing. Key findings: highest revenue week December 25 = $2,110,350. Highest-price zip code: 98134. One-bedroom dominates supply at 1,811 listings. Four peak revenue weeks: March 27 ($1,906,735), May 29 ($2,013,698), June 19 ($2,073,319), December 25 ($2,110,350). Three data quality issues: 4417 null price entries correlate with available=f; January 2017 records appear in 2016 dataset; reviewer comments incomplete. Original .twbx not embedded; full methodology and findings documented.'
 },
 
-/* ─── EXCEL — BIKE SALES ANALYSIS ─── */
+/* ─── EXCEL - BIKE SALES ANALYSIS ─── */
 excel: {
   badge: 'Excel',
   badgeColor: '#437A22',
   title: 'Bike Sales Analysis',
+  outcome: 'Cleaned buyer data and isolated where demand concentrates - Pacific leads this sample.',
+  bridge: 'Segment → prioritize → act is the same loop used in service-line and panel analytics.',
+  nextSteps: 'With more time: hold out a test slice and check whether Pacific still leads after controlling for income.',
   subtitle: 'Excel Dashboard',
   insight: '13,351 records, 338 duplicates removed. Three regions surveyed. One clear answer: the Pacific region. The highest-income buyer profile, the farthest commutes, the strongest profit margins. North America and Europe are secondary. This is not a close call.',
   kpis: [
@@ -984,12 +992,12 @@ excel: {
       type: 'thinking-trail',
       title: 'The Analyst\'s Thinking Trail',
       steps: [
-        { type: 'assume', text: 'Assumed income would be the primary driver of bike purchase — higher income equals more discretionary spend on non-essential items.', result: null },
+        { type: 'assume', text: 'Assumed income would be the primary driver of bike purchase - higher income equals more discretionary spend on non-essential items.', result: null },
         { type: 'find', text: 'The highest-income bike buyer in the dataset is a married Pacific-region female homeowner in a management occupation, averaging $90,000 annually. But this profile is a specific segment, not a general rule. Across all segments, commute distance was a more consistent predictor than income alone.', result: null },
         { type: 'pivot', text: 'Raw survey data used single-character codes: M, S, F. This is common in data entry to reduce keystrokes, but it breaks any readable analysis. Used Find and Replace across three passes to decode M → Married, S → Single, F → Female before any pivot table work. Currency fields also required decimal place standardization.', result: null },
-        { type: 'insight', text: 'Age bracket required a calculated column. Raw age integers do not segment cleanly. Built a nested IF formula: Adolescent for 25–30, Middle Age for 31–54, Old for 55–89. Middle-aged Pacific females emerged as the longest-commute segment — more than 10 miles — and also among the highest purchase-rate groups.', result: null },
+        { type: 'insight', text: 'Age bracket required a calculated column. Raw age integers do not segment cleanly. Built a nested IF formula: Adolescent for 25-30, Middle Age for 31-54, Old for 55-89. Middle-aged Pacific females emerged as the longest-commute segment - more than 10 miles - and also among the highest purchase-rate groups.', result: null },
         { type: 'find', text: 'The Pacific region had 192 participants, fewer than Europe (300) and North America (508). Despite the smaller sample, it posted the strongest profit margin indicators and the highest average income per purchase. Sample size was flagged but the pattern held across multiple cross-sections.', result: null },
-        { type: 'limit', text: 'The dataset has no year column and no purchase date. Without time data, trend analysis is impossible — this is a single cross-sectional snapshot. Recommended future data collection: add year, purchase channel, and weekly commute frequency to enable longitudinal tracking.', result: null },
+        { type: 'limit', text: 'The dataset has no year column and no purchase date. Without time data, trend analysis is impossible - this is a single cross-sectional snapshot. Recommended future data collection: add year, purchase channel, and weekly commute frequency to enable longitudinal tracking.', result: null },
       ]
     },
     {
@@ -1006,7 +1014,7 @@ excel: {
     {
       type: 'bar-chart',
       title: 'Avg Income of Highest-Income Bike Buyers by Region',
-      subtitle: 'Actual figures from the dataset — Pacific management homeowners averaged $90K',
+      subtitle: 'Actual figures from the dataset - Pacific management homeowners averaged $90K',
       data: [
         { label: 'Pacific (f, mgmt, homeowner)', value: 90000, color: '#437A22' },
         { label: 'Pacific (f, homeowner, all occ)', value: 70000, color: '#20808D' },
@@ -1042,7 +1050,7 @@ excel: {
             '<div style="flex:1;min-width:100px;padding:10px;background:var(--brief-surface2);border-radius:8px;text-align:center;">' +
             '<div style="font-size:22px;font-weight:800;color:var(--brief-text)">' + pacificSales.toLocaleString() + '</div>' +
             '<div style="font-size:10px;color:var(--brief-text-dim)">From Pacific-focused leads</div></div>' +
-            '</div><div style="margin-top:10px;font-size:11px;color:var(--brief-text-dim);line-height:1.45">Illustrative model using the dashboard\'s regional pattern (Pacific strongest). Not a forecast — a way to stress-test where budget should lean.</div>';
+            '</div><div style="margin-top:10px;font-size:11px;color:var(--brief-text-dim);line-height:1.45">Illustrative model using the dashboard\'s regional pattern (Pacific strongest). Not a forecast - a way to stress-test where budget should lean.</div>';
         }
       }
     },
@@ -1050,8 +1058,8 @@ excel: {
       type: 'impact-text',
       title: 'What Sales Leadership Can Use',
       items: [
-        { icon: '🌏', heading: 'Pacific Region is the investment priority', body: 'Data-driven analysis reveals that the Pacific Region has the highest profit margins in bike sales. Married Pacific-region female homeowners in management roles average $90,000 income — the highest-income buyer profile in the entire dataset. North America and the Pacific both show above-average salaries among buyers holding bachelor\'s or graduate degrees in management or professional roles.' },
-        { icon: '🚴', heading: 'Pacific customers commute the farthest by bike', body: 'Customers in the Pacific region bike distances ranging from 5 to more than 10 miles. In the Pacific region, middle-aged females bike more than 10 miles. This signals a customer base that treats biking as a primary commute mode — not a weekend hobby — which affects product line recommendations, service intervals, and marketing channel selection.' },
+        { icon: '🌏', heading: 'Pacific Region is the investment priority', body: 'Data-driven analysis reveals that the Pacific Region has the highest profit margins in bike sales. Married Pacific-region female homeowners in management roles average $90,000 income - the highest-income buyer profile in the entire dataset. North America and the Pacific both show above-average salaries among buyers holding bachelor\'s or graduate degrees in management or professional roles.' },
+        { icon: '🚴', heading: 'Pacific customers commute the farthest by bike', body: 'Customers in the Pacific region bike distances ranging from 5 to more than 10 miles. In the Pacific region, middle-aged females bike more than 10 miles. This signals a customer base that treats biking as a primary commute mode - not a weekend hobby - which affects product line recommendations, service intervals, and marketing channel selection.' },
         { icon: '👩', heading: 'Pacific female homeowners are the highest-income segment by region', body: 'Home ownership is highest in the Pacific region where females have an average income of $70,000. When filtered to management occupations, that figure rises to $90,000. This demographic is the most financially capable buyer segment in the dataset and the clearest target for premium product positioning.' },
         { icon: '💡', heading: 'Three data gaps that would sharpen every future analysis', body: 'Andre flagged three improvements directly to stakeholders: (1) no year column exists in the raw data, making year-over-year trend analysis impossible; (2) no data on how frequently customers commute by bike each week; (3) no survey question on electric bike preference, which could unlock an entirely new product demand signal for stakeholders planning future inventory.' },
       ]
@@ -1148,6 +1156,30 @@ function renderDrawer(key) {
   /* Overview anchor */
   var overview = document.createElement('div');
   overview.className = 'brief-chapter brief-chapter--overview';
+
+  /* ── First screen: Result → KPIs (recruiter 10s) ── */
+  if (p.outcome) {
+    var outcomeEl = document.createElement('div');
+    outcomeEl.className = 'brief-outcome';
+    outcomeEl.innerHTML =
+      '<div class="brief-outcome-kicker">Result</div>' +
+      '<p class="brief-outcome-text">' + p.outcome + '</p>' +
+      (p.bridge ? '<p class="brief-outcome-bridge">' + p.bridge + '</p>' : '');
+    overview.appendChild(outcomeEl);
+  }
+
+  var kpiStrip = document.createElement('div');
+  kpiStrip.className = 'brief-kpi-strip';
+  (p.kpis || []).forEach(function(k) {
+    var card = document.createElement('div');
+    card.className = 'brief-kpi-card';
+    card.innerHTML = '<div class="brief-kpi-icon">' + k.icon + '</div>' +
+      '<div class="brief-kpi-val" data-target="' + k.value + '" data-prefix="' + (k.prefix||'') + '" data-suffix="' + (k.suffix||'') + '" data-comma="' + (k.comma?'1':'') + '">0</div>' +
+      '<div class="brief-kpi-label">' + k.label + '</div>';
+    kpiStrip.appendChild(card);
+  });
+  overview.appendChild(kpiStrip);
+
   overview.id = 'ch-overview';
   scrollBody.appendChild(overview);
 
@@ -1178,18 +1210,7 @@ function renderDrawer(key) {
     '<div class="brief-headline-text">' + p.insight + '</div>';
   overview.appendChild(headline);
 
-  /* ── KPI Strip ── */
-  var kpiStrip = document.createElement('div');
-  kpiStrip.className = 'brief-kpi-strip';
-  p.kpis.forEach(function(k) {
-    var card = document.createElement('div');
-    card.className = 'brief-kpi-card';
-    card.innerHTML = '<div class="brief-kpi-icon">' + k.icon + '</div>' +
-      '<div class="brief-kpi-val" data-target="' + k.value + '" data-prefix="' + (k.prefix||'') + '" data-suffix="' + (k.suffix||'') + '" data-comma="' + (k.comma?'1':'') + '">0</div>' +
-      '<div class="brief-kpi-label">' + k.label + '</div>';
-    kpiStrip.appendChild(card);
-  });
-  overview.appendChild(kpiStrip);
+  /* KPI strip already rendered at top of first screen */
 
   /* ── Explore This Project (question-based lens) ── */
   if (p.stakeholders && p.stakeholders.length) {
@@ -1202,7 +1223,7 @@ function renderDrawer(key) {
     slHdr.innerHTML = '<span class="brief-explore-label">What do you want to know?</span>';
     sl.appendChild(slHdr);
 
-    /* Question cards — each is a full tappable card, not a small pill */
+    /* Question cards - each is a full tappable card, not a small pill */
     var slCards = document.createElement('div');
     slCards.className = 'brief-explore-cards';
     var slAnswer = document.createElement('div');
@@ -1261,7 +1282,8 @@ function renderDrawer(key) {
       renderMorphTable(chWrap, sec.before, sec.after, sec.columns);
 
     } else if (sec.type === 'mini-sql') {
-      chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Live Query Lab') + '</h3>';
+      chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Live Query Lab') + '</h3>' +
+        '<p class="brief-section-sub">Runs live in your browser. Demo tables are a representative sample so queries stay instant - headline counts (e.g. 56,477) describe the full project dataset on GitHub.</p>';
       renderMiniSQL(chWrap, sec.projectKey);
 
     } else if (sec.type === 'bar-chart') {
@@ -1287,7 +1309,7 @@ function renderDrawer(key) {
       renderWhatIf(chWrap, sec.wi);
 
     } else if (sec.type === 'conviction-meters') {
-      chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Confidence') + '</h3>' +
+      chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Confidence (self-assessed)') + '</h3>' +
         '<div class="brief-conviction-row" id="conv-row-' + si + '"></div>';
       setTimeout(function() {
         var row = chWrap.querySelector('.brief-conviction-row');
@@ -1324,24 +1346,24 @@ function renderDrawer(key) {
     var askWrap = document.createElement('div');
     askWrap.className = 'brief-ask-wrap';
 
-    /* Per-project Q&A — precise, pre-written answers */
+    /* Per-project Q&A - precise, pre-written answers */
     var ASK_QA = {
       nashville: [
-        { label: 'Main finding', a: '56,477 Nashville property records contained four categories of data quality failure. 29 blank PropertyAddress rows were fully recoverable via a self-join on ParcelID — the address existed on a sibling row. 104 duplicate transactions were removed with ROW_NUMBER(). SaleDate stored as DATETIME with all-zero time was converted to DATE. OwnerAddress as a single concatenated string was split into three fields via PARSENAME. SoldAsVacant had four values (Y, N, Yes, No) — collapsed to two via CASE WHEN.' },
-        { label: 'Most surprising', a: 'The 29 blank PropertyAddress rows looked like missing data, but they were not — they were present on a sibling row sharing the same ParcelID. One property, two database entries. The distinction between "data is absent" and "data is elsewhere" is the difference between deleting 29 rows and recovering all 29 addresses without touching a single row.' },
+        { label: 'Main finding', a: '56,477 Nashville property records contained four categories of data quality failure. 29 blank PropertyAddress rows were fully recoverable via a self-join on ParcelID - the address existed on a sibling row. 104 duplicate transactions were removed with ROW_NUMBER(). SaleDate stored as DATETIME with all-zero time was converted to DATE. OwnerAddress as a single concatenated string was split into three fields via PARSENAME. SoldAsVacant had four values (Y, N, Yes, No) - collapsed to two via CASE WHEN.' },
+        { label: 'Most surprising', a: 'The 29 blank PropertyAddress rows looked like missing data, but they were not - they were present on a sibling row sharing the same ParcelID. One property, two database entries. The distinction between "data is absent" and "data is elsewhere" is the difference between deleting 29 rows and recovering all 29 addresses without touching a single row.' },
         { label: 'Tools used', a: 'SQL Server (T-SQL). Methods: self-join for NULL recovery, ROW_NUMBER() with PARTITION BY for duplicate detection, CONVERT(Date, SaleDate) for type correction, PARSENAME() and SUBSTRING() for string splitting, CASE WHEN for value standardization. Full source code is on GitHub.' },
         { label: 'What was fixed', a: '4 data quality categories: blank addresses (29 rows recovered), duplicate transactions (104 removed), DATETIME-typed sale dates (converted to DATE), and a concatenated owner address string (split into OwnerSplitAddress, OwnerSplitCity, OwnerSplitState). Any report built on the original data would have silently inherited all four problems.' }
       ],
       python: [
-        { label: 'What it does', a: 'The program takes a name, age, gender, height (inches), and weight (lbs) and calculates BMI using the CDC formula: weight / height\u00b2 \u00d7 703. It classifies the result as Underweight, Normal, Overweight, or Obese and returns a plain-English sentence — e.g. "Hello John, your BMI of 23.7 indicates you are at a healthy weight." An optional second step calculates Waist-to-Hip Ratio using WHO thresholds.' },
-        { label: 'Why two metrics', a: 'BMI and WHR measure different things. BMI uses total body mass relative to height. WHR measures fat distribution. A person can have a Normal BMI of 24.9 and still have a WHR of 1.1 that flags elevated cardiovascular risk — they look fine on one measure and are at risk on the other. Using both gives a more complete picture than either alone.' },
+        { label: 'What it does', a: 'The program takes a name, age, gender, height (inches), and weight (lbs) and calculates BMI using the CDC formula: weight / height\u00b2 \u00d7 703. It classifies the result as Underweight, Normal, Overweight, or Obese and returns a plain-English sentence - e.g. "Hello John, your BMI of 23.7 indicates you are at a healthy weight." An optional second step calculates Waist-to-Hip Ratio using WHO thresholds.' },
+        { label: 'Why two metrics', a: 'BMI and WHR measure different things. BMI uses total body mass relative to height. WHR measures fat distribution. A person can have a Normal BMI of 24.9 and still have a WHR of 1.1 that flags elevated cardiovascular risk - they look fine on one measure and are at risk on the other. Using both gives a more complete picture than either alone.' },
         { label: 'Tools used', a: 'Python. CDC BMI formula (weight in lbs / height in inches squared \u00d7 703). WHO WHR thresholds (male \u2265 0.90 = high risk, female \u2265 0.85 = high risk). Input validation with up to 6 attempts per prompt, advisory on attempt 5. Full source code is on GitHub.' },
-        { label: 'Limitation', a: 'BMI is a screening tool, not a diagnosis. The CDC states this explicitly. It does not account for muscle mass — a lean athlete and a sedentary person can share the same BMI. WHR adds one independent signal but is also self-reported. Both outputs are labeled as estimates and the program encourages clinical verification for any health decision.' }
+        { label: 'Limitation', a: 'BMI is a screening tool, not a diagnosis. The CDC states this explicitly. It does not account for muscle mass - a lean athlete and a sedentary person can share the same BMI. WHR adds one independent signal but is also self-reported. Both outputs are labeled as estimates and the program encourages clinical verification for any health decision.' }
       ],
       powerbi: [
         { label: 'Main finding', a: '630 data professionals across 40+ countries were surveyed. The clearest finding: education level alone does not determine salary. PhD holders average $206K but there are only 5 of them in the dataset. Bachelor\'s degree data scientists average $93K across 329 participants. Role is a stronger predictor than credential. Python is the \u00231 programming language. 42.7% of respondents found breaking into data difficult.' },
         { label: 'What the data shows', a: 'Average salary by title: Data Scientist leads. Python dominates language preference across all roles. Work-life balance satisfaction: 5.74 out of 10. Career satisfaction by salary bracket: 4.27 out of 10. US female data scientists average $95,000. India data scientists average 7,644,693 rupees (~$93K USD). Salary satisfaction drops sharply below $60K.' },
-        { label: 'Tools used', a: 'Power BI Desktop. Visualizations: donut chart (language preference), horizontal bar (salary by title), treemap (country distribution), gauge charts (satisfaction scores). DAX for calculated fields. Data cleaning done in Power Query. Original .pbix is not embedded — Power BI embedding requires Azure AD app registration and Premium capacity.' },
+        { label: 'Tools used', a: 'Power BI Desktop. Visualizations: donut chart (language preference), horizontal bar (salary by title), treemap (country distribution), gauge charts (satisfaction scores). DAX for calculated fields. Data cleaning done in Power Query. Original .pbix is not embedded - Power BI embedding requires Azure AD app registration and Premium capacity.' },
         { label: 'What is missing', a: 'The survey is missing three columns that would sharpen the analysis: motivational factors for entering data (open-ended), difficulty of learning SQL on a scaled score, and favorite data visualization tool. These gaps limit analysis of what actually drives career satisfaction and tool preference beyond programming language.' }
       ],
       tableau: [
@@ -1352,8 +1374,8 @@ function renderDrawer(key) {
       ],
       excel: [
         { label: 'Main finding', a: 'The Pacific Region shows the highest-income buyer profile: married female homeowner in a management role, average income $90,000, commuting 5-10+ miles. Pacific Region female homeowners average $70,000. North America and Pacific show above-average salaries among buyers with bachelor or graduate degrees in management or professional roles. Middle-aged Pacific females are the most active long-distance bike commuters.' },
-        { label: 'Who is buying bikes', a: 'Buyers skew toward higher-income, middle-aged, homeowning professionals with longer commutes. The Pacific Region is the strongest market. Married buyers with management or professional occupations and commutes of 5+ miles have the highest purchase rates. Gender splits vary by region — Pacific female homeowners are notably high income among buyers.' },
-        { label: 'Tools used', a: 'Microsoft Excel. Pivot tables for segmentation by region, income, gender, marital status, and occupation. Slicers for interactive filtering. Calculated columns for derived segments. Charts: bar charts for income distribution, line charts for commute distance vs. purchase rate. Original .xlsx not embedded — full findings documented in the dashboard.' },
+        { label: 'Who is buying bikes', a: 'Buyers skew toward higher-income, middle-aged, homeowning professionals with longer commutes. The Pacific Region is the strongest market. Married buyers with management or professional occupations and commutes of 5+ miles have the highest purchase rates. Gender splits vary by region - Pacific female homeowners are notably high income among buyers.' },
+        { label: 'Tools used', a: 'Microsoft Excel. Pivot tables for segmentation by region, income, gender, marital status, and occupation. Slicers for interactive filtering. Calculated columns for derived segments. Charts: bar charts for income distribution, line charts for commute distance vs. purchase rate. Original .xlsx not embedded - full findings documented in the dashboard.' },
         { label: 'What is missing', a: '3 data gaps limit deeper analysis: no year column (prevents year-over-year trend analysis), no weekly commute frequency (only distance is captured, not how often), and no e-bike preference question (a growing market segment entirely absent from the data). These gaps are documented in the dashboard.' }
       ]
     };
@@ -1401,8 +1423,19 @@ function renderDrawer(key) {
   layout.appendChild(scrollBody);
   body.appendChild(layout);
 
-  /* Sticky exit bar — always visible way back to portfolio */
+  /* Sticky exit bar - always visible way back to portfolio */
   var exitBar = document.createElement('div');
+  
+  if (p.nextSteps) {
+    var ns = document.createElement('div');
+    ns.className = 'brief-chapter brief-next-steps';
+    ns.id = 'ch-next';
+    ns.innerHTML =
+      '<h3 class="brief-section-title">What I\'d do next</h3>' +
+      '<p class="brief-next-text">' + p.nextSteps + '</p>';
+    scrollBody.appendChild(ns);
+  }
+
   exitBar.className = 'brief-exit-bar';
   exitBar.innerHTML =
     '<button type="button" class="brief-exit-back" onclick="closeDD()">' +
@@ -1437,7 +1470,7 @@ function renderDrawer(key) {
   /* ── Spine ── */
   setTimeout(function() { initSpine(panel); }, 100);
 
-  /* ── Bottom bar is hidden — close and theme are in the header ── */
+  /* ── Bottom bar is hidden - close and theme are in the header ── */
   /* Keep the element for backwards compat but keep it empty */
   var oldBarFinal = document.getElementById('dd-bottom-bar');
   if (oldBarFinal) oldBarFinal.parentNode.removeChild(oldBarFinal);
@@ -1446,7 +1479,7 @@ function renderDrawer(key) {
 /* ═══════════════════════════════════════════════════════════════════
    PANEL OPEN / CLOSE
 ═══════════════════════════════════════════════════════════════════ */
-/* ── Deep dive theme toggle — delegates to main portfolio toggle ── */
+/* ── Deep dive theme toggle - delegates to main portfolio toggle ── */
 window.toggleDDTheme = function() {
   /* Fire the main page toggle so both update together */
   var mainToggle = document.querySelector('[data-theme-toggle]');
@@ -1484,7 +1517,7 @@ window.openDD = function(key) {
     }
   } catch (err) {}
   renderDrawer(key);
-  /* Mirror the main portfolio theme — deep dive never has its own independent state */
+  /* Mirror the main portfolio theme - deep dive never has its own independent state */
   var mainTheme = document.documentElement.getAttribute('data-theme') || 'light';
   var themeBtn = document.getElementById('dd-theme-toggle');
   if (mainTheme === 'light') {

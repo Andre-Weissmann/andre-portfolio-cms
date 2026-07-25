@@ -15,10 +15,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=1784987000" />
-  <link rel="stylesheet" href="portfolio_os.css?v=1784987000" />
-  <link rel="stylesheet" href="data_rail.css?v=1784987000" />
-  <link rel="stylesheet" href="deep_dive_v2.css?v=1784987000" />
+  <link rel="stylesheet" href="style.css?v=1784992000" />
+  <link rel="stylesheet" href="portfolio_os.css?v=1784992000" />
+  <link rel="stylesheet" href="data_rail.css?v=1784992000" />
+  <link rel="stylesheet" href="deep_dive_v2.css?v=1784992000" />
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Data Analyst | Healthcare Operations and Analytics","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
@@ -187,7 +187,7 @@
 
             <!-- Pull quote -->
             <blockquote class="about-quote">
-              "I get sharper every week by asking better questions of messy health data."
+              I’ve coded claims and cleaned the data that comes from them.
             </blockquote>
 
             <!-- Stat cards -->
@@ -1048,15 +1048,15 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-  <script src="style-tokens.js?v=1784987000"></script>
-  <script src="script.js?v=1784987000"></script>
+  <script src="style-tokens.js?v=1784992000"></script>
+  <script src="script.js?v=1784992000"></script>
   <!-- modals.js removed: Deep Dive system lives in portfolio.html directly -->
-  <script src="portfolio_os.js?v=1784987000"></script>
-  <script src="data_rail.js?v=1784987000"></script>
-  <script src="deep_dive_v2.js?v=1784987000"></script>
-  <script src="powerbi.js?v=1784987000"></script>
-  <script src="tableau.js?v=1784987000"></script>
-  <script src="excel.js?v=1784987000"></script>
+  <script src="portfolio_os.js?v=1784992000"></script>
+  <script src="data_rail.js?v=1784992000"></script>
+  <script src="deep_dive_v2.js?v=1784992000"></script>
+  <script src="powerbi.js?v=1784992000"></script>
+  <script src="tableau.js?v=1784992000"></script>
+  <script src="excel.js?v=1784992000"></script>
 
   <script>
   /* ══ MAVEN-BEATING FEATURES ══ */
@@ -1378,6 +1378,30 @@ window.addEventListener('pageshow', function(e) {
 
 
 <!-- Portfolio OS: apply live-edit overrides from admin panel -->
+
+
+<script>
+(function () {
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.get('debug') !== '1' && localStorage.getItem('portfolioDebug') !== '1') return;
+    var el = document.createElement('div');
+    el.id = 'viewport-debug-badge';
+    el.setAttribute('aria-hidden', 'true');
+    el.style.cssText = 'position:fixed;bottom:10px;left:10px;z-index:99999;font:12px/1.3 ui-monospace,Menlo,monospace;background:rgba(15,23,42,.92);color:#e2e8f0;padding:8px 10px;border-radius:8px;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+    function label() {
+      var w = window.innerWidth;
+      var mode = w < 640 ? 'phone' : w < 900 ? 'phablet' : w < 1024 ? 'tablet' : w < 1280 ? 'laptop' : w < 1440 ? 'desktop' : 'wide';
+      var ptr = window.matchMedia('(pointer: coarse)').matches ? 'touch' : 'fine';
+      el.textContent = w + '×' + window.innerHeight + ' · ' + mode + ' · ' + ptr;
+    }
+    label();
+    window.addEventListener('resize', label);
+    document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(el); });
+    if (document.body) document.body.appendChild(el);
+  } catch (e) {}
+})();
+</script>
 
 </body>
 </html>
