@@ -2766,3 +2766,16 @@ body.dd-open {
   .brief-section-title { font-size: 11.5px !important; }
   .brief-kpi-label { font-size: 10.5px !important; color: var(--dd-text-dim) !important; }
 }
+
+
+/* LAST SECTION SCROLL ROOM — lets final chapter reach the active pin line */
+.brief-scroll-body {
+  padding-bottom: max(96px, 18vh);
+}
+.brief-chapter:last-child {
+  min-height: 0;
+  padding-bottom: 32px;
+}
+.brief-ask-wrap.brief-chapter {
+  margin-top: 8px;
+}
