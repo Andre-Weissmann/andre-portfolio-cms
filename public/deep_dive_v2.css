@@ -1675,7 +1675,7 @@
   }
 
   .brief-scroll-body {
-    padding: 0 40px 96px 24px;
+    padding: 0 40px 48px 24px;
   }
 
   .brief-hdr-title {
@@ -1778,7 +1778,7 @@ body.dd-open {
     padding: 20px 32px 18px;
   }
   .brief-scroll-body {
-    padding-bottom: 56px;
+    padding-bottom: 48px;
   }
   /* Wider spine labels on stage */
   .brief-spine {
@@ -1790,7 +1790,7 @@ body.dd-open {
     width: 220px;
   }
   .brief-scroll-body {
-    padding: 0 36px 72px 28px;
+    padding: 0 36px 48px 28px;
   }
 }
 
@@ -2640,17 +2640,9 @@ body.dd-open {
 }
 
 
-/* ── Exit bar clearance: floating pill must not cover content ── */
-.brief-scroll-body {
-  padding-bottom: 110px !important;
-}
+/* ── Exit bar clearance (base; refined in BOTTOM PAD PASS) ── */
 .brief-chapter:last-child {
-  padding-bottom: 48px !important;
-}
-@media (min-width: 900px) {
-  .brief-scroll-body {
-    padding-bottom: 120px !important;
-  }
+  padding-bottom: 24px;
 }
 /* Morph table: keep SaleDate readable, horizontal scroll not clip */
 .brief-morph-tbl {
@@ -2747,13 +2739,9 @@ body.dd-open {
 }
 
 
-/* LAST SECTION SCROLL ROOM — lets final chapter reach the active pin line */
-.brief-scroll-body {
-  padding-bottom: max(96px, 18vh);
-}
+/* LAST SECTION: no giant empty scroll on desktop (see BOTTOM PAD PASS) */
 .brief-chapter:last-child {
   min-height: 0;
-  padding-bottom: 32px;
 }
 .brief-ask-wrap.brief-chapter {
   margin-top: 8px;
@@ -3460,9 +3448,9 @@ a.brief-tool-btn.brief-github-btn {
   .brief-hdr.is-compact + .brief-mob-rail {
     box-shadow: 0 8px 22px rgba(0,0,0,0.16);
   }
-  /* Extra bottom pad so last section clears exit bar + feels reachable */
+  /* Mobile: room for floating exit bar only */
   .brief-scroll-body {
-    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
@@ -3477,5 +3465,38 @@ a.brief-tool-btn.brief-github-btn {
     position: sticky !important;
     top: 0 !important;
     z-index: 25 !important;
+  }
+}
+
+
+/* BOTTOM PAD PASS — kill dead desktop scroll past last nav item */
+/* Desktop/tablet stage: small clearance for floating exit pill only */
+@media (min-width: 900px) {
+  .brief-scroll-body {
+    padding-bottom: 64px !important;
+  }
+  .brief-chapter:last-child,
+  .brief-ask-wrap.brief-chapter:last-child {
+    padding-bottom: 20px !important;
+    min-height: 0 !important;
+  }
+  /* Do not force last chapter to fill the viewport */
+  .brief-chapter:last-of-type {
+    min-height: 0 !important;
+  }
+  /* Exit bar sits over content edge — 64px is enough; no 18vh spacer */
+  .brief-exit-bar {
+    bottom: 16px !important;
+  }
+}
+
+/* Phones: keep enough room for exit bar + home indicator */
+@media (max-width: 899px) {
+  .brief-scroll-body {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #dd-body {
+    /* when body is scroll root, same clearance */
+    padding-bottom: 0;
   }
 }
