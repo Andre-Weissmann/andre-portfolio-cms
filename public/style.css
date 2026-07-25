@@ -11994,3 +11994,258 @@ body, .header, .qb-block, .cmp-card, .qb-input {
 
 
 
+
+/* ══════════════════════════════════════════════════════════════
+   DESKTOP OPTIMIZATION PACK
+   True multi-column layouts for laptop/desktop widths.
+   iPad portrait (~768–834 CSS px) stays tablet; landscape iPad
+   and real desktops get the fuller layout.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Hide the sticky pill section nav once top nav links are usable */
+@media (min-width: 1024px) {
+  #mobile-section-nav { display: none !important; }
+  html { scroll-padding-top: 80px; }
+  .project-block,
+  .project-block--flip,
+  .section {
+    scroll-margin-top: 88px;
+  }
+}
+
+/* Wider reading frame on large screens */
+@media (min-width: 1100px) {
+  .container {
+    max-width: 1240px;
+    padding: 0 var(--sp-8);
+  }
+
+  .section {
+    padding: clamp(4.5rem, 7vw, 7rem) 0;
+  }
+
+  .section-sub {
+    max-width: 720px;
+    font-size: 1.05rem;
+  }
+
+  /* Hero: photo column + content column (uses existing DOM) */
+  .hero {
+    min-height: min(100svh, 920px);
+    align-items: center;
+  }
+
+  .hero-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: clamp(3rem, 6vh, 5rem) var(--sp-8);
+    width: 100%;
+  }
+
+  .hero-left {
+    display: grid;
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    column-gap: clamp(2rem, 4vw, 3.5rem);
+    row-gap: var(--sp-5);
+    align-items: start;
+  }
+
+  .hero-photo-top {
+    grid-column: 1;
+    grid-row: 1 / span 6;
+    flex-direction: column !important;
+    align-items: stretch;
+    gap: var(--sp-4);
+    margin-bottom: 0;
+    position: sticky;
+    top: 96px;
+  }
+
+  .hero-photo-frame {
+    width: 100% !important;
+  }
+
+  .hero-photo-img {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+    max-width: 280px;
+  }
+
+  .hero-identity-strip,
+  .hero-identity-strip--below {
+    width: 100%;
+    padding-top: var(--sp-2);
+  }
+
+  .hero-fact-row {
+    white-space: normal;
+    font-size: 0.92rem;
+  }
+
+  .hero-heading {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: clamp(3.25rem, 4.6vw, 4.75rem);
+    line-height: 1.05;
+    max-width: 14ch;
+  }
+
+  .hero-tagline {
+    grid-column: 2;
+    grid-row: 2;
+    margin-bottom: 0;
+  }
+
+  .hero-body {
+    grid-column: 2;
+    grid-row: 3;
+    max-width: 38rem;
+    font-size: 1.12rem;
+    line-height: 1.7;
+  }
+
+  .hero-stack {
+    grid-column: 2;
+    grid-row: 4;
+  }
+
+  .hero-stack span {
+    font-size: 0.84rem;
+    padding: 0.4rem 0.85rem;
+  }
+
+  .hero-cta-row {
+    grid-column: 2;
+    grid-row: 5;
+    gap: var(--sp-3);
+  }
+
+  .hero-cta-row .btn {
+    min-height: 48px;
+    padding-inline: 1.25rem;
+  }
+
+  /* About: use more of the width */
+  .about-layout {
+    max-width: none;
+  }
+
+  .about-heading {
+    font-size: clamp(2rem, 2.8vw, 2.6rem);
+    max-width: 22ch;
+  }
+
+  .about-bio {
+    max-width: 68ch;
+    font-size: 1.05rem;
+  }
+
+  .about-stat-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--sp-5);
+  }
+
+  .asc-metric {
+    font-size: 2.25rem;
+  }
+
+  /* Skills: prefer 3–4 columns on desktop */
+  .skills-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-6);
+  }
+
+  /* Projects: stronger two-column split + larger demos */
+  .projects-list {
+    gap: clamp(3.5rem, 6vw, 5.5rem);
+  }
+
+  .project-block,
+  .project-block--flip {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: clamp(2rem, 3.5vw, 3.5rem);
+    align-items: center;
+  }
+
+  .project-block-title {
+    font-size: clamp(1.7rem, 2.2vw, 2.1rem);
+  }
+
+  .project-block-desc {
+    font-size: 1rem;
+    max-width: 42rem;
+  }
+
+  .project-block-img {
+    max-height: 320px;
+    min-height: 220px;
+  }
+
+  .project-block-demo {
+    min-height: 420px;
+    padding: var(--sp-7, 1.75rem);
+  }
+
+  .project-block-demo--tall {
+    min-height: 560px;
+  }
+
+  /* Contact: roomier form shell */
+  .contact-wrap {
+    max-width: 760px;
+    padding: var(--sp-24) 0;
+  }
+
+  .contact-wrap:has(.qb-shell) {
+    max-width: 1200px;
+  }
+}
+
+/* Large desktop / external monitors */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1360px;
+  }
+
+  .hero-inner {
+    max-width: 1360px;
+  }
+
+  .hero-left {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    column-gap: 4rem;
+  }
+
+  .hero-photo-img {
+    max-width: 320px;
+  }
+
+  .hero-heading {
+    font-size: clamp(4rem, 4.2vw, 5.25rem);
+  }
+
+  .skills-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .project-block,
+  .project-block--flip {
+    gap: 4rem;
+  }
+}
+
+/* Prefer denser hover affordances only when a real pointer is present */
+@media (min-width: 1100px) and (hover: hover) and (pointer: fine) {
+  .skill-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .project-block-img:hover {
+    transform: scale(1.025);
+  }
+
+  .nav-links a:hover {
+    background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+  }
+}
