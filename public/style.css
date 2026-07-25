@@ -12375,7 +12375,11 @@ body, .header, .qb-block, .cmp-card, .qb-input {
 /* If hero-right is hidden on tablet, its cards are decorative only —
    core identity + CTAs stay in hero-left on every breakpoint. */
 
-/* ── Projects jump strip + featured badges (content parity) ── */
+/* ── Jump strip removed from UI; keep rules inert ── */
+.projects-jump, .all-projects-grid, .all-proj-card { display: none !important; }
+/* featured badge chrome off — clean selected-work look */
+.proj-featured-tag, .project-block--featured-tier { /* no-op chrome */ }
+/* was: Projects jump strip */
 .projects-jump {
   margin: 0 0 var(--sp-10);
   padding: var(--sp-5);

@@ -15,10 +15,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=1785012000" />
-  <link rel="stylesheet" href="portfolio_os.css?v=1785012000" />
-  <link rel="stylesheet" href="data_rail.css?v=1785012000" />
-  <link rel="stylesheet" href="deep_dive_v2.css?v=1785012000" />
+  <link rel="stylesheet" href="style.css?v=1785014000" />
+  <link rel="stylesheet" href="portfolio_os.css?v=1785014000" />
+  <link rel="stylesheet" href="data_rail.css?v=1785014000" />
+  <link rel="stylesheet" href="deep_dive_v2.css?v=1785014000" />
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Data Analyst | Healthcare Operations and Analytics","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
@@ -40,7 +40,7 @@
       <ul class="nav-links" role="list">
         <li><a href="#about">About</a></li>
         <li><a href="#skills">Capabilities</a></li>
-        <li><a href="#projects">All projects</a></li>
+        <li><a href="#projects">Projects</a></li>
         <li><a href="#experience">Experience</a></li>
         <li><a href="#contact-form" class="nav-cta">Contact</a></li>
       </ul>
@@ -59,7 +59,7 @@
       <ul role="list">
         <li><a href="#about" class="mobile-link">About</a></li>
         <li><a href="#skills" class="mobile-link">Capabilities</a></li>
-        <li><a href="#projects" class="mobile-link">All projects</a></li>
+        <li><a href="#projects" class="mobile-link">Projects</a></li>
         <li><a href="#experience" class="mobile-link">Experience</a></li>
         <li><a href="#contact-form" class="mobile-link">Contact</a></li>
       </ul>
@@ -70,7 +70,7 @@
   <nav id="mobile-section-nav" class="nav-hidden" aria-label="Section navigation">
     <a href="#about" class="msn-pill" data-msn="about">About</a>
     <a href="#skills" class="msn-pill" data-msn="skills">Capabilities</a>
-    <a href="#projects" class="msn-pill" data-msn="projects">All projects</a>
+    <a href="#projects" class="msn-pill" data-msn="projects">Projects</a>
     <a href="#experience" class="msn-pill" data-msn="experience">Experience</a>
     <a href="#contact-form" class="msn-pill" data-msn="contact">Contact</a>
   </nav>
@@ -146,7 +146,7 @@
           </div>
 
           <div class="hero-cta-row">
-            <a href="#projects" class="btn btn-primary" onclick="instantJump(event,'projects')">View all projects</a>
+            <a href="#projects" class="btn btn-primary" onclick="instantJump(event,'projects')">See My Projects</a>
             <a href="#contact" class="btn btn-outline" onclick="instantJump(event,'contact')">Get in Touch</a>
             <a href="resume.html" id="resume-btn" class="btn btn-resume">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -331,16 +331,8 @@
         <section class="section projects-section" id="projects">
       <div class="container">
         <div class="section-eyebrow">Portfolio</div>
-        <h2 class="section-heading">Data projects</h2>
-        <p class="section-sub">The same projects on phone and desktop. Layout stacks on small screens; nothing is removed. Start with the featured case studies, then keep scrolling for the full set.</p>
-
-        <!-- Jump strip: button-like cards for every project (same set every viewport) -->
-        <div class="projects-jump" id="projects-jump" aria-label="Jump to a project">
-          <div class="projects-jump-label">Jump to a project</div>
-          <div class="projects-jump-row" id="all-projects-grid">
-            <!-- Filled by projects-sync.js from projects-catalog.json -->
-          </div>
-        </div>
+        <h2 class="section-heading">Selected work</h2>
+        <p class="section-sub">Interactive case studies across SQL, Python, Power BI, Tableau, and Excel. Same projects on phone and desktop — layout flexes, nothing is removed.</p>
 
         <div class="projects-list" id="featured-projects-list">
           <article class="project-block" id="proj-nashville">
@@ -517,8 +509,6 @@
           </article>
         </div>
 
-        <!-- Hidden empty catalog list kept for older anchors / sync script safety -->
-        <div class="projects-list projects-list--catalog" id="catalog-projects-list" hidden></div>
       </div>
     </section>
 
@@ -1057,7 +1047,7 @@
   <!-- modals.js removed: Deep Dive system lives in portfolio.html directly -->
   <script src="portfolio_os.js?v=1784999000"></script>
   <script src="data_rail.js?v=1784999000"></script>
-  <script src="deep_dive_v2.js?v=1785012000"></script>
+  <script src="deep_dive_v2.js?v=1785014000"></script>
   <script src="powerbi.js?v=1784999000"></script>
   <script src="tableau.js?v=1784999000"></script>
   <script src="excel.js?v=1784999000"></script>
@@ -1407,6 +1397,6 @@ window.addEventListener('pageshow', function(e) {
 })();
 </script>
 
-  <script src="projects-sync.js?v=1785012000"></script>
+  <script src="projects-sync.js?v=1785014000"></script>
 </body>
 </html>
