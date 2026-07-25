@@ -758,7 +758,6 @@ nashville: {
   subtitle: 'SQL Data Cleaning',
   outcome: 'Turned 56,477 messy property sales into a query-ready table: zero blank addresses, zero same-day duplicate closings.',
   bridge: 'Metro housing, assessor, and brokerage teams need the same thing: addresses you can map, sales you can count once, and labels that mean one thing.',
-  nextSteps: 'Next iteration: wire this scorecard to a scheduled Metro refresh and fail the pipeline when completeness drops below 99.9%.',
   insight: '56,477 Nashville property sales. 29 homes with blank street addresses, 104 duplicate sale rows, and four different spellings of "sold vacant." None of that was random - each issue was a repeatable pattern. One self-join restored every missing address without deleting a single home from the file.',
   kpis: [
     { label: 'Sales Records Reviewed', value: 56477, comma: true, suffix: '', icon: '🗂' },
