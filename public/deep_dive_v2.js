@@ -1102,7 +1102,16 @@ function renderDrawer(key) {
     '<div class="brief-hdr-content">' +
       '<div class="brief-hdr-top-row">' +
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
-        '<button id="dd-close" onclick="closeDD()" aria-label="Close panel">&#x2715;</button>' +
+        '<div class="brief-hdr-nav">' +
+          '<button type="button" id="dd-back" class="brief-back-btn" onclick="closeDD()" aria-label="Back to portfolio">' +
+            '<span class="brief-back-arrow" aria-hidden="true">&#8592;</span>' +
+            '<span class="brief-back-label">Back to portfolio</span>' +
+          '</button>' +
+          '<button type="button" id="dd-close" class="brief-close-btn" onclick="closeDD()" aria-label="Close deep dive and return to portfolio" title="Close (Esc)">' +
+            '<span class="brief-close-x" aria-hidden="true">&#x2715;</span>' +
+            '<span class="brief-close-text">Close</span>' +
+          '</button>' +
+        '</div>' +
       '</div>' +
       '<h2 class="brief-hdr-title">' + p.title + '</h2>' +
       '<p class="brief-hdr-sub">' + p.subtitle + '</p>' +
@@ -1120,10 +1129,13 @@ function renderDrawer(key) {
 
   var spine = document.createElement('div');
   spine.className = 'brief-spine';
+  spine.setAttribute('aria-label', 'Deep dive sections');
   var spineItems = [{ id: 'ch-overview', title: 'Overview' }].concat(p.chapters || []);
-  spine.innerHTML = '<div class="brief-spine-fill"></div>' +
-    spineItems.map(function(ch) {
+  spine.innerHTML = '<div class="brief-spine-title">On this page</div>' +
+    '<div class="brief-spine-fill"></div>' +
+    spineItems.map(function(ch, idx) {
       return '<button type="button" class="brief-spine-item" data-target="' + ch.id + '" title="' + ch.title + '">' +
+        '<span class="brief-spine-num" aria-hidden="true">' + (idx + 1) + '</span>' +
         '<span class="brief-spine-dot" aria-hidden="true"></span>' +
         '<span class="brief-spine-label">' + ch.title + '</span>' +
       '</button>';
@@ -1389,6 +1401,17 @@ function renderDrawer(key) {
   layout.appendChild(scrollBody);
   body.appendChild(layout);
 
+  /* Sticky exit bar — always visible way back to portfolio */
+  var exitBar = document.createElement('div');
+  exitBar.className = 'brief-exit-bar';
+  exitBar.innerHTML =
+    '<button type="button" class="brief-exit-back" onclick="closeDD()">' +
+      '<span aria-hidden="true">&#8592;</span> Back to portfolio' +
+    '</button>' +
+    '<span class="brief-exit-hint"><kbd>Esc</kbd> or click outside to close</span>' +
+    '<button type="button" class="brief-exit-close" onclick="closeDD()" aria-label="Close deep dive">Close</button>';
+  body.appendChild(exitBar);
+
   /* Spine nav: click label/dot to jump */
   spine.querySelectorAll('.brief-spine-item').forEach(function(btn) {
     btn.addEventListener('click', function() {
@@ -1436,10 +1459,30 @@ window.toggleDDTheme = function() {
   if (btn) btn.innerHTML = (isLight ? '<span id="dd-theme-icon">\u2600</span> Light' : '<span id="dd-theme-icon">\u263E</span> Dark');
 };
 
+
+/* Deep dive navigation state */
+window.__ddReturnFocus = null;
+window.__ddPageScrollY = 0;
+
 window.openDD = function(key) {
   var panel = document.getElementById('dd-panel');
   var overlay = document.getElementById('dd-overlay');
   if (!panel) return;
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-label', 'Project deep dive');
+  /* Remember where the visitor was on the portfolio */
+  window.__ddReturnFocus = document.activeElement;
+  window.__ddPageScrollY = window.scrollY || window.pageYOffset || 0;
+  /* Browser Back closes deep dive instead of leaving the site */
+  try {
+    if (!window.__ddHistoryPushed) {
+      history.pushState({ ddOpen: true, ddKey: key }, '', '#deep-dive');
+      window.__ddHistoryPushed = true;
+    } else {
+      history.replaceState({ ddOpen: true, ddKey: key }, '', '#deep-dive');
+    }
+  } catch (err) {}
   renderDrawer(key);
   /* Mirror the main portfolio theme — deep dive never has its own independent state */
   var mainTheme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -1451,37 +1494,98 @@ window.openDD = function(key) {
     panel.classList.remove('brief-light');
     if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon">\u263E</span> Dark';
   }
-  panel.classList.add('open')
-  document.body.classList.add('dd-open');;
+  panel.classList.add('open');
+  document.body.classList.add('dd-open');
   if (overlay) overlay.classList.add('visible');
   document.body.style.overflow = 'hidden';
   /* Scroll to top of panel */
-  var body = document.getElementById('dd-body');
-  if (body) body.scrollTop = 0;
+  var bodyEl = document.getElementById('dd-body');
+  if (bodyEl) bodyEl.scrollTop = 0;
+  var scrollBody = panel.querySelector('.brief-scroll-body');
+  if (scrollBody) scrollBody.scrollTop = 0;
   /* Hide data-rail pill so it doesn't block panel content */
   var rail = document.getElementById('data-rail');
   if (rail) rail.style.cssText = 'display:none!important;pointer-events:none!important;';
-  /* Theme icon updated after renderDrawer builds the bottom bar */
+  /* Focus close control so keyboard users know how to leave */
+  setTimeout(function() {
+    var closeBtn = document.getElementById('dd-close') || document.getElementById('dd-back');
+    if (closeBtn) closeBtn.focus();
+  }, 40);
 };
 
 window.closeDD = function() {
   var panel = document.getElementById('dd-panel');
   var overlay = document.getElementById('dd-overlay');
-  if (panel) panel.classList.remove('open')
-  document.body.classList.remove('dd-open');;
+  if (!panel || !panel.classList.contains('open')) return;
+  /* If we opened via pushState, step back once without double-close */
+  if (window.__ddHistoryPushed && !window.__ddClosingFromPop) {
+    window.__ddHistoryPushed = false;
+    try { history.back(); } catch (err) {}
+  }
+  window.__ddClosingFromPop = false;
+  panel.classList.remove('open');
+  document.body.classList.remove('dd-open');
   if (overlay) overlay.classList.remove('visible');
   document.body.style.overflow = '';
   /* Restore data-rail pill */
   var rail = document.getElementById('data-rail');
   if (rail) rail.style.cssText = '';
+  /* Return visitor to the same place on the portfolio */
+  var y = window.__ddPageScrollY || 0;
+  requestAnimationFrame(function() {
+    window.scrollTo(0, y);
+    var prev = window.__ddReturnFocus;
+    if (prev && typeof prev.focus === 'function') {
+      try { prev.focus({ preventScroll: true }); } catch (err) { try { prev.focus(); } catch (e2) {} }
+    }
+    window.__ddReturnFocus = null;
+  });
 };
 
-/* ── Close on overlay click / Escape ── */
+/* ── Close on overlay click / Escape (only while open) ── */
 document.addEventListener('DOMContentLoaded', function() {
   var overlay = document.getElementById('dd-overlay');
-  if (overlay) overlay.addEventListener('click', window.closeDD);
+  if (overlay) {
+    overlay.addEventListener('click', function() { window.closeDD(); });
+  }
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') window.closeDD();
+    var panel = document.getElementById('dd-panel');
+    var open = panel && panel.classList.contains('open');
+    if (!open) return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      window.closeDD();
+      return;
+    }
+
+    /* Simple focus trap inside the stage */
+    if (e.key !== 'Tab') return;
+    var focusables = panel.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    var list = Array.prototype.filter.call(focusables, function(el) {
+      return el.offsetParent !== null || el === document.activeElement;
+    });
+    if (!list.length) return;
+    var first = list[0];
+    var last = list[list.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
+  window.addEventListener('popstate', function() {
+    var panel = document.getElementById('dd-panel');
+    if (panel && panel.classList.contains('open')) {
+      window.__ddClosingFromPop = true;
+      window.__ddHistoryPushed = false;
+      window.closeDD();
+    }
   });
 });
 
