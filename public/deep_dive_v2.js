@@ -433,6 +433,13 @@ function renderThinkingTrail(container, steps) {
 function initSpine(panel) {
   var spine = panel.querySelector('.brief-spine');
   var content = panel.querySelector('.brief-scroll-body');
+  // On phone CSS, #dd-body is the real scroll root; spine must listen there.
+  var bodyEl = document.getElementById('dd-body');
+  var isPhoneScroll = false;
+  try {
+    isPhoneScroll = !!(bodyEl && window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
+  } catch (e) { isPhoneScroll = false; }
+  if (isPhoneScroll && bodyEl) content = bodyEl;
   if (!spine || !content) return;
 
   // Prefer spine targets (same order as left nav). Fall back to chapter nodes.
@@ -1533,12 +1540,10 @@ function renderDrawer(key) {
     '<div class="brief-hdr-content">' +
       '<div class="brief-hdr-top-row">' +
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
-        '<div class="brief-hdr-nav">' +
-          '<button type="button" id="dd-back" class="brief-back-btn" onclick="closeDD()" aria-label="Back to portfolio">' +
-            '<span class="brief-back-arrow" aria-hidden="true">&#8592;</span>' +
-            '<span class="brief-back-label">Back to portfolio</span>' +
-          '</button>' +
-          '<button type="button" id="dd-close" class="brief-close-btn" onclick="closeDD()" aria-label="Close deep dive and return to portfolio" title="Close (Esc)">' +
+        '<div class="brief-hdr-tools">' +
+          (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="View on GitHub" title="View on GitHub" onclick="var w=window.open(this.href,\"_blank\",\"noopener,noreferrer\");if(!w){try{window.top.location.href=this.href;}catch(e){}}return false;">' + githubSvg + '<span class="brief-github-label">GitHub</span></a>' : '') +
+          '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Toggle light / dark" title="Toggle theme"><span id="dd-theme-icon" aria-hidden="true">&#9790;</span><span id="dd-theme-label" class="brief-theme-label">Dark</span></button>' +
+          '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" onclick="closeDD()" aria-label="Close deep dive" title="Close (Esc)">' +
             '<span class="brief-close-x" aria-hidden="true">&#x2715;</span>' +
             '<span class="brief-close-text">Close</span>' +
           '</button>' +
@@ -1546,10 +1551,6 @@ function renderDrawer(key) {
       '</div>' +
       '<h2 class="brief-hdr-title">' + p.title + '</h2>' +
       '<p class="brief-hdr-sub">' + p.subtitle + '</p>' +
-      '<div class="brief-hdr-actions">' +
-        (p.github ? '<a class="brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="View on GitHub" onclick="var w=window.open(this.href,\"_blank\",\"noopener,noreferrer\");if(!w){try{window.top.location.href=this.href;}catch(e){}}return false;">' + githubSvg + '<span class="brief-github-label">View on GitHub</span></a>' : '') +
-        '<button id="dd-theme-toggle" onclick="toggleDDTheme()" aria-label="Toggle light / dark"><span id="dd-theme-icon">&#9790;</span> Dark</button>' +
-      '</div>' +
     '</div>';
   body.appendChild(hdr);
 
@@ -1935,7 +1936,7 @@ window.toggleDDTheme = function() {
   var btn   = document.getElementById('dd-theme-toggle');
   if (!panel) return;
   var isLight = panel.classList.toggle('brief-light');
-  if (btn) btn.innerHTML = (isLight ? '<span id="dd-theme-icon">\u2600</span> Light' : '<span id="dd-theme-icon">\u263E</span> Dark');
+  if (btn) btn.innerHTML = (isLight ? '<span id="dd-theme-icon" aria-hidden="true">\u2600</span><span id="dd-theme-label" class="brief-theme-label">Light</span>' : '<span id="dd-theme-icon" aria-hidden="true">\u263E</span><span id="dd-theme-label" class="brief-theme-label">Dark</span>');
 };
 
 
@@ -1968,10 +1969,10 @@ window.openDD = function(key) {
   var themeBtn = document.getElementById('dd-theme-toggle');
   if (mainTheme === 'light') {
     panel.classList.add('brief-light');
-    if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon">\u2600</span> Light';
+    if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon" aria-hidden="true">\u2600</span><span id="dd-theme-label" class="brief-theme-label">Light</span>';
   } else {
     panel.classList.remove('brief-light');
-    if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon">\u263E</span> Dark';
+    if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon" aria-hidden="true">\u263E</span><span id="dd-theme-label" class="brief-theme-label">Dark</span>';
   }
   panel.classList.add('open');
   document.body.classList.add('dd-open');

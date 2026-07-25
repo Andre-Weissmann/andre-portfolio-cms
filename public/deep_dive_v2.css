@@ -1245,29 +1245,8 @@
   .brief-hdr-sub {
     font-size: 12px !important;
   }
-  /* GitHub button: full-width pill on mobile */
-  .brief-hdr-actions {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-  }
-  .brief-github-btn {
-    justify-content: center !important;
-    padding: 11px 18px !important;
-    font-size: 13.5px !important;
-    border-radius: 10px !important;
-  }
-  #dd-theme-toggle {
-    justify-content: center !important;
-    padding: 9px 14px !important;
-    font-size: 12.5px !important;
-  }
-  /* Close button: slightly larger touch target */
-  #dd-close {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 16px !important;
-  }
+  /* Header actions moved into .brief-hdr-tools (see MOBILE DD POLISH) */
+  .brief-hdr-actions { display: none !important; }
 
   /* Key Finding */
   .brief-headline {
@@ -2778,4 +2757,281 @@ body.dd-open {
 }
 .brief-ask-wrap.brief-chapter {
   margin-top: 8px;
+}
+
+
+/* HDR TOOLS CLUSTER — GitHub / theme / close as one compact control group */
+.brief-hdr-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.brief-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--dd-border2);
+  background: var(--dd-surface);
+  color: var(--dd-text);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  box-sizing: border-box;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.brief-tool-btn:hover {
+  border-color: var(--dd-accent);
+  color: var(--dd-accent);
+  background: var(--dd-accent-glow, rgba(32,128,141,0.1));
+}
+.brief-tool-btn:focus-visible {
+  outline: 2px solid var(--dd-accent);
+  outline-offset: 2px;
+}
+a.brief-tool-btn.brief-github-btn {
+  padding: 0 12px;
+  border-radius: 999px;
+  box-shadow: none;
+  font-size: 12.5px;
+}
+#dd-theme-toggle.brief-tool-btn {
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--dd-surface);
+  color: var(--dd-text);
+  border: 1px solid var(--dd-border2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+#dd-close.brief-tool-btn,
+#dd-close.brief-close-btn {
+  width: auto !important;
+  height: 36px !important;
+  min-width: 36px;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-size: 12.5px !important;
+  background: var(--dd-surface2);
+}
+#dd-close.brief-tool-btn:hover {
+  background: color-mix(in oklab, #c23b3b 14%, var(--dd-surface2));
+  border-color: color-mix(in oklab, #c23b3b 45%, var(--dd-border2));
+  color: #c23b3b;
+}
+.brief-github-icon {
+  flex-shrink: 0;
+  display: block;
+}
+#dd-theme-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+
+/* MOBILE DD POLISH */
+@media (max-width: 640px) {
+  .brief-hdr-actions { display: none !important; }
+
+  .brief-hdr-content {
+    padding: 10px 12px 12px !important;
+    gap: 6px !important;
+  }
+  .brief-hdr-top-row {
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .brief-badge {
+    max-width: min(48vw, 160px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 9px !important;
+    padding: 4px 9px !important;
+  }
+  .brief-hdr-tools {
+    gap: 6px !important;
+  }
+  .brief-tool-btn,
+  a.brief-tool-btn.brief-github-btn,
+  #dd-theme-toggle.brief-tool-btn,
+  #dd-close.brief-tool-btn,
+  #dd-close.brief-close-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    font-size: 15px !important;
+    box-shadow: none !important;
+  }
+  .brief-github-label,
+  .brief-theme-label,
+  .brief-close-text {
+    display: none !important;
+  }
+  .brief-close-x {
+    font-size: 15px !important;
+    line-height: 1 !important;
+  }
+  #dd-theme-icon {
+    font-size: 16px !important;
+  }
+  .brief-github-icon {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .brief-hdr-title {
+    font-size: 17px !important;
+    line-height: 1.28 !important;
+    padding-right: 4px;
+  }
+  .brief-hdr-sub {
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
+    color: var(--dd-text-dim) !important;
+    max-width: 100%;
+  }
+
+  .brief-mob-chapters {
+    margin: 0 0 10px !important;
+    padding: 8px 0 6px !important;
+  }
+  .brief-mob-chapters-label {
+    padding: 0 14px 5px !important;
+    font-size: 0.62rem !important;
+  }
+  .brief-mob-chapters-track {
+    padding: 0 14px 2px !important;
+    gap: 6px !important;
+  }
+  .brief-mob-chip {
+    padding: 6px 10px !important;
+    font-size: 0.74rem !important;
+  }
+
+  .brief-scroll-body {
+    padding: 0 0 calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .brief-chapter {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .brief-chapter--overview {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .brief-outcome {
+    margin: 0 14px 12px !important;
+    padding: 0.85rem 1rem !important;
+  }
+  .brief-outcome-text {
+    font-size: 1.02rem !important;
+    line-height: 1.4 !important;
+  }
+  .brief-outcome-bridge {
+    font-size: 0.86rem !important;
+    line-height: 1.5 !important;
+  }
+  .brief-decision {
+    margin: 0 14px 12px !important;
+    border-radius: 12px !important;
+    border-left: 1px solid var(--dd-border) !important;
+    border-right: 1px solid var(--dd-border) !important;
+  }
+  .brief-decision-row {
+    padding: 12px 14px !important;
+  }
+  .brief-headline {
+    padding: 14px 14px 12px !important;
+  }
+  .brief-headline-text {
+    font-size: 14.5px !important;
+    line-height: 1.6 !important;
+  }
+
+  .brief-kpi-strip {
+    margin: 0 0 8px !important;
+  }
+  .brief-kpi-card {
+    padding: 12px 10px !important;
+    min-width: 0 !important;
+  }
+  .brief-kpi-val {
+    font-size: 17px !important;
+    word-break: break-word;
+  }
+  .brief-kpi-label {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+  }
+
+  .brief-exit-bar {
+    width: calc(100vw - 16px) !important;
+    max-width: none !important;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 8px !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+  .brief-exit-back {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 42px;
+    height: 42px;
+    font-size: 14px !important;
+  }
+  .brief-exit-close {
+    flex: 0 0 auto;
+    margin-left: 0 !important;
+    min-height: 42px;
+    height: 42px;
+    padding: 0 14px !important;
+  }
+  .brief-exit-hint { display: none !important; }
+
+  .brief-ask-wrap,
+  .brief-ask-wrap.brief-chapter {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .brief-scroll-body,
+  #dd-body,
+  .brief-chapter {
+    overflow-x: clip;
+  }
+  .brief-chapter pre,
+  .brief-sql__editor,
+  .brief-table-wrap,
+  table {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 899px) {
+  .brief-hdr-tools { gap: 8px; }
+  .brief-tool-btn {
+    height: 38px;
+    padding: 0 12px;
+  }
+  #dd-close.brief-tool-btn {
+    width: auto !important;
+    height: 38px !important;
+  }
 }
