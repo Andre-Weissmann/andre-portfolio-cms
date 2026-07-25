@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="auto">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Andre Weissmann — Healthcare Data Analyst</title>
-  <meta name="description" content="Andre Weissmann is a Healthcare Data Analyst based in Chicago, IL. SQL · Python · Power BI · Tableau · Excel. Explore interactive data projects." />
-  <meta property="og:title" content="Andre Weissmann — Healthcare Data Analyst" />
+  <title>Andre Weissmann | Data Analyst | Healthcare Operations and Analytics</title>
+  <meta name="description" content="Andre Weissmann is a Data Analyst specializing in Healthcare Operations and Analytics based in Chicago, IL. SQL · Python · Power BI · Tableau · Excel. Explore interactive data projects." />
+  <meta property="og:title" content="Andre Weissmann | Data Analyst | Healthcare Operations and Analytics" />
   <meta property="og:description" content="Interactive data portfolio: live SQL sandbox, Python health calculator, BI dashboards, and more." />
   <meta property="og:type" content="website" />
 
@@ -15,37 +15,40 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=1784999000" />
+  <link rel="stylesheet" href="portfolio_os.css?v=1784999000" />
+  <link rel="stylesheet" href="data_rail.css?v=1784999000" />
+  <link rel="stylesheet" href="deep_dive_v2.css?v=1785002000" />
 
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Healthcare Data Analyst","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
+  {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Data Analyst | Healthcare Operations and Analytics","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
   </script>
 </head>
 <body>
+<div class="curtain-overlay" id="curtain-overlay" aria-hidden="true">
+  <div class="curtain-left"></div>
+  <div class="curtain-right"></div>
+</div>
 
   <!-- ══ HEADER ══ -->
   <header class="header" id="header">
     <nav class="nav container">
       <a href="#home" class="logo" aria-label="Andre Weissmann">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <rect width="32" height="32" rx="7" fill="var(--color-primary)" opacity="0.12"/>
-          <path d="M6 24 L10 10 L16 20 L22 10 L26 24" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <circle cx="16" cy="20" r="2" fill="var(--color-primary)"/>
-        </svg>
         <span class="logo-text">Andre Weissmann</span>
       </a>
 
       <ul class="nav-links" role="list">
         <li><a href="#about">About</a></li>
-        <li><a href="#skills">Skills</a></li>
+        <li><a href="#skills">Capabilities</a></li>
         <li><a href="#projects">Projects</a></li>
         <li><a href="#experience">Experience</a></li>
-        <li><a href="#contact" class="nav-cta">Let's Talk</a></li>
+        <li><a href="#contact-form" class="nav-cta">Contact</a></li>
       </ul>
 
       <div class="nav-controls">
         <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <span class="theme-toggle__icon"></span>
+          <span class="theme-toggle__label">Light mode</span>
         </button>
         <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
           <span></span><span></span><span></span>
@@ -55,15 +58,24 @@
     <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
       <ul role="list">
         <li><a href="#about" class="mobile-link">About</a></li>
-        <li><a href="#skills" class="mobile-link">Skills</a></li>
+        <li><a href="#skills" class="mobile-link">Capabilities</a></li>
         <li><a href="#projects" class="mobile-link">Projects</a></li>
         <li><a href="#experience" class="mobile-link">Experience</a></li>
-        <li><a href="#contact" class="mobile-link">Let's Talk</a></li>
+        <li><a href="#contact-form" class="mobile-link">Contact</a></li>
       </ul>
     </div>
   </header>
 
-  <main>
+  <!-- Mobile section pill nav -->
+  <nav id="mobile-section-nav" class="nav-hidden" aria-label="Section navigation">
+    <a href="#about" class="msn-pill" data-msn="about">About</a>
+    <a href="#skills" class="msn-pill" data-msn="skills">Capabilities</a>
+    <a href="#projects" class="msn-pill" data-msn="projects">Projects</a>
+    <a href="#experience" class="msn-pill" data-msn="experience">Experience</a>
+    <a href="#contact-form" class="msn-pill" data-msn="contact">Contact</a>
+  </nav>
+
+  <main id="main-content" tabindex="-1">
 
     <!-- ══ HERO ══ -->
     <section class="hero" id="home">
@@ -74,9 +86,43 @@
 
       <div class="container hero-inner">
         <div class="hero-left">
-          <div class="hero-tag">
-            <span class="hero-dot"></span>
-            Available · Chicago, IL
+
+          <!-- Profile photo — top of hero -->
+          <div class="hero-photo-top">
+            <div class="hero-photo-frame">
+              <img src="images/avatar.jpeg" alt="Andre Weissmann" class="hero-photo-img" />
+              <span class="hero-photo-badge">
+                <span class="hero-photo-dot"></span> Open to Work
+              </span>
+            </div>
+            <div class="hero-identity-strip hero-identity-strip--below">
+              <div class="hero-fact-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Chicago, IL
+              </div>
+              <div class="hero-fact-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                Open to Remote · Hybrid
+              </div>
+              <div class="hero-fact-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                BA · Information Technology
+              </div>
+              <div class="hero-fact-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Healthcare · Analytics
+              </div>
+              <div class="hero-identity-links">
+                <a href="https://www.linkedin.com/in/andre-weissmann" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="LinkedIn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  LinkedIn
+                </a>
+                <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="GitHub">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.374 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                  GitHub
+                </a>
+              </div>
+            </div>
           </div>
 
           <h1 class="hero-heading">
@@ -85,8 +131,10 @@
             into clarity
           </h1>
 
+          <p class="hero-tagline">Raw data in. Real answers out.</p>
+
           <p class="hero-body">
-            Healthcare Data Analyst who believes every dataset tells a story worth telling — clearly, honestly, and with purpose.
+            Data Analyst specializing in Healthcare Operations and Analytics who believes every dataset tells a story worth telling. Clearly, honestly, and with purpose.
           </p>
 
           <div class="hero-stack">
@@ -98,35 +146,17 @@
           </div>
 
           <div class="hero-cta-row">
-            <a href="#projects" class="btn btn-primary">See My Projects</a>
-            <a href="#contact" class="btn btn-outline">Get in Touch</a>
+            <a href="#projects" class="btn btn-primary" onclick="instantJump(event,'projects')">See My Projects</a>
+            <a href="#contact" class="btn btn-outline" onclick="instantJump(event,'contact')">Get in Touch</a>
+            <a href="resume.html" id="resume-btn" class="btn btn-resume">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              View Resume
+            </a>
           </div>
         </div>
 
-        <div class="hero-right" aria-hidden="true">
-          <!-- Animated data card stack -->
-          <div class="hero-cards">
-            <div class="hcard hcard-1">
-              <div class="hcard-label">Avg BMI · Patient Cohort</div>
-              <div class="hcard-value">27.4</div>
-              <div class="hcard-sub">↑ 1.2 vs last quarter</div>
-              <div class="hcard-bar"><div class="hcard-bar-fill" style="width:68%"></div></div>
-            </div>
-            <div class="hcard hcard-2">
-              <div class="hcard-label">Data Professionals Surveyed</div>
-              <div class="hcard-value">630</div>
-              <div class="hcard-sub">Salary · Tools · Satisfaction</div>
-              <div class="hcard-dots">
-                <span></span><span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-            <div class="hcard hcard-3">
-              <div class="hcard-label">SQL Rows Cleaned</div>
-              <div class="hcard-value">56,477</div>
-              <div class="hcard-sub">Nashville Housing · 0 duplicates</div>
-            </div>
-          </div>
-        </div>
+
+
       </div>
 
       <div class="hero-scroll-hint" aria-hidden="true">
@@ -136,90 +166,63 @@
 
     <!-- ══ ABOUT ══ -->
     <section class="section about-section" id="about">
+      <!-- Profile banner -->
+      <div id="profile-banner" class="profile-banner" style="display:none">
+        <!-- profile-banner-img: populated programmatically when a banner is set -->
+      </div>
       <div class="container">
         <div class="about-layout">
 
           <!-- Left: photo + quick facts -->
-          <div class="about-sidebar">
-            <div class="about-photo-frame">
-              <img src="images/avatar.jpeg" alt="Andre Weissmann, Healthcare Data Analyst" class="about-photo" />
-              <div class="about-status">
-                <span class="status-dot"></span> Open to work
-              </div>
-            </div>
-
-            <div class="about-facts">
-              <div class="fact-row">
-                <span class="fact-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                </span>
-                <span>Chicago, IL</span>
-              </div>
-              <div class="fact-row">
-                <span class="fact-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                </span>
-                <span>Open to Remote · Hybrid</span>
-              </div>
-              <div class="fact-row">
-                <span class="fact-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                </span>
-                <span>BA · Information Technology</span>
-              </div>
-              <div class="fact-row">
-                <span class="fact-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                </span>
-                <span>Healthcare · Analytics</span>
-              </div>
-            </div>
-
-            <div class="about-social">
-              <a href="https://www.linkedin.com/in/andre-weissmann" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="LinkedIn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                LinkedIn
-              </a>
-              <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="GitHub">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-                GitHub
-              </a>
-            </div>
-          </div>
-
           <!-- Right: bio + story -->
           <div class="about-body">
             <div class="section-eyebrow">About Me</div>
             <h2 class="about-heading">Healthcare data that benefits society, not just spreadsheets</h2>
 
             <div class="about-bio">
-              <p>I'm <strong>Andre Weissmann</strong> — a data analyst with deep roots in healthcare operations and a genuine obsession with two things: <em>health data</em> and <em>differential privacy</em>. I believe that when data is analyzed with care, it can do more than inform decisions — it can improve lives.</p>
-              <p>My path into analytics started with curiosity and grew through real work. Five years in healthcare billing operations at <strong>Andres Medical Billing / EMS Management & Consultants</strong> gave me domain knowledge that most analysts don't have: I understand the data <em>before</em> it reaches the dashboard.</p>
-              <p>I've built projects across SQL, Python, Power BI, Tableau, and Excel — not as demos, but as genuine explorations. The portfolio you're looking at right now is the antidote to platforms that hide your work behind a login wall.</p>
+              <p>I'm <strong>Andre Weissmann</strong>, a data analyst with deep roots in healthcare operations and a genuine obsession with health data and how it moves through healthcare systems. When data is analyzed with care, it does more than inform decisions. It improves lives.</p>
+              <p>My path into analytics started with curiosity and grew through real work. Working inside healthcare billing operations at <strong>Andres Medical Billing / EMS Management & Consultants</strong> gave me domain knowledge that most analysts don't have: I understand the data <em>before</em> it reaches the dashboard.</p>
+              <p>I've built projects across SQL, Python, Power BI, Tableau, and Excel. Each one started with a real question, not a tutorial prompt. Working inside healthcare operations taught me something most analysts learn late: the messiest part of data isn't the cleaning. It's knowing what to ask of it.</p>
             </div>
 
             <!-- Pull quote -->
             <blockquote class="about-quote">
-              "My enthusiasm to learn more about data analytics grows every day."
+              My passion with data grows every day.
             </blockquote>
 
-            <!-- Mini stat row -->
-            <div class="about-stats">
-              <div class="about-stat">
-                <span class="about-stat-n">5</span>
-                <span class="about-stat-l">Projects</span>
+            <!-- Stat cards -->
+            <div class="about-stat-cards">
+              <div class="asc-card">
+                <div class="asc-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="asc-metric">5</div>
+                <div class="asc-label">Live Projects</div>
+                <div class="asc-sub">SQL · Python · Power BI · Tableau · Excel</div>
               </div>
-              <div class="about-stat">
-                <span class="about-stat-n">5+</span>
-                <span class="about-stat-l">Yrs Healthcare</span>
+              <div class="asc-card">
+                <div class="asc-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div class="asc-metric">5<span class="asc-plus">+</span></div>
+                <div class="asc-label">Years in Healthcare</div>
+                <div class="asc-sub">Revenue cycle · EMS billing · Operations</div>
               </div>
-              <div class="about-stat">
-                <span class="about-stat-n">6</span>
-                <span class="about-stat-l">Certifications</span>
+              <div class="asc-card">
+                <div class="asc-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                </div>
+                <div class="asc-metric">2</div>
+                <div class="asc-label">BI Tools Mastered</div>
+                <div class="asc-sub">Power BI · Tableau</div>
               </div>
-              <div class="about-stat">
-                <span class="about-stat-n">BA</span>
-                <span class="about-stat-l">SNHU · IT</span>
+              <div class="asc-card">
+                <div class="asc-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                </div>
+                <div class="asc-metric">BA</div>
+                <div class="asc-label">Information Technology</div>
+                <div class="asc-sub">SNHU · Graduated 2024</div>
               </div>
             </div>
           </div>
@@ -233,7 +236,7 @@
       <div class="container">
         <div class="section-eyebrow">Capabilities</div>
         <h2 class="section-heading">A full-stack analytics toolkit</h2>
-        <p class="section-sub">Built through projects, certifications, and five years in a healthcare environment where data accuracy is non-negotiable.</p>
+        <p class="section-sub">Built through projects, certifications, and hands-on work in a healthcare environment where data accuracy is non-negotiable.</p>
 
         <div class="skills-grid">
           <div class="skill-card">
@@ -252,7 +255,7 @@
             </div>
             <div class="skill-card-title">Programming</div>
             <div class="skill-pills">
-              <span>Python</span><span>SQL</span><span>R</span><span>pandas</span><span>Jupyter</span><span>dbt</span>
+              <span>Python</span><span>SQL</span><span>VBA</span><span>R</span><span>C++</span><span>Visual Basic</span>
             </div>
           </div>
 
@@ -262,7 +265,7 @@
             </div>
             <div class="skill-card-title">Visualization</div>
             <div class="skill-pills">
-              <span>Power BI</span><span>Tableau</span><span>Streamlit</span><span>D-Tale</span><span>Chart.js</span>
+              <span>Power BI</span><span>Tableau</span><span>Microsoft Excel</span><span>PivotCharts</span><span>DAX</span><span>Dashboard Design</span>
             </div>
           </div>
 
@@ -272,17 +275,7 @@
             </div>
             <div class="skill-card-title">Healthcare Domain</div>
             <div class="skill-pills">
-              <span>Health Data</span><span>Differential Privacy</span><span>FHIR</span><span>Medical Billing</span><span>Ops Analytics</span>
-            </div>
-          </div>
-
-          <div class="skill-card">
-            <div class="skill-card-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 8v4l3 3"/></svg>
-            </div>
-            <div class="skill-card-title">Machine Learning</div>
-            <div class="skill-pills">
-              <span>Regression</span><span>Classification</span><span>Forecasting</span><span>Unsupervised</span><span>Generative AI</span>
+              <span>Medical Billing</span><span>Revenue Cycle</span><span>ICD-10-CM Coding</span><span>CPT Codes</span><span>Prior Authorization</span><span>Claims Data</span><span>HIPAA</span><span>Health Data</span><span>Ops Analytics</span>
             </div>
           </div>
 
@@ -290,28 +283,44 @@
             <div class="skill-card-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
             </div>
-            <div class="skill-card-title">Workflow & Tools</div>
+            <div class="skill-card-title">Workflow &amp; Tools</div>
             <div class="tools-logos">
-              <div class="tool-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                Microsoft 365
-              </div>
               <div class="tool-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
                 GitHub
               </div>
               <div class="tool-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                VS Code
-              </div>
-              <div class="tool-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Teams
-              </div>
-              <div class="tool-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
                 AI Agents
               </div>
+              <div class="tool-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
+                Jupyter
+              </div>
+              <div class="tool-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 12c0 1.657 4.03 3 9 3s9-1.343 9-3"/></svg>
+                SQL Server
+              </div>
+            </div>
+          </div>
+
+          <div class="skill-card">
+            <div class="skill-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <div class="skill-card-title">AI and Automation</div>
+            <div class="skill-pills">
+              <span>Microsoft Copilot</span><span>Prompt Engineering</span><span>AI-Assisted Debugging</span><span>VBA Macro Automation</span>
+            </div>
+          </div>
+
+          <div class="skill-card">
+            <div class="skill-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/><path d="M17 3l2 2-2 2M7 3L5 5l2 2"/></svg>
+            </div>
+            <div class="skill-card-title">Certifications</div>
+            <div class="skill-pills">
+              <span>Google Data Analytics</span><span>Maven Analytics</span><span>Analyst Builder</span>
             </div>
           </div>
         </div>
@@ -323,7 +332,7 @@
       <div class="container">
         <div class="section-eyebrow">Portfolio</div>
         <h2 class="section-heading">Interactive data projects</h2>
-        <p class="section-sub">Don't just read about it — run it. Every project below is fully interactive: write SQL, enter your own data, filter dashboards, and explore the findings firsthand.</p>
+        <p class="section-sub">Don't just read about it. Run it. Every project below is fully interactive: enter your own data, run preset queries, filter dashboards, and explore the findings firsthand.</p>
 
         <div class="projects-list">
 
@@ -335,27 +344,31 @@
                 <span class="proj-year">2023</span>
                 <button class="proj-explore-btn" data-explore="nashville">Deep Dive &rarr;</button>
               </div>
-              <h3 class="project-block-title">Cleaning Nashville Housing Property Data</h3>
-              <p class="project-block-desc">SQL data cleaning techniques applied to standardize raw Nashville housing records. Handles NULLs, splits address columns, removes duplicates, reformats dates — the unglamorous but essential work that makes every downstream analysis reliable.</p>
+              <h3 class="project-block-title">Nashville Housing: Turning 56,477 Corrupt Records Into a Trusted Data Asset</h3>
+              <p class="project-block-desc">A real estate dataset with missing addresses, duplicated parcels, and four inconsistent values where two should exist cannot support any downstream decision. Using SQL Server, I applied seven data cleaning methods: self-join imputation for missing addresses, PARSENAME to split owner and property address columns, CASE WHEN standardization across 56,477 rows, CTE-plus-ROW_NUMBER deduplication, and date format normalization. The output is a fully queryable, trustworthy table any analyst or business team can build on without second-guessing the data.</p>
               <div class="project-tech-row"><span>SQL</span><span>Data Cleaning</span><span>Data Quality</span><span>Database Management</span></div>
-              <img src="images/nashville-home.jpg" alt="Nashville Housing Data" class="project-block-img" loading="lazy"/>
+              <img src="images/nashville-home.jpg" alt="Nashville Housing Data" width="358" height="202" class="project-block-img" loading="lazy"/>
             </div>
             <div class="project-block-demo">
               <div class="demo-header">
                 <span class="demo-badge"><span class="live-dot"></span>Live SQL Sandbox</span>
-                <p class="demo-hint">Pick an example or write your own query. Press <kbd>Ctrl+Enter</kbd> to run.</p>
+                <p class="demo-hint">56,477 Nashville housing records. Results load live — pick any query to update instantly.</p>
               </div>
               <div class="sql-sandbox">
+                <p class="sql-preset-label">Live SQL sandbox · results update as you explore</p>
                 <div class="sql-examples">
                   <button class="sql-ex" data-query="SELECT ParcelID, LandUse, SaleDate, SalePrice, LegalReference FROM housing LIMIT 10;">Preview rows</button>
                   <button class="sql-ex" data-query="SELECT LandUse, COUNT(*) as total, ROUND(AVG(SalePrice),0) as avg_price FROM housing GROUP BY LandUse ORDER BY total DESC;">By land use</button>
                   <button class="sql-ex" data-query="SELECT * FROM housing WHERE SalePrice IS NULL OR SaleDate IS NULL;">Find NULLs</button>
                   <button class="sql-ex" data-query="SELECT LandUse, SaleDate, SalePrice FROM housing WHERE SalePrice > 500000 ORDER BY SalePrice DESC;">High-value sales</button>
                 </div>
-                <textarea class="sql-editor" id="sql-editor-nashville" spellcheck="false">SELECT ParcelID, LandUse, SaleDate, SalePrice, LegalReference FROM housing LIMIT 10;</textarea>
-                <button class="sql-run-btn" data-target="nashville">▶ Run Query</button>
+                <!-- SQL code reveal block -->
+                <div class="sql-code-reveal" id="sql-code-reveal" style="display:none;">
+                  <div class="sql-code-label">SQL behind this query</div>
+                  <pre class="sql-code-block" id="sql-code-display"></pre>
+                </div>
                 <div class="sql-results" id="sql-results-nashville">
-                  <div class="sql-placeholder">Results will appear here. Click an example or run a query above.</div>
+                  <div class="sql-placeholder">Loading live query results…</div>
                 </div>
               </div>
             </div>
@@ -369,17 +382,24 @@
                 <span class="proj-year">2023</span>
                 <button class="proj-explore-btn" data-explore="bmi">Deep Dive &rarr;</button>
               </div>
-              <h3 class="project-block-title">Health Data Insights: BMI & Waist-to-Hip Ratio</h3>
-              <p class="project-block-desc">A Python health analytics tool that calculates Body Mass Index and optionally Waist-to-Hip Ratio, then delivers risk category insights. Demonstrates input validation, clinical formula implementation, and translating medical concepts into accessible, actionable output.</p>
+              <h3 class="project-block-title">BMI and Waist-to-Hip Ratio: Clinical Risk Screening in Plain Language</h3>
+              <p class="project-block-desc">Raw BMI scores are screening tools, not diagnoses. This Python program applies the CDC formula across four clinical weight categories, then optionally calculates Waist-to-Hip Ratio using WHO thresholds (0.90 for men, 0.85 for women) to add a cardiovascular risk dimension BMI alone cannot provide. The output is not a number to Google. It is a plain-English assessment: your classification, your risk tier, and what it means, delivered in seconds to a patient or provider with no medical background required.</p>
               <div class="project-tech-row"><span>Python</span><span>Health Analytics</span><span>Data Validation</span><span>CLI Programming</span></div>
-              <img src="images/bmi-main.jpg" alt="BMI Health Analysis" class="project-block-img" loading="lazy"/>
+              <img src="images/bmi-main.jpg" alt="BMI Health Analysis" width="358" height="202" class="project-block-img" loading="lazy"/>
             </div>
             <div class="project-block-demo">
               <div class="demo-header">
                 <span class="demo-badge"><span class="live-dot"></span>Live Python Program</span>
-                <p class="demo-hint">Enter your own measurements and run the actual health analysis.</p>
+                <p class="demo-hint">Live calculator · results update as you change height, weight, or WHR.</p>
               </div>
               <div class="bmi-app">
+                <div class="bmi-presets">
+                  <span class="bmi-preset-label">Quick scenarios:</span>
+                  <button class="bmi-preset-btn" data-feet="5" data-inches="8" data-weight="115">Underweight: 5'8", 115 lbs</button>
+                  <button class="bmi-preset-btn" data-feet="5" data-inches="10" data-weight="155">Healthy Weight: 5'10", 155 lbs</button>
+                  <button class="bmi-preset-btn" data-feet="6" data-inches="1" data-weight="190">Overweight: 6'1", 190 lbs</button>
+                  <button class="bmi-preset-btn" data-feet="5" data-inches="9" data-weight="220">Above Obesity: 5'9", 220 lbs</button>
+                </div>
                 <div class="bmi-row">
                   <div class="bmi-field">
                     <label class="bmi-label">Height</label>
@@ -440,8 +460,8 @@
                     </div>
                   </div>
                 </div>
-                <button class="bmi-run-btn" id="bmi-run-btn">Analyze My Health Data</button>
-                <div id="bmi-output" style="display:none;"></div>
+                <div class="bmi-live-status" id="bmi-live-status" aria-live="polite">Live · updates as you type</div>
+                <div id="bmi-output"></div>
               </div>
             </div>
           </article>
@@ -454,18 +474,12 @@
                 <span class="proj-year">2023</span>
                 <button class="proj-explore-btn" data-explore="survey">Deep Dive &rarr;</button>
               </div>
-              <h3 class="project-block-title">Analysis on a Survey of 630 Data Professionals</h3>
-              <p class="project-block-desc">Power BI analysis of data willingly shared by 630 professionals. Explores salary by role and country, preferred programming languages, career entry difficulty, and work-life satisfaction — surfacing trends that matter to anyone navigating a data career.</p>
+              <h3 class="project-block-title">Data Professionals Survey: Does Education Level Actually Drive Salary?</h3>
+              <p class="project-block-desc">630 data professionals across the US, India, Canada, and UK reported their salaries, tools, and satisfaction. The central question was whether education level predicts compensation. The Power BI dashboard I built across five charts and two KPI cards answers it clearly: PhD holders average $206K, yet bachelor's degree data scientists average $93K and outperform associates and masters tiers in total employment volume. Education level alone is not the salary driver people assume. The real signal is role, not credential. That distinction matters to every hiring manager setting compensation bands and every early-career analyst deciding whether to go back to school.</p>
               <div class="project-tech-row"><span>Power BI</span><span>Survey Analysis</span><span>DAX</span><span>Data Visualization</span></div>
-              <img src="images/powerbi-dashboard.png" alt="Power BI Dashboard" class="project-block-img" loading="lazy"/>
+              <a href="powerbi-dashboard.html" target="_blank" rel="noopener noreferrer" class="project-block-img-link" aria-label="Open Power BI Dashboard"><img src="images/powerbi-dashboard.png" alt="Power BI Dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></a>
             </div>
-            <div class="project-block-demo project-block-demo--tall">
-              <div class="demo-header">
-                <span class="demo-badge"><span class="live-dot"></span>LIVE POWER BI DASHBOARD</span>
-                <p class="demo-hint">Interactive replica · 630 participants · Cross-filtering</p>
-              </div>
-              <div id="powerbi-replica" style="width:100%;flex:1"></div>
-            </div>
+
           </article>
 
           <!-- PROJECT 4: Airbnb Tableau -->
@@ -476,18 +490,12 @@
                 <span class="proj-year">2023</span>
                 <button class="proj-explore-btn" data-explore="airbnb">Deep Dive &rarr;</button>
               </div>
-              <h3 class="project-block-title">Airbnb Analysis of Seattle Residential Areas — 2016</h3>
-              <p class="project-block-desc">Tableau analysis of Seattle Airbnb listings across residential zip codes in 2016. Surfaces pricing by neighborhood, seasonal revenue patterns, and the relationship between bedroom count and nightly rate — turning geographic and temporal data into a clear host strategy narrative.</p>
+              <h3 class="project-block-title">Seattle Airbnb 2016: The Three Variables That Explain Every Pricing Decision</h3>
+              <p class="project-block-desc">323,346 booking records across Seattle's Airbnb market. Seven missing zip codes manually corrected through neighborhood cross-referencing. An inner join across Listings and Calendar tables to connect property attributes to revenue timing. What emerged were three clean levers any host can act on: zip code 98134 commands the city's highest average nightly rate, a four-bedroom generates nearly four times the revenue of a one-bedroom, and the week of December 25th ($2,110,350 in city-wide revenue) outperforms the week of March 27th ($1,906,735). Gut-feel pricing ignores all three. This Tableau dashboard makes all three visible and interactive.</p>
               <div class="project-tech-row"><span>Tableau</span><span>Geospatial</span><span>Time Series</span><span>Airbnb Data</span></div>
-              <img src="images/airbnb-dashboard.png" alt="Airbnb Seattle Tableau Dashboard" class="project-block-img" loading="lazy"/>
+              <a href="tableau-dashboard.html" target="_blank" rel="noopener noreferrer" class="project-block-img-link" aria-label="Open Tableau Dashboard"><img src="images/airbnb-dashboard.png" alt="Airbnb Seattle Tableau Dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></a>
             </div>
-            <div class="project-block-demo project-block-demo--tall">
-              <div class="demo-header">
-                <span class="demo-badge"><span class="live-dot"></span>LIVE TABLEAU DASHBOARD</span>
-                <p class="demo-hint">Sheet tabs · 5 views · Yearly revenue + zip pricing + bedrooms</p>
-              </div>
-              <div id="tableau-replica" style="width:100%;flex:1"></div>
-            </div>
+
           </article>
 
           <!-- PROJECT 5: Bike Sales Excel -->
@@ -498,47 +506,12 @@
                 <span class="proj-year">2023</span>
                 <button class="proj-explore-btn" data-explore="bikes">Deep Dive &rarr;</button>
               </div>
-              <h3 class="project-block-title">Bike Sales Business Insights</h3>
-              <p class="project-block-desc">Excel-powered analysis of bike sales data visualized to guide business strategy. Segments customers by demographics, commute distance, and income — identifying which buyers convert and why. Data storytelling that turns a spreadsheet into a strategic roadmap.</p>
+              <h3 class="project-block-title">Bike Sales: Pacific Region Shows Strong Margins — On a Smaller Sample Worth Watching</h3>
+              <p class="project-block-desc">13,351 sales records across Europe, North America, and the Pacific region. After deduplication and field standardization (marital status, gender, and age brackets via nested IF formula), four pivot tables and an interactive slicer dashboard revealed one clear finding: the Pacific region generates the highest profit margins in bike sales. The highest-income buyer profile is a married Pacific-region homeowner in a management role averaging $90,000 annually. The farthest commute distances are also in the Pacific region, where middle-aged female buyers ride more than 10 miles. For any stakeholder allocating sales or marketing investment, this dataset points to one region, one demographic, and one clear next move.</p>
               <div class="project-tech-row"><span>Microsoft Excel</span><span>Data Visualization</span><span>Sales Analytics</span><span>BI</span></div>
-              <img src="images/bike-sales.png" alt="Bike Sales Excel Dashboard" class="project-block-img" loading="lazy"/>
+              <a href="excel-dashboard.html" target="_blank" rel="noopener noreferrer" class="project-block-img-link" aria-label="Open Excel Dashboard"><img src="images/bike-sales.png" alt="Bike Sales Excel Dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></a>
             </div>
-            <div class="project-block-demo project-block-demo--tall">
-              <div class="demo-header">
-                <span class="demo-badge"><span class="live-dot"></span>Interactive Dashboard</span>
-                <p class="demo-hint">Slice by region and marital status to explore purchase drivers.</p>
-              </div>
-              <div class="survey-filters">
-                <div class="filter-wrap">
-                  <label class="filter-lbl">Region</label>
-                  <select id="bike-region" class="filter-sel">
-                    <option value="all">All Regions</option>
-                    <option value="North America">North America</option>
-                    <option value="Europe">Europe</option>
-                    <option value="Pacific">Pacific</option>
-                  </select>
-                </div>
-                <div class="filter-wrap">
-                  <label class="filter-lbl">Marital Status</label>
-                  <select id="bike-marital" class="filter-sel">
-                    <option value="all">All</option>
-                    <option value="Married">Married</option>
-                    <option value="Single">Single</option>
-                  </select>
-                </div>
-              </div>
-              <div class="kpi-row">
-                <div class="kpi"><div class="kpi-n" id="bk-sales">1,000</div><div class="kpi-l">Records</div></div>
-                <div class="kpi"><div class="kpi-n" id="bk-purchased">481</div><div class="kpi-l">Purchased</div></div>
-                <div class="kpi"><div class="kpi-n" id="bk-rate">48%</div><div class="kpi-l">Purchase Rate</div></div>
-              </div>
-              <div class="charts-2col">
-                <div class="chart-card"><div class="chart-lbl">Purchases by Age Group</div><canvas id="chart-bike-age" height="200"></canvas></div>
-                <div class="chart-card"><div class="chart-lbl">By Commute Distance</div><canvas id="chart-bike-commute" height="200"></canvas></div>
-                <div class="chart-card"><div class="chart-lbl">Income vs Decision</div><canvas id="chart-bike-income" height="180"></canvas></div>
-                <div class="chart-card"><div class="chart-lbl">By Region</div><canvas id="chart-bike-region" height="180"></canvas></div>
-              </div>
-            </div>
+
           </article>
 
         </div>
@@ -606,7 +579,7 @@
                 <div class="tl-dot"></div>
                 <div class="tl-date">Aug 2003 – Jun 2007</div>
                 <div class="tl-role">Associate of Science</div>
-                <div class="tl-org">Harper College — Health Information Technology</div>
+                <div class="tl-org">Harper College, Health Information Technology</div>
               </div>
             </div>
           </div>
@@ -645,155 +618,790 @@
       </div>
     </section>
 
-    <!-- ══ CONTACT ══ -->
-    <section class="section contact-section" id="contact">
-      <div class="container">
-        <div class="contact-wrap">
-          <div class="contact-orb"></div>
-          <div class="section-eyebrow">Let's Connect</div>
-          <h2 class="contact-heading">Open to data analyst &amp;<br>operations performance roles</h2>
-          <p class="contact-body">Actively seeking remote or hybrid opportunities in healthcare analytics. If you have a role, a project, or just want to connect — I'd genuinely love to hear from you.</p>
-          <div class="contact-btns">
-            <a href="https://www.linkedin.com/in/andre-weissmann" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-              Connect on LinkedIn
-            </a>
-            <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-lg">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-              View GitHub
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
 
-  </main>
+
+    <!-- ══ CONTACT ══ -->
+    <!-- ══════════════════════════════════════════════════════════
+             CONTACT FORM v7 — "Spreadsheet with a Pulse"
+             Two modes: Plain English / SQL Builder
+             Shared state object; mode is a lens, not a fork.
+             No Mac window buttons. No terminal. Just data.
+        ══════════════════════════════════════════════════════════ -->
+        <section class="section contact-section" id="contact">
+    
+          <!-- Easter egg -->
+          <!--
+            SELECT * FROM curious_developers WHERE you_read_the_source = true;
+            -- Hi. I'm Andre. Yes, I really do write my own comments. Let's talk.
+          -->
+    
+          <div class="v7-bg">
+            <div class="v7-wrap">
+    
+              <!-- ── Header ── -->
+              <div class="v7-header" id="v7-header">
+                <p class="v7-eyebrow v7-arrive" data-arrive="eyebrow">Let's connect</p>
+                <h2 class="v7-headline v7-arrive" data-arrive="headline">I'd love to hear from you.</h2>
+                <p class="v7-subhead v7-arrive" data-arrive="subhead">Drop me a line. I read every message personally and always write back.</p>
+                <div class="v7-contact-links v7-arrive" data-arrive="note">
+                  <a href="https://www.linkedin.com/in/andre-weissmann" class="v7-contact-link" target="_blank" rel="noopener noreferrer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    Connect on LinkedIn
+                  </a>
+                </div>
+              </div>
+    
+              <!-- ── Intent bar + Mode switcher ── -->
+              <div class="v7-switcher-wrap v7-arrive" data-arrive="switcher" id="v7-switcher-wrap">
+              <!-- contact-form anchor: nav scrolls here so the form is in view -->
+              <span id="contact-form" style="position:relative;top:-88px;display:block;pointer-events:none;" aria-hidden="true"></span>
+
+                <!-- Intent selector — what brings you here? -->
+                <div class="v7-intent-bar" id="v7-intent-bar" role="group" aria-label="What brings you here?">
+                  <p class="v7-intent-label">What brings you here?</p>
+                  <div class="v7-intent-btns">
+                    <button class="v7-intent-btn" data-intent="hire" type="button" aria-pressed="false" data-testid="v7-intent-hire">
+                      <svg class="v7-intent-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                      I'm hiring
+                    </button>
+                    <button class="v7-intent-btn" data-intent="collab" type="button" aria-pressed="false" data-testid="v7-intent-collab">
+                      <svg class="v7-intent-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      Let's work together
+                    </button>
+                    <button class="v7-intent-btn" data-intent="hello" type="button" aria-pressed="false" data-testid="v7-intent-hello">
+                      <svg class="v7-intent-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      Just saying hi
+                    </button>
+                    <button class="v7-intent-btn" data-intent="other" type="button" aria-pressed="false" data-testid="v7-intent-other">
+                      <svg class="v7-intent-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                      Something else
+                    </button>
+                    <button class="v7-intent-btn v7-intent-btn--sql" data-intent="sql" type="button" aria-pressed="false" data-testid="v7-intent-sql">
+                      <svg class="v7-intent-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                      SQL mode
+                    </button>
+                  </div>
+                  <p class="v7-intent-hint" id="v7-intent-hint" aria-live="polite"></p>
+                </div>
+
+                <!-- Hidden original switcher — still needed for JS logic -->
+                <div class="v7-switcher" role="group" aria-label="Choose contact mode" id="v7-switcher" style="display:none" aria-hidden="true">
+                  <button class="v7-mode-btn v7-mode-btn--active" id="v7-btn-plain" type="button"
+                    data-mode="plain" aria-pressed="true" data-testid="v7-btn-plain">Quick Form</button>
+                  <button class="v7-mode-btn" id="v7-btn-sql" type="button"
+                    data-mode="sql" aria-pressed="false" data-testid="v7-btn-sql">SQL Editor Form</button>
+                  <span class="v7-pill" id="v7-pill" aria-hidden="true"></span>
+                </div>
+              </div>
+    
+              <!-- ── Subject chips — shared by both forms ── -->
+              <div class="v7-chip-row v7-chip-row--shared" id="v7-chip-row" style="display:none" aria-hidden="true" role="group" aria-label="Quick subject starters">
+                <span class="v7-chip-row-label">Subject:</span>
+                <button class="v7-chip" data-chip="recruiter" type="button" data-testid="v7-chip-recruiter">
+                  <span class="v7-chip-prefix" aria-hidden="true">--</span> Open to hiring
+                </button>
+                <button class="v7-chip" data-chip="collaborator" type="button" data-testid="v7-chip-collab">
+                  <span class="v7-chip-prefix" aria-hidden="true">--</span> Project collaboration
+                </button>
+                <button class="v7-chip" data-chip="hi" type="button" data-testid="v7-chip-hi">
+                  <span class="v7-chip-prefix" aria-hidden="true">--</span> Networking
+                </button>
+                <button class="v7-chip" data-chip="feedback" type="button" data-testid="v7-chip-feedback">
+                  <span class="v7-chip-prefix" aria-hidden="true">--</span> Feedback on my work
+                </button>
+                <!-- Custom chip -->
+                <button class="v7-chip v7-chip--custom" id="v7-chip-custom" type="button" data-testid="v7-chip-custom">
+                  <span class="v7-chip-prefix" aria-hidden="true">+</span> Other
+                </button>
+                <div class="v7-chip-custom-wrap" id="v7-chip-custom-wrap" hidden>
+                  <input class="v7-chip-custom-input" id="v7-chip-custom-input" type="text"
+                    placeholder="Your subject..." autocomplete="off" maxlength="80"
+                    aria-label="Custom subject" data-testid="v7-chip-custom-input" />
+
+                </div>
+              </div>
+
+              <!-- Subject confirmation — shows when a subject is set -->
+              <div class="v7-subject-set" id="v7-subject-set" hidden aria-live="polite" style="display:none">
+                <span class="v7-subject-set-label">Subject set:</span>
+                <span class="v7-subject-set-val" id="v7-subject-set-val"></span>
+                <button class="v7-subject-set-clear" id="v7-subject-set-clear" type="button" aria-label="Clear subject">clear</button>
+              </div>
+
+              <!-- ── Panel Container ── -->
+              <div class="v7-panels v7-arrive" data-arrive="form" id="v7-panels">
+                <!-- ══ PLAIN ENGLISH PANEL ══ -->
+                <div class="v7-panel v7-plain-panel" id="v7-plain-panel" role="form" aria-label="Quick Form contact form">
+    
+                  <div class="v7-p-fields">
+    
+                    <div class="v7-p-field" id="v7-pf-name">
+                      <label class="v7-p-label" for="v7-p-name">Name</label>
+                      <div class="v7-p-input-wrap">
+                        <input class="v7-p-input" type="text" id="v7-p-name"
+                          placeholder="Jane Smith" autocomplete="off" maxlength="80"
+                          data-testid="v7-p-name" />
+                        <svg class="v7-p-check" id="v7-pc-name" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                          stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </div>
+                      <span class="v7-p-err" id="v7-pe-name" aria-live="polite"></span>
+                    </div>
+    
+                    <div class="v7-p-field" id="v7-pf-email">
+                      <label class="v7-p-label" for="v7-p-email">Email</label>
+                      <div class="v7-p-input-wrap">
+                        <input class="v7-p-input" type="email" id="v7-p-email"
+                          placeholder="jane@company.com" autocomplete="off" maxlength="120"
+                          data-testid="v7-p-email" />
+                        <svg class="v7-p-check" id="v7-pc-email" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                          stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </div>
+                      <span class="v7-p-err" id="v7-pe-email" aria-live="polite"></span>
+                    </div>
+    
+                    <!-- Subject hidden — chips above both forms serve as the subject picker -->
+                    <div class="v7-p-field" id="v7-pf-subject" aria-hidden="true" style="display:none">
+                      <label class="v7-p-label" for="v7-p-subject">Subject <span class="v7-p-optional">(optional)</span></label>
+                      <div class="v7-p-input-wrap">
+                        <input class="v7-p-input" type="text" id="v7-p-subject"
+                          placeholder="What's this about?" autocomplete="off" maxlength="80"
+                          data-testid="v7-p-subject" tabindex="-1" />
+                      </div>
+                    </div>
+    
+                    <div class="v7-p-field" id="v7-pf-msg">
+                      <label class="v7-p-label" for="v7-p-msg">Message</label>
+                      <div class="v7-p-input-wrap">
+                        <textarea class="v7-p-input v7-p-textarea" id="v7-p-msg"
+                          placeholder="Tell me a bit about what you're working on or what brought you here."
+                          rows="5" autocomplete="off" maxlength="5000"
+                          data-testid="v7-p-msg"></textarea>
+                      </div>
+                      <div class="v7-p-char-row">
+                        <span class="v7-p-err" id="v7-pe-msg" aria-live="polite"></span>
+                        <span class="v7-p-char" id="v7-p-char"></span>
+                      </div>
+                    </div>
+    
+                  </div><!-- /v7-p-fields -->
+    
+                  <div class="v7-p-submit-row">
+                    <button class="v7-p-submit-btn" id="v7-p-submit" type="button" data-testid="v7-p-submit">
+                      <span class="v7-p-btn-label" id="v7-p-btn-label">Send message</span>
+                      <svg class="v7-p-btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                      </svg>
+                      <svg class="v7-p-btn-spinner" id="v7-p-spinner" width="16" height="16"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        aria-hidden="true" hidden>
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                      </svg>
+                    </button>
+                    <p class="v7-p-reassure">Goes straight to my inbox. I read and reply to every one.</p>
+                  </div>
+    
+                  <div class="v7-p-status" id="v7-p-status" aria-live="assertive"></div>
+    
+                </div><!-- /v7-plain-panel -->
+    
+                <!-- ══ SQL BUILDER PANEL ══ -->
+                <div class="v7-panel v7-sql-panel" id="v7-sql-panel" hidden role="form" aria-label="SQL Editor Form contact form">
+    
+                  <p class="v7-sql-intro">Build your own query. Only email and message are required. Everything is your choice.</p>
+    
+                  <!-- Editor card -->
+                  <div class="v7-editor-card" id="v7-editor-card">
+    
+                    <!-- Tab bar -->
+                    <div class="v7-tab-bar" id="v7-tab-bar" role="tablist">
+                      <div class="v7-tab v7-tab--active" role="tab" aria-selected="true">
+                        <span class="v7-tab-icon" aria-hidden="true">&#9636;</span>
+                        <span class="v7-tab-filename" id="v7-tab-filename">contact.sql</span>
+                        <span class="v7-tab-dot" id="v7-tab-dot" aria-hidden="true" hidden></span>
+                      </div>
+                      <div class="v7-tab-spacer"></div>
+                    </div>
+    
+                    <!-- Block shelf: optional toggleable blocks -->
+                    <div class="v7-block-shelf" id="v7-block-shelf" role="group" aria-label="Optional SQL blocks">
+                      <div class="v7-block-shelf-label">
+                        <span class="v7-cmt-inline">-- add optional columns (totally optional, just for fun)</span>
+                        <span class="v7-block-shelf-hint" id="v7-block-shelf-hint">Add optional blocks to build your query</span>
+                      </div>
+                      <div class="v7-block-toggles">
+                        <button class="v7-block-toggle" data-block-toggle="name" type="button" aria-pressed="false" data-testid="v7-block-toggle-name">
+                          <span class="v7-block-toggle-plus" aria-hidden="true">+</span>
+                          <span class="v7-block-toggle-kw">NAME</span>
+                        </button>
+                        <button class="v7-block-toggle" data-block-toggle="subject" type="button" aria-pressed="false" data-testid="v7-block-toggle-subject">
+                          <span class="v7-block-toggle-plus" aria-hidden="true">+</span>
+                          <span class="v7-block-toggle-kw">SUBJECT</span>
+                        </button>
+                        <button class="v7-block-toggle" data-block-toggle="priority" type="button" aria-pressed="false" data-testid="v7-block-toggle-priority">
+                          <span class="v7-block-toggle-plus" aria-hidden="true">+</span>
+                          <span class="v7-block-toggle-kw">PRIORITY</span>
+                        </button>
+                        <button class="v7-block-toggle" data-block-toggle="returning" type="button" aria-pressed="false" data-testid="v7-block-toggle-returning">
+                          <span class="v7-block-toggle-plus" aria-hidden="true">+</span>
+                          <span class="v7-block-toggle-kw">RETURNING</span>
+                        </button>
+                      </div>
+                    </div>
+    
+                    <!-- Required field rows -->
+                    <div class="v7-input-rows" id="v7-input-rows">
+
+                      <!-- NAME block (optional, hidden by default) -->
+                      <div class="v7-sql-block-row" id="v7-sql-block-name" hidden>
+                        <div class="v7-field-cell" data-col="name" data-state="empty" id="v7-cell-name">
+                          <div class="v7-field-row-label"><span class="v7-col-name">name</span></div>
+                          <div class="v7-field-value-line">
+                            <span class="v7-q" aria-hidden="true">'</span>
+                            <input class="v7-sql-input" type="text" id="v7-s-name"
+                              placeholder="your_name" autocomplete="off" maxlength="80"
+                              aria-label="Name" tabindex="1" data-testid="v7-s-name" />
+                            <span class="v7-q" aria-hidden="true">'</span>
+                          </div>
+                          <div class="v7-field-meta">
+                            <span class="v7-field-hint" id="v7-hint-name">Your first and last name</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- EMAIL block (required, always visible) -->
+                      <div class="v7-sql-block-row">
+                        <div class="v7-field-cell" data-col="email" data-state="empty" id="v7-cell-email">
+                          <div class="v7-field-row-label"><span class="v7-col-name">email</span> <span class="v7-required-badge">required</span></div>
+                          <div class="v7-field-value-line">
+                            <span class="v7-q" aria-hidden="true">'</span>
+                            <input class="v7-sql-input" type="email" id="v7-s-email"
+                              placeholder="you@example.com" autocomplete="off" maxlength="120"
+                              aria-label="Email" tabindex="2" data-testid="v7-s-email" />
+                            <span class="v7-q" aria-hidden="true">'</span>
+                          </div>
+                          <div class="v7-field-meta">
+                            <span class="v7-field-hint" id="v7-hint-email">Your email address, so I can write back</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- SUBJECT block (optional, hidden by default) -->
+                      <div class="v7-sql-block-row" id="v7-sql-block-subject" hidden>
+                        <div class="v7-field-cell" data-col="subject" data-state="empty" id="v7-cell-subject">
+                          <div class="v7-field-row-label"><span class="v7-col-name">subject</span></div>
+                          <div class="v7-field-value-line">
+                            <span class="v7-q" aria-hidden="true">'</span>
+                            <input class="v7-sql-input" type="text" id="v7-s-subject"
+                              placeholder="what_this_is_about" autocomplete="off" maxlength="80"
+                              aria-label="Subject (optional)" tabindex="3" data-testid="v7-s-subject" />
+                            <span class="v7-q" aria-hidden="true">'</span>
+                          </div>
+                          <div class="v7-field-meta">
+                            <span class="v7-field-hint" id="v7-hint-subject">Subject line for your message (optional)</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- MESSAGE block (required, always visible) -->
+                      <div class="v7-sql-block-row">
+                        <div class="v7-field-cell v7-field-cell--msg" data-col="message" data-state="empty" id="v7-cell-msg">
+                          <div class="v7-field-row-label"><span class="v7-col-name">message</span> <span class="v7-required-badge">required</span></div>
+                          <div class="v7-field-value-line v7-field-value-line--block">
+                            <span class="v7-q" aria-hidden="true">'</span>
+                            <textarea class="v7-sql-input v7-sql-textarea" id="v7-s-msg"
+                              placeholder="your_message" autocomplete="off"
+                              rows="3" aria-label="Message" tabindex="4" maxlength="5000"
+                              data-testid="v7-s-msg"></textarea>
+                            <span class="v7-q" aria-hidden="true">'</span>
+                          </div>
+                          <div class="v7-field-meta">
+                            <span class="v7-field-hint" id="v7-hint-msg">Your message, write as much as you like</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- PRIORITY block (optional, hidden by default) -->
+                      <div class="v7-sql-block-row" id="v7-sql-block-priority" hidden>
+                        <div class="v7-field-cell" data-col="priority" data-state="empty">
+                          <div class="v7-field-row-label"><span class="v7-cmt-inline">-- PRIORITY</span> <span class="v7-optional-note">shows up as a comment, not a column</span></div>
+                          <div class="v7-priority-pills">
+                            <button class="v7-option-pill" data-priority="whenever_you_can" type="button" aria-pressed="false" data-testid="v7-priority-whenever">'whenever_you_can'</button>
+                            <button class="v7-option-pill" data-priority="soon" type="button" aria-pressed="false" data-testid="v7-priority-soon">'soon'</button>
+                            <button class="v7-option-pill" data-priority="urgent" type="button" aria-pressed="false" data-testid="v7-priority-urgent">'urgent'</button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- RETURNING block (optional, hidden by default) -->
+                      <div class="v7-sql-block-row" id="v7-sql-block-returning" hidden>
+                        <div class="v7-field-cell" data-col="returning" data-state="empty">
+                          <div class="v7-field-row-label"><span class="v7-col-name">RETURNING</span> <span class="v7-optional-note">what would you like back?</span></div>
+                          <div class="v7-priority-pills">
+                            <button class="v7-option-pill" data-returning="a_reply" type="button" aria-pressed="false" data-testid="v7-returning-reply">'a_reply'</button>
+                            <button class="v7-option-pill" data-returning="lets_talk" type="button" aria-pressed="false" data-testid="v7-returning-talk">'lets_talk'</button>
+                            <button class="v7-option-pill" data-returning="no_need" type="button" aria-pressed="false" data-testid="v7-returning-noneed">'no_need'</button>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div><!-- /v7-input-rows -->
+    
+                    <!-- Live query preview pane -->
+                    <div class="v7-preview-wrap" id="v7-preview-wrap">
+                      <div class="v7-preview-label" aria-hidden="true">LIVE PREVIEW</div>
+                      <pre class="v7-preview" id="v7-preview" aria-live="polite" aria-label="Live SQL preview" tabindex="-1"><code><span class="v7-cmt">-- your message to Andre</span>
+<span class="v7-kw">INSERT INTO</span> <span class="v7-tbl">contacts</span> (<span class="v7-col-name">email</span>, <span class="v7-col-name">message</span>)
+<span class="v7-kw">VALUES</span> (
+  '<span class="v7-val-text is-placeholder" id="v7-pv-email">you@example.com</span>',
+  '<span class="v7-val-text is-placeholder" id="v7-pv-msg">your_message</span>'
+);</code><span class="v7-commit-line" id="v7-commit-line" aria-live="polite"></span></pre>
+                    </div>
+    
+                    <!-- SQL errors area -->
+                    <div class="v7-sql-errors" id="v7-sql-errors" aria-live="polite"></div>
+    
+                    <!-- Submit row -->
+                    <div class="v7-sql-submit-row">
+                      <button class="v7-run-btn" id="v7-s-submit" type="button" data-state="idle" data-testid="v7-s-submit">
+                        <span class="v7-run-label" id="v7-run-label">COMMIT</span>
+                        <span class="v7-run-icon" aria-hidden="true">&#9654;</span>
+                      </button>
+                      <!-- Progress indicator -->
+                      <div class="v7-progress" id="v7-progress" role="status" aria-live="polite">
+                        <span class="v7-prog-dots">
+                          <span class="v7-dot" id="v7-dot-0"></span>
+                          <span class="v7-dot" id="v7-dot-1"></span>
+                          <span class="v7-dot" id="v7-dot-2"></span>
+                        </span>
+                        <span class="v7-prog-text" id="v7-prog-text">-- 0 of 2 required fields filled</span>
+                      </div>
+                      <p class="v7-sql-disclaimer">Goes straight to my inbox. I read and reply to every one.</p>
+                    </div>
+    
+                  </div><!-- /v7-editor-card -->
+    
+                </div><!-- /v7-sql-panel -->
+    
+                <!-- ══ SUCCESS PANEL (shared) ══ -->
+                <div class="v7-success" id="v7-success" hidden aria-live="polite">
+                  <div class="v7-success-icon">
+                    <svg class="v7-check-svg" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+                      <circle class="v7-success-circle" cx="26" cy="26" r="24"
+                        stroke="currentColor" stroke-width="2"/>
+                      <polyline class="v7-success-check" points="14 26 22 34 38 18"
+                        stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <h3 class="v7-success-title">Got it, thank you!</h3>
+                  <p class="v7-success-body">Your message is in my inbox. I personally read every one and will get back to you as soon as I can.</p>
+                  <p class="v7-success-sent" id="v7-success-sent">Looking forward to connecting.</p>
+                  <!-- RETURNING result block — shows on SQL mode submit -->
+                  <div class="v7-returning" id="v7-returning" hidden>
+                    <div class="v7-returning-clause"><span class="v7-kw-inline">RETURNING</span> <span class="v7-col-name-inline">contact_id</span>, <span class="v7-col-name-inline">submitted_at</span>;</div>
+                    <table class="v7-returning-table" aria-label="Message receipt">
+                      <thead><tr><th>contact_id</th><th>submitted_at</th></tr></thead>
+                      <tbody><tr>
+                        <td id="v7-ret-id">--</td>
+                        <td id="v7-ret-ts">--</td>
+                      </tr></tbody>
+                    </table>
+                    <div class="v7-insert-confirm">INSERT 0 1</div>
+                  </div>
+                  <button class="v7-reset-btn" id="v7-reset" type="button" data-testid="v7-reset">Send another message</button>
+                </div>
+    
+              </div><!-- /v7-panels -->
+    
+              <!-- SR announcer -->
+              <div class="sr-only" id="v7-aria-live" aria-live="polite" aria-atomic="true"></div>
+    
+            </div><!-- /v7-wrap -->
+          </div><!-- /v7-bg -->
+        </section>
+
+
+
+        </main>
 
   <footer class="footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--color-primary)" opacity="0.12"/><path d="M6 24 L10 10 L16 20 L22 10 L26 24" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="16" cy="20" r="2" fill="var(--color-primary)"/></svg>
-        Andre Weissmann
-      </div>
-      <p class="footer-copy" id="secret-knock" title="">© 2026 · Healthcare Data Analyst · Chicago, IL</p>
-      <div class="footer-links">
-        <a href="https://www.linkedin.com/in/andre-weissmann" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-        <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer">GitHub</a>
-      </div>
+    <div class="container footer-inner footer-inner--centered">
+      <p class="footer-copy footer-copy--name">Andre Weissmann</p>
+      <p class="footer-copy">Data Analyst &nbsp;&middot;&nbsp; Healthcare Operations &amp; Analytics &nbsp;&middot;&nbsp; Chicago, IL</p>
+      <p class="footer-copy footer-copy--year">&copy; 2026</p>
     </div>
   </footer>
 
-  <!-- ── Admin overlay (secret knock: triple-click footer copyright) ── -->
-  <div id="admin-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem">
-    <div style="background:#0f1117;border:1px solid #1e2433;border-radius:1.25rem;padding:2rem;width:100%;max-width:380px;position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.6)">
-      <button onclick="document.getElementById('admin-overlay').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:#6b7280;cursor:pointer;font-size:1.25rem;line-height:1">&#x2715;</button>
-      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.25rem">
-        <div style="width:2rem;height:2rem;background:#2563eb;border-radius:0.5rem;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.875rem">A</div>
-        <span style="color:white;font-weight:600">Portfolio Admin</span>
-      </div>
-      <p style="color:#6b7280;font-size:0.8rem;margin:0 0 1.5rem 2.75rem">Enter your password to manage projects</p>
-      <form id="admin-overlay-form" style="display:flex;flex-direction:column;gap:0.75rem">
-        <input id="admin-overlay-pw" type="password" placeholder="Admin password" autocomplete="current-password"
-          style="width:100%;background:#1a1f2e;border:1px solid #2d3448;border-radius:0.75rem;padding:0.75rem 1rem;color:white;font-size:0.9rem;outline:none;box-sizing:border-box"
-          onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#2d3448'" />
-        <div id="admin-overlay-err" style="color:#f87171;font-size:0.8rem;display:none">Wrong password. Try again.</div>
-        <button type="submit"
-          style="background:#2563eb;color:white;border:none;border-radius:0.75rem;padding:0.75rem;font-size:0.9rem;font-weight:600;cursor:pointer;transition:background 0.2s"
-          onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">Sign in to Admin</button>
-        <p style="color:#4b5563;font-size:0.72rem;text-align:center;margin:0">Secret access — not visible to visitors</p>
-      </form>
-    </div>
-  </div>
+<!-- ══ SCROLL PROGRESS ══ -->
+<div id="scroll-progress"></div>
+
+<!-- TOC / schema left sidebar removed — top nav handles section jumps -->
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.2/dist/sql-wasm.js"></script>
-  <script src="style-tokens.js"></script>
-  <script src="script.js"></script>
-  <script src="modals.js"></script>
-  <script src="powerbi.js"></script>
-  <script src="tableau.js"></script>
+
+  <script src="style-tokens.js?v=1784999000"></script>
+  <script src="script.js?v=1784999000"></script>
+  <!-- modals.js removed: Deep Dive system lives in portfolio.html directly -->
+  <script src="portfolio_os.js?v=1784999000"></script>
+  <script src="data_rail.js?v=1784999000"></script>
+  <script src="deep_dive_v2.js?v=1785002000"></script>
+  <script src="powerbi.js?v=1784999000"></script>
+  <script src="tableau.js?v=1784999000"></script>
+  <script src="excel.js?v=1784999000"></script>
 
   <script>
-  /* ── SECRET KNOCK: triple-click the footer copyright to open admin ── */
+  /* ══ MAVEN-BEATING FEATURES ══ */
   (function() {
-    var knock = document.getElementById('secret-knock');
-    var overlay = document.getElementById('admin-overlay');
-    var form = document.getElementById('admin-overlay-form');
-    var pwInput = document.getElementById('admin-overlay-pw');
-    var errMsg = document.getElementById('admin-overlay-err');
-    var clickCount = 0, clickTimer = null;
-
-    // Triple-click to open
-    knock.addEventListener('click', function() {
-      clickCount++;
-      if (clickTimer) clearTimeout(clickTimer);
-      clickTimer = setTimeout(function() { clickCount = 0; }, 600);
-      if (clickCount >= 3) {
-        clickCount = 0;
-        overlay.style.display = 'flex';
-        setTimeout(function() { pwInput.focus(); }, 100);
-      }
-    });
-
-    // Also: keyboard shortcut Shift+Shift+A (press Shift+A twice fast)
-    var shiftACount = 0, shiftATimer = null;
-    document.addEventListener('keydown', function(e) {
-      if (e.shiftKey && e.key === 'A') {
-        shiftACount++;
-        if (shiftATimer) clearTimeout(shiftATimer);
-        shiftATimer = setTimeout(function() { shiftACount = 0; }, 800);
-        if (shiftACount >= 2) {
-          shiftACount = 0;
-          overlay.style.display = 'flex';
-          setTimeout(function() { pwInput.focus(); }, 100);
+    var _PFX = (function() {
+      var h = window.location.hostname || '';
+      if (h.endsWith('.pplx.app') || h === 'www.perplexity.ai') return '/port/5000';
+      return '';
+    })();
+    // Fire-and-forget ping so the server is warm before the user finds the contact form
+    fetch(_PFX + '/api/ping', { method: 'GET', cache: 'no-store' }).catch(function(){});
+    // ── 1. Load about.json and populate banner + resume btn ──────────────────
+    fetch(_PFX + '/api/about')
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(about => {
+        // Banner
+        if (about.banner_url) {
+          var banner = document.getElementById('profile-banner');
+          var bannerImg = document.getElementById('profile-banner-img');
+          bannerImg.src = about.banner_url;
+          banner.style.display = 'block';
+          document.querySelector('.about-section').classList.add('has-banner');
         }
-      }
-    });
+        // Resume button href is hardcoded — no dynamic update needed
+      })
+      .catch(function() {});
 
-    // Close on overlay background click
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) overlay.style.display = 'none';
-    });
-
-    // Close on Escape
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') overlay.style.display = 'none';
-    });
-
-    // Form submit — hits the Express backend exactly like the React admin login does
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      var pw = pwInput.value;
-      if (!pw) return;
-      errMsg.style.display = 'none';
-      var btn = form.querySelector('button[type="submit"]');
-      btn.textContent = 'Signing in...';
-      btn.disabled = true;
-      try {
-        var res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pw })
+    // ── 3. Share buttons ──────────────────────────────────────────────────────
+    document.querySelectorAll('.proj-share-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        // Find the nearest project article's id
+        var article = btn.closest('article');
+        var anchor = article ? article.id : '';
+        var url = window.location.origin + window.location.pathname + (anchor ? '#' + anchor : '');
+        navigator.clipboard.writeText(url).then(function() {
+          btn.classList.add('copied');
+          var orig = btn.innerHTML;
+          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+          setTimeout(function() {
+            btn.classList.remove('copied');
+            btn.innerHTML = orig;
+          }, 2000);
+        }).catch(function() {
+          // Fallback for older browsers
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          btn.textContent = 'Copied!';
+          setTimeout(function() { btn.textContent = 'Share'; }, 2000);
         });
-        var data = await res.json();
-        if (data.success && data.token) {
-          // Store token in sessionStorage so React admin panel picks it up
-          sessionStorage.setItem('admin_token', data.token);
-          // Navigate to admin panel
-          window.location.href = '/admin';
-        } else {
-          errMsg.style.display = 'block';
-          pwInput.value = '';
-          pwInput.focus();
-        }
-      } catch(err) {
-        errMsg.style.display = 'block';
-      } finally {
-        btn.textContent = 'Sign in to Admin';
-        btn.disabled = false;
-      }
+      });
     });
   })();
-  </script>
+</script>
+
+<script>
+/* ══ TOC + SCROLL PROGRESS + MOBILE MENU FIX ══ */
+(function() {
+  // Scroll progress
+  const bar = document.getElementById('scroll-progress');
+  if (bar) {
+    window.addEventListener('scroll', function() {
+      const scrolled = window.scrollY;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = (total > 0 ? (scrolled / total) * 100 : 0) + '%';
+    }, { passive: true });
+  }
+
+  // ── AUTO-HIDE PILL NAV (mobile/tablet only) ──
+  // Hides on scroll-down, reappears INSTANTLY on ANY upward movement
+  var pillNav = document.getElementById('mobile-section-nav');
+  var lastScrollY = window.scrollY;
+  var downAccum = 0;
+  var HIDE_THRESHOLD = 60;   // px scrolled continuously down before hiding
+  var pillNavHidden = false;
+
+  window.addEventListener('scroll', function() {
+    if (window.innerWidth >= 1200 || !pillNav) return;
+    var currentY = window.scrollY;
+    var delta = currentY - lastScrollY;
+    lastScrollY = currentY;
+
+    // Always show near top
+    if (currentY < 10) {
+      pillNav.classList.remove('nav-hidden');
+      pillNavHidden = false;
+      downAccum = 0;
+      return;
+    }
+
+    if (delta < 0) {
+      // Any upward scroll — show immediately, reset accumulator
+      downAccum = 0;
+      if (pillNavHidden) {
+        pillNav.classList.remove('nav-hidden');
+        pillNavHidden = false;
+      }
+    } else if (delta > 0) {
+      downAccum += delta;
+      if (!pillNavHidden && downAccum > HIDE_THRESHOLD) {
+        pillNav.classList.add('nav-hidden');
+        pillNavHidden = true;
+        downAccum = 0;
+      }
+    }
+  }, { passive: true });
+
+  // Unified section spy for TOC sidebar + mobile pill nav + desktop nav
+  var tocItems = document.querySelectorAll('.toc-item[data-section]');
+  var msnPills = document.querySelectorAll('.msn-pill[data-msn]');
+  var desktopNavLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+  var allSectionIds = ['about','skills','projects','experience','contact'];
+  var trackedSections = allSectionIds.map(function(id) {
+    return document.getElementById(id);
+  }).filter(Boolean);
+
+  function setActiveSection(id) {
+    tocItems.forEach(function(item) {
+      item.classList.toggle('active', item.dataset.section === id);
+    });
+    msnPills.forEach(function(pill) {
+      pill.classList.toggle('active', pill.dataset.msn === id);
+    });
+    // Desktop nav active state
+    desktopNavLinks.forEach(function(link) {
+      var href = link.getAttribute('href');
+      link.classList.toggle('active', href === '#' + id);
+    });
+    // Scroll active pill into view in mobile nav (instant, no conflict with page scroll)
+    var activePill = document.querySelector('.msn-pill.active');
+    if (activePill) activePill.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
+  }
+
+  // Also track home section so the dot resets when scrolled back to top
+  var homeSection = document.getElementById('home');
+  if (homeSection) {
+    var homeObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) setActiveSection('home');
+      });
+    }, { rootMargin: '0px 0px -50% 0px', threshold: 0 });
+    homeObserver.observe(homeSection);
+  }
+
+  if (trackedSections.length > 0) {
+    var sectionObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) setActiveSection(entry.target.id);
+      });
+    }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
+    trackedSections.forEach(function(s) { sectionObserver.observe(s); });
+  }
+
+  // TOC smooth scroll — native scrollIntoView respects CSS scroll-padding-top
+  tocItems.forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = document.getElementById(this.dataset.section);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // Mobile pill nav smooth scroll — native scrollIntoView respects CSS scroll-padding-top
+  msnPills.forEach(function(pill) {
+    pill.addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = document.getElementById(this.dataset.msn);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // Mobile menu — close when a link is clicked
+  var mobileLinks = document.querySelectorAll('.mobile-link');
+  var mobileMenu = document.getElementById('mobileMenu');
+  var hamburger = document.getElementById('hamburger');
+  mobileLinks.forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (mobileMenu) mobileMenu.classList.remove('open');
+      if (hamburger) {
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+})();
+</script>
+
+<script>
+/* ── External link handler ─────────────────────────────────────────────────
+   Ensures all external links open in a new tab reliably, whether the page
+   is running standalone or inside an iframe (pplx.app).
+─────────────────────────────────────────────────────────────────────────── */
+(function () {
+  function isExternal(href) {
+    if (!href) return false;
+    try {
+      var url = new URL(href, window.location.href);
+      return url.origin !== window.location.origin;
+    } catch (e) { return false; }
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('a[href]');
+    if (!el) return;
+    var href = el.getAttribute('href');
+    if (!isExternal(href)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Use window.open — works in both standalone and iframe contexts
+    var w = window.open(href, '_blank', 'noopener,noreferrer');
+    // If popup was blocked or we are in a cross-origin iframe, try top
+    if (!w) {
+      try { window.top.location.href = href; } catch(err) {}
+    }
+  }, true);
+})();
+</script>
+
+<!-- ── Back-to-Resume floating button ───────────────────────────────────── -->
+<!-- Only appears when the visitor came from resume.html (e.g. clicked a project link) -->
+<a id="resume-back-btn" href="resume.html" aria-label="Back to Resume" style="display:none;">
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg>
+  Back to Resume
+</a>
+<style>
+  #resume-back-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex !important;
+    align-items: center;
+    gap: 7px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border2);
+    border-radius: 9999px;
+    padding: 10px 20px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    white-space: nowrap;
+    transition: background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+    /* Hidden until JS decides to show it */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(12px);
+  }
+  #resume-back-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  #resume-back-btn:hover {
+    background: var(--color-surface2);
+    color: var(--color-primary);
+    box-shadow: 0 6px 32px rgba(0,0,0,0.45);
+  }
+  /* On mobile push it above any bottom nav chrome */
+  @media (max-width: 640px) {
+    #resume-back-btn { bottom: 28px; padding: 11px 22px; font-size: 0.875rem; }
+  }
+</style>
+<script>
+(function() {
+  // Show the button if the visitor came from the resume page,
+  // OR if the URL hash points to a specific project (meaning they clicked from resume).
+  var btn = document.getElementById('resume-back-btn');
+  if (!btn) return;
+  var ref = document.referrer || '';
+  var hash = window.location.hash || '';
+  var projectHashes = ['#proj-nashville','#proj-survey','#proj-airbnb','#proj-bmi','#proj-bikes'];
+  var fromResume = ref.indexOf('resume') !== -1 ||
+                   ref.indexOf('/resume') !== -1 ||
+                   projectHashes.some(function(h) { return hash === h || hash.startsWith(h); });
+  if (fromResume) {
+    // Small delay so the page paint completes first
+    setTimeout(function() { btn.classList.add('visible'); }, 600);
+    btn.style.display = '';
+  }
+})();
+</script>
+<script>
+/* bfcache guard: if browser restores this page from back/forward cache
+   (e.g. on a shared device), reset the contact form so a new visitor
+   never sees the previous visitor's typed values. */
+window.addEventListener('pageshow', function(e) {
+  if (!e.persisted) return; // normal load — nothing to do
+  var ids = ['qb-name','qb-email','qb-message','qb-plain-name','qb-plain-email','qb-plain-msg'];
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+});
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DEEP DIVE MODALS
+     ═══════════════════════════════════════════════════════════ -->
+<!-- Deep Dive Drawer v4 -->
+<div id="dd-overlay"></div>
+<div id="dd-panel" role="dialog" aria-modal="true" aria-label="Project deep dive">
+  <div id="dd-body"></div>
+</div>
+
+
+<!-- Portfolio OS: apply live-edit overrides from admin panel -->
+
+
+<script>
+(function () {
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.get('debug') !== '1' && localStorage.getItem('portfolioDebug') !== '1') return;
+    var el = document.createElement('div');
+    el.id = 'viewport-debug-badge';
+    el.setAttribute('aria-hidden', 'true');
+    el.style.cssText = 'position:fixed;bottom:10px;left:10px;z-index:99999;font:12px/1.3 ui-monospace,Menlo,monospace;background:rgba(15,23,42,.92);color:#e2e8f0;padding:8px 10px;border-radius:8px;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+    function label() {
+      var w = window.innerWidth;
+      var mode = w < 640 ? 'phone' : w < 900 ? 'phablet' : w < 1024 ? 'tablet' : w < 1280 ? 'laptop' : w < 1440 ? 'desktop' : 'wide';
+      var ptr = window.matchMedia('(pointer: coarse)').matches ? 'touch' : 'fine';
+      el.textContent = w + '×' + window.innerHeight + ' · ' + mode + ' · ' + ptr;
+    }
+    label();
+    window.addEventListener('resize', label);
+    document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(el); });
+    if (document.body) document.body.appendChild(el);
+  } catch (e) {}
+})();
+</script>
+
 </body>
 </html>
