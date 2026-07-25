@@ -2508,3 +2508,131 @@ select.bmi-input {
 
 /* If hero-right is hidden on tablet, its cards are decorative only —
    core identity + CTAs stay in hero-left on every breakpoint. */
+
+
+/* ── Option A: featured + all projects ── */
+.view-all-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.view-all-btn {
+  min-height: 44px;
+  font-weight: 700;
+}
+
+.view-all-hint {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-text-faint);
+  max-width: 36rem;
+}
+
+.all-projects-section {
+  background: color-mix(in oklab, var(--color-surface2) 55%, transparent);
+}
+
+.all-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--sp-5);
+  margin-bottom: var(--sp-12);
+}
+
+.all-proj-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--sp-5);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  text-decoration: none;
+  color: inherit;
+  min-height: 180px;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.all-proj-card:hover {
+  border-color: color-mix(in oklab, var(--color-teal) 45%, var(--color-border));
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+}
+
+.all-proj-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.all-proj-tier {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.all-proj-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.all-proj-blurb {
+  margin: 0;
+  flex: 1;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.all-proj-go {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-teal);
+}
+
+.all-projects-detail-heading {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 400;
+  margin: 0 0 var(--sp-2);
+  color: var(--color-text);
+}
+
+.all-projects-detail-sub {
+  margin-bottom: var(--sp-8) !important;
+}
+
+.project-block--featured-tier {
+  /* full weight in selected work */
+}
+
+.project-block--catalog-tier {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .all-projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .view-all-wrap {
+    margin-top: var(--sp-8);
+    padding-top: var(--sp-6);
+  }
+  .all-proj-card {
+    min-height: 0;
+  }
+}

@@ -223,6 +223,7 @@
     .project-title a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); transition: color 0.18s, border-color 0.18s; }
     .project-title a:hover { color: var(--teal); border-bottom-color: var(--teal); }
     .project-title .tool-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); margin-right: 6px; font-style: normal; }
+    .resume-sync-note { font-size: 12px; color: var(--faint); margin: 0 0 14px; }
     .project-bullet { font-size: 13.5px; line-height: 1.65; color: var(--muted); padding-left: 14px; position: relative; }
     .project-bullet::before { content: '•'; position: absolute; left: 0; color: var(--faint); }
 
@@ -315,11 +316,11 @@
         <div class="gr-section">
           <div class="gr-section-label">View online</div>
           <div class="gr-view-row">
-            <a class="gr-view-btn" href="https://view.officeapps.live.com/op/view.aspx?src=https://andre-weissmann-my-data-portfolio.pplx.app/Andre_Weissmann_Resume.docx" target="_blank" rel="noopener">
+            <a class="gr-view-btn" href="https://view.officeapps.live.com/op/view.aspx?src=https://andre-weissmann-data-portfolio-view.pplx.app/Andre_Weissmann_Resume.docx" target="_blank" rel="noopener">
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="16" height="16" rx="2"/><path d="M5 6l2 8 3-5 3 5 2-8"/></svg>
               Word Online
             </a>
-            <a class="gr-view-btn" href="https://andre-weissmann-my-data-portfolio.pplx.app/Andre_Weissmann_Resume.pdf" target="_blank" rel="noopener">
+            <a class="gr-view-btn" href="https://andre-weissmann-data-portfolio-view.pplx.app/Andre_Weissmann_Resume.pdf" target="_blank" rel="noopener">
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="2"/><path d="M6 8h8M6 11h8M6 14h5"/></svg>
               View PDF
             </a>
@@ -328,11 +329,11 @@
         <div class="gr-section">
           <div class="gr-section-label">Download</div>
           <div class="gr-dl-row">
-            <a class="gr-dl-btn pdf" href="https://andre-weissmann-my-data-portfolio.pplx.app/Andre_Weissmann_Resume.pdf" download="Andre_Weissmann_Resume.pdf">
+            <a class="gr-dl-btn pdf" href="https://andre-weissmann-data-portfolio-view.pplx.app/Andre_Weissmann_Resume.pdf" download="Andre_Weissmann_Resume.pdf">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M3 13h10"/></svg>
               PDF
             </a>
-            <a class="gr-dl-btn word" href="https://andre-weissmann-my-data-portfolio.pplx.app/Andre_Weissmann_Resume.docx" download="Andre_Weissmann_Resume.docx">
+            <a class="gr-dl-btn word" href="https://andre-weissmann-data-portfolio-view.pplx.app/Andre_Weissmann_Resume.docx" download="Andre_Weissmann_Resume.docx">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M3 13h10"/></svg>
               Word
             </a>
@@ -380,51 +381,11 @@
   <!-- Projects -->
   <section class="section" aria-labelledby="lbl-projects">
     <h2 class="section-label" id="lbl-projects">Data Analytics Projects</h2>
-    <div class="portfolio-link">Full interactive portfolio: <a href="https://andre-weissmann-my-data-portfolio.pplx.app" target="_blank" rel="noopener">andre-weissmann-my-data-portfolio.pplx.app</a></div>
-
-    <div class="project">
-      <div class="project-title">
-        <a href="https://andre-weissmann-my-data-portfolio.pplx.app/#proj-nashville" target="_blank" rel="noopener">
-          <span class="tool-tag">SQL</span> Nashville Housing Data Cleaning
-        </a>
-      </div>
-      <div class="project-bullet">Cleaned 56,477 property records in SQL Server, removing duplicate parcels, resolving NULLs, and normalizing date formats. Flagged ~18% of records with data quality issues, producing a production-ready dataset that eliminated a full manual review stage downstream.</div>
-    </div>
-
-    <div class="project">
-      <div class="project-title">
-        <a href="https://andre-weissmann-my-data-portfolio.pplx.app/#proj-survey" target="_blank" rel="noopener">
-          <span class="tool-tag">Power BI</span> Data Professionals Survey Dashboard
-        </a>
-      </div>
-      <div class="project-bullet">Built a cross-filtered Power BI dashboard across 630 survey respondents, surfacing that Data Scientists earn 2x the salary of Data Analysts and Python is the dominant tool across every role. Gives hiring teams and career switchers a single view to benchmark compensation and skill investment.</div>
-    </div>
-
-    <div class="project">
-      <div class="project-title">
-        <a href="https://andre-weissmann-my-data-portfolio.pplx.app/#proj-airbnb" target="_blank" rel="noopener">
-          <span class="tool-tag">Tableau</span> Airbnb Seattle Pricing Analysis
-        </a>
-      </div>
-      <div class="project-bullet">Analyzed 323,346 Airbnb listings across Seattle, identifying that zip code alone accounts for a 3x spread in nightly pricing. Interactive dashboard lets hosts benchmark their listing against neighborhood averages, enabling data-driven pricing decisions without a spreadsheet.</div>
-    </div>
-
-    <div class="project">
-      <div class="project-title">
-        <a href="https://andre-weissmann-my-data-portfolio.pplx.app/#proj-bmi" target="_blank" rel="noopener">
-          <span class="tool-tag">Python</span> Health Metrics Calculator
-        </a>
-      </div>
-      <div class="project-bullet">Built a Python health metrics tool using CDC-aligned BMI thresholds and waist-to-hip ratio risk classification. Validates inputs, returns plain-language clinical interpretations, and includes preset health scenarios so non-technical users get immediate actionable output without reading a chart.</div>
-    </div>
-
-    <div class="project">
-      <div class="project-title">
-        <a href="https://andre-weissmann-my-data-portfolio.pplx.app/#proj-bikes" target="_blank" rel="noopener">
-          <span class="tool-tag">Excel</span> Bike Sales Business Insights
-        </a>
-      </div>
-      <div class="project-bullet">Segmentation analysis on 1,026 customer records using pivot tables and dynamic charts, identifying that middle-aged Pacific Region buyers drive the highest purchase conversion rate. Insight directly informs where a marketing team should concentrate regional ad spend.</div>
+    <div class="portfolio-link">Full interactive portfolio: <a id="resume-portfolio-link" href="https://andre-weissmann-data-portfolio-view.pplx.app" target="_blank" rel="noopener">andre-weissmann-data-portfolio-view.pplx.app</a></div>
+    <p class="resume-sync-note">Projects below stay in sync with the live portfolio catalog.</p>
+    <div id="resume-projects">
+      <!-- Filled by projects-sync.js from projects-catalog.json -->
+      <div class="project"><div class="project-title"><span class="tool-tag">SQL</span> Nashville Housing Data Cleaning</div><div class="project-bullet">Loading latest projects…</div></div>
     </div>
   </section>
 
@@ -550,7 +511,7 @@ document.addEventListener('keydown', function(e) {
 function copyResume() {
   const text = `ANDRE WEISSMANN
 Data Analyst | Healthcare Operations and Analytics
-Chicago, IL | andre_weissmann@icloud.com | andre-weissmann-my-data-portfolio.pplx.app | linkedin.com/in/andre-weissmann | github.com/Andre-Weissmann
+Chicago, IL | andre_weissmann@icloud.com | andre-weissmann-data-portfolio-view.pplx.app | linkedin.com/in/andre-weissmann | github.com/Andre-Weissmann
 
 PROFESSIONAL SUMMARY
 Data Analyst with 5+ years embedded inside EMS medical billing and healthcare operations, building technical solutions to real workflow problems. Hands-on with revenue cycle processes, claims analytics, and EHR documentation. Self-built a full analytics toolkit across SQL, Python, Power BI, Tableau, Excel, and VBA. Automated daily billing workflows using Excel macros, cutting manual processing time by 40%. Brings a rare combination of healthcare domain knowledge and analytical execution to every dataset.
@@ -562,7 +523,7 @@ Healthcare Domain: Revenue Cycle, Claims Analytics, Medical Billing, ICD-10, CPT
 AI and Automation: Microsoft Copilot, Prompt Engineering, AI-Assisted Debugging, GitHub
 
 DATA ANALYTICS PROJECTS
-Full portfolio: andre-weissmann-my-data-portfolio.pplx.app
+Full portfolio: andre-weissmann-data-portfolio-view.pplx.app
 
 SQL | Nashville Housing Data Cleaning
 - Cleaned 56,477 property records in SQL Server, removing duplicate parcels, resolving NULLs, and normalizing date formats. Flagged ~18% of records with data quality issues, producing a production-ready dataset that eliminated a full manual review stage downstream.
@@ -653,5 +614,6 @@ Continuing Education: Maven Analytics Lifetime Membership | SQL, Python, Power B
 })();
 </script>
 
+  <script src="projects-sync.js?v=1785010000"></script>
 </body>
 </html>
