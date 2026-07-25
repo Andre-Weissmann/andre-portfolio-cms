@@ -432,28 +432,68 @@ function renderThinkingTrail(container, steps) {
 ───────────────────────────────────────────────────────────────── */
 function initSpine(panel) {
   var spine = panel.querySelector('.brief-spine');
-  var chapters = panel.querySelectorAll('.brief-chapter');
-  var items = panel.querySelectorAll('.brief-spine-item');
-  var dots = panel.querySelectorAll('.brief-spine-dot');
-  if (!spine || !chapters.length) return;
   var content = panel.querySelector('.brief-scroll-body');
-  if (!content) return;
+  if (!spine || !content) return;
+
+  // Prefer spine targets (same order as left nav). Fall back to chapter nodes.
+  var items = Array.prototype.slice.call(panel.querySelectorAll('.brief-spine-item'));
+  if (!items.length) return;
+
+  function resolveTargets() {
+    return items.map(function(it) {
+      var id = it.getAttribute('data-target');
+      return id ? content.querySelector('#' + id) || document.getElementById(id) : null;
+    }).filter(Boolean);
+  }
+
+  function sectionTop(el) {
+    // Position of section relative to the scroll container (not offsetParent quirks)
+    return el.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop;
+  }
+
   function onScroll() {
+    var targets = resolveTargets();
+    if (!targets.length) return;
+
     var scrollTop = content.scrollTop;
-    var scrollH = content.scrollHeight - content.clientHeight;
-    var pct = scrollH > 0 ? Math.min(scrollTop / scrollH, 1) : 0;
+    var viewH = content.clientHeight;
+    var scrollH = content.scrollHeight - viewH;
+    var pct = scrollH > 0 ? Math.min(Math.max(scrollTop / scrollH, 0), 1) : 0;
     var fill = spine.querySelector('.brief-spine-fill');
     if (fill) fill.style.height = (pct * 100) + '%';
 
     var active = 0;
-    chapters.forEach(function(ch, i) {
-      if (ch.offsetTop - 48 <= scrollTop) active = i;
-    });
+    var bottomSlop = 48;
+    // Classic short last-section bug: last block never reaches the top pin line.
+    // When the user is at (or near) the bottom, force the last nav item active.
+    if (scrollH <= 0 || scrollTop + viewH >= content.scrollHeight - bottomSlop) {
+      active = targets.length - 1;
+    } else {
+      var pin = scrollTop + 64; // a little below the top of the scroll body
+      for (var i = 0; i < targets.length; i++) {
+        if (sectionTop(targets[i]) <= pin) active = i;
+      }
+    }
+
     items.forEach(function(it, i) { it.classList.toggle('active', i === active); });
-    dots.forEach(function(d, i) { d.classList.toggle('active', i === active); });
-    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, i) { c.classList.toggle('active', i === active); });
+    panel.querySelectorAll('.brief-spine-dot').forEach(function(d, i) {
+      d.classList.toggle('active', i === active);
+    });
+    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, i) {
+      c.classList.toggle('active', i === active);
+    });
   }
+
   content.addEventListener('scroll', onScroll, { passive: true });
+  // Re-run after layout settles (charts/images change scrollHeight)
+  window.setTimeout(onScroll, 50);
+  window.setTimeout(onScroll, 300);
+  if (typeof ResizeObserver !== 'undefined') {
+    try {
+      var ro = new ResizeObserver(function() { onScroll(); });
+      ro.observe(content);
+    } catch (e) { /* ignore */ }
+  }
   onScroll();
 }
 
@@ -1522,6 +1562,9 @@ function renderDrawer(key) {
   spine.className = 'brief-spine';
   spine.setAttribute('aria-label', 'Deep dive sections');
   var spineItems = [{ id: 'ch-overview', title: 'Overview' }].concat(p.chapters || []);
+  if (p.context) {
+    spineItems = spineItems.concat([{ id: 'ch-ask', title: 'Ask This Project' }]);
+  }
   spine.innerHTML = '<div class="brief-spine-title">On this page</div>' +
     '<div class="brief-spine-fill"></div>' +
     spineItems.map(function(ch, idx) {
@@ -1756,7 +1799,8 @@ function renderDrawer(key) {
   /* ── Ask This Project ── */
   if (p.context) {
     var askWrap = document.createElement('div');
-    askWrap.className = 'brief-ask-wrap';
+    askWrap.className = 'brief-chapter brief-ask-wrap';
+    askWrap.id = 'ch-ask';
 
     /* Per-project Q&A - precise, pre-written answers */
     var ASK_QA = {
