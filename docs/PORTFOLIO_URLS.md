@@ -2,7 +2,7 @@
 
 ## Canonical (use this everywhere)
 
-**https://andre-weissmann-data-portfolio-show.pplx.app**
+**https://andre-weissmann-data-portfolio-view.pplx.app**
 
 - `site_id`: `a9fc07d7-78d5-4317-80e2-f5521df22cc7`
 - asset: `f4e9ff78-2d76-43ea-8fa4-5148552a9bd4`
