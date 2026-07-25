@@ -14,9 +14,9 @@
   --dd-accent:        #20808D;
   --dd-accent-h:      #2aa0af;
   --dd-accent-glow:   rgba(32,128,141,0.15);
-  --dd-text:          #edf0f7;
-  --dd-text-dim:      #9aa3b8;
-  --dd-text-faint:    #5c6680;
+  --dd-text:          #f4f6fb;
+  --dd-text-dim:      #c4cad8;
+  --dd-text-faint:    #9aa3b8;
   --dd-red:           #c0614a;
   --dd-gold:          #d4a030;
   --dd-green:         #4d8c2a;
@@ -58,9 +58,9 @@
   --dd-accent:        #01696f;
   --dd-accent-h:      #0c4e54;
   --dd-accent-glow:   rgba(1,105,111,0.09);
-  --dd-text:          #1e1c18;
-  --dd-text-dim:      #4e4b44;
-  --dd-text-faint:    #8a877e;
+  --dd-text:          #141311;
+  --dd-text-dim:      #3a3833;
+  --dd-text-faint:    #5c5952;
   --dd-red:           #a13544;
   --dd-gold:          #7a5a00;
   --dd-green:         #2d5a14;
@@ -220,7 +220,7 @@
 
 /* Title row */
 .brief-hdr-title {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--dd-text);
   margin: 0;
@@ -228,7 +228,7 @@
   letter-spacing: -0.025em;
 }
 .brief-hdr-sub {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--dd-text-dim);
   margin: -4px 0 0;
   line-height: 1.4;
@@ -319,8 +319,8 @@
   flex-shrink: 0;
 }
 .brief-headline-text {
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.75;
   color: var(--dd-text);
   font-weight: 500;
   letter-spacing: 0.01em;
@@ -357,7 +357,7 @@
   letter-spacing: -0.02em;
 }
 .brief-kpi-label {
-  font-size: 9.5px;
+  font-size: 11px;
   color: var(--dd-text-dim);
   margin-top: 4px;
   line-height: 1.3;
@@ -459,7 +459,7 @@
 .brief-chapter:last-child { border-bottom: none; padding-bottom: 20px; }
 
 .brief-section-title {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: .11em;
   text-transform: uppercase;
@@ -477,13 +477,13 @@
   border-radius: 1px;
 }
 .brief-section-sub {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--dd-text);
   margin: -8px 0 14px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 .brief-insight-block {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.8;
   color: var(--dd-text);
   padding: 16px 18px;
@@ -533,10 +533,10 @@
 #dd-panel.brief-light .brief-decision-pill.why  { background: rgba(161,53,68,0.12);  color: #8a2030; }
 #dd-panel.brief-light .brief-decision-pill.next { background: rgba(45,90,20,0.12);   color: #2d5a14; }
 .brief-decision-text {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--dd-text);
   flex: 1;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 /* ═══════════════════════════════════
@@ -2690,3 +2690,79 @@ body.dd-open {
 .brief-morph-cell:nth-child(2) { flex: 1 1 220px; min-width: 180px; }
 .brief-morph-cell:nth-child(3) { flex: 0 0 168px; max-width: 180px; font-variant-numeric: tabular-nums; }
 .brief-morph-cell:nth-child(4) { flex: 0 0 110px; max-width: 120px; }
+
+
+/* READABILITY PASS — body copy easy to read in light and dark */
+#dd-panel,
+#dd-body {
+  color: var(--dd-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.brief-scroll-body p,
+.brief-insight-block,
+.brief-decision-text,
+.brief-section-sub,
+.brief-headline-text,
+.brief-trail__result,
+.brief-trail__body,
+.brief-impact-label,
+.brief-impact-sub,
+.nq-why,
+.sq-why,
+.sq-result-note,
+.brief-ask-sub {
+  line-height: 1.75;
+  color: var(--dd-text);
+}
+.brief-scroll-body p,
+.brief-insight-block,
+.brief-decision-text,
+.brief-section-sub,
+.brief-headline-text,
+.brief-trail__result,
+.brief-trail__body,
+.nq-why,
+.sq-why,
+.sq-result-note {
+  font-size: 16px;
+}
+.brief-impact-sub,
+.brief-ask-sub,
+.brief-sql__hint {
+  font-size: 14px;
+  color: var(--dd-text-dim);
+}
+.brief-kpi-label,
+.brief-explore-label,
+.brief-headline-label {
+  font-size: 11px !important;
+  color: var(--dd-text-dim) !important;
+}
+.brief-kpi-val {
+  font-size: 22px;
+  color: var(--dd-text);
+}
+/* Hide legacy next-steps if any leftover markup */
+.brief-next-steps,
+.brief-next-text {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  .brief-scroll-body p,
+  .brief-insight-block,
+  .brief-decision-text,
+  .brief-section-sub,
+  .brief-headline-text,
+  .brief-trail__result,
+  .brief-trail__body,
+  .nq-why,
+  .sq-why,
+  .sq-result-note {
+    font-size: 15.5px !important;
+    line-height: 1.75 !important;
+    color: var(--dd-text) !important;
+  }
+  .brief-section-title { font-size: 11.5px !important; }
+  .brief-kpi-label { font-size: 10.5px !important; color: var(--dd-text-dim) !important; }
+}
