@@ -345,13 +345,11 @@ function renderConviction(container, label, pct, color) {
   ptxt.setAttribute('fill', 'var(--brief-text)');
   ptxt.textContent = '0%';
   svg.appendChild(ptxt);
-  var ltxt = document.createElementNS(ns, 'text');
-  ltxt.setAttribute('x', cx); ltxt.setAttribute('y', cy + 10);
-  ltxt.setAttribute('text-anchor', 'middle');
-  ltxt.setAttribute('font-size', '8.5'); ltxt.setAttribute('fill', 'var(--brief-text-dim)');
-  ltxt.textContent = label;
-  svg.appendChild(ltxt);
   wrap.appendChild(svg);
+  var lab = document.createElement('div');
+  lab.className = 'brief-conviction-label';
+  lab.textContent = label;
+  wrap.appendChild(lab);
   container.appendChild(wrap);
 
   var obs = new IntersectionObserver(function(entries) {
@@ -430,6 +428,21 @@ function renderThinkingTrail(container, steps) {
 /* ─────────────────────────────────────────────────────────────────
    SCROLL SPINE
 ───────────────────────────────────────────────────────────────── */
+function initMobileChrome(panel) {
+  if (!panel) return;
+  var bodyEl = document.getElementById('dd-body');
+  var hdr = panel.querySelector('.brief-hdr');
+  if (!bodyEl || !hdr) return;
+  var phone = false;
+  try { phone = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches); } catch (e) {}
+  if (!phone) return;
+  var onScr = function() {
+    hdr.classList.toggle('is-compact', bodyEl.scrollTop > 36);
+  };
+  bodyEl.addEventListener('scroll', onScr, { passive: true });
+  onScr();
+}
+
 function initSpine(panel) {
   var spine = panel.querySelector('.brief-spine');
   var content = panel.querySelector('.brief-scroll-body');
@@ -1541,7 +1554,7 @@ function renderDrawer(key) {
       '<div class="brief-hdr-top-row">' +
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
         '<div class="brief-hdr-tools">' +
-          (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="View on GitHub" title="View on GitHub" onclick="var w=window.open(this.href,\"_blank\",\"noopener,noreferrer\");if(!w){try{window.top.location.href=this.href;}catch(e){}}return false;">' + githubSvg + '<span class="brief-github-label">GitHub</span></a>' : '') +
+          (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="View on GitHub" title="View on GitHub">' + githubSvg + '<span class="brief-github-label">GitHub</span></a>' : '') +
           '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Toggle light / dark" title="Toggle theme"><span id="dd-theme-icon" aria-hidden="true">&#9790;</span><span id="dd-theme-label" class="brief-theme-label">Dark</span></button>' +
           '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" onclick="closeDD()" aria-label="Close deep dive" title="Close (Esc)">' +
             '<span class="brief-close-x" aria-hidden="true">&#x2715;</span>' +
@@ -1595,6 +1608,16 @@ function renderDrawer(key) {
     }).join('') +
     '</div>';
   scrollBody.appendChild(mobNav);
+  try {
+    var trackNudge = mobNav.querySelector('.brief-mob-chapters-track');
+    if (trackNudge && trackNudge.scrollWidth > trackNudge.clientWidth + 8) {
+      mobNav.classList.add('has-overflow');
+      window.setTimeout(function() {
+        trackNudge.scrollTo({ left: 28, behavior: 'smooth' });
+        window.setTimeout(function() { trackNudge.scrollTo({ left: 0, behavior: 'smooth' }); }, 420);
+      }, 350);
+    }
+  } catch (eN) {}
   mobNav.addEventListener('click', function(e) {
     var btn = e.target.closest('[data-target]');
     if (!btn) return;
@@ -1915,7 +1938,8 @@ function renderDrawer(key) {
   kpiObs.observe(kpiStrip);
 
   /* ── Spine ── */
-  setTimeout(function() { initSpine(panel); }, 100);
+  setTimeout(function() { initSpine(panel);
+  initMobileChrome(panel); }, 100);
 
   /* ── Bottom bar is hidden - close and theme are in the header ── */
   /* Keep the element for backwards compat but keep it empty */
