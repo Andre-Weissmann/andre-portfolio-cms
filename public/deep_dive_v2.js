@@ -617,8 +617,10 @@ function initSpine(panel) {
 
     var active = 0;
     var i, top, nextTop;
-    // Range ownership: section i owns [its top, next section top).
-    // Do not force-last when scroll hits bottom — that skipped second-to-last.
+    // Range ownership with hysteresis band so the highlight does not bounce
+    // between neighboring list items when the reading line sits on a boundary.
+    var hyst = 18; // px band around the pin
+    var prevActive = typeof panel._spineActiveIndex === 'number' ? panel._spineActiveIndex : 0;
     for (i = 0; i < targets.length; i++) {
       top = targets[i].getBoundingClientRect().top;
       if (i < targets.length - 1) {
@@ -632,6 +634,27 @@ function initSpine(panel) {
       }
       if (top <= pinY) active = i;
     }
+    // If still on the previous section's edge, keep it until the neighbor
+    // clearly crosses the pin by the hysteresis amount.
+    if (prevActive !== active && prevActive >= 0 && prevActive < targets.length) {
+      var pTop = targets[prevActive].getBoundingClientRect().top;
+      var pNext = (prevActive < targets.length - 1)
+        ? targets[prevActive + 1].getBoundingClientRect().top
+        : rootRect.bottom + 1;
+      // Keep previous while reading line is still inside expanded previous range
+      if (pTop - hyst <= pinY && pNext + hyst > pinY) {
+        // Only allow switch if new section has clearly entered
+        if (active > prevActive) {
+          // scrolling down: require next section top past pin - hyst
+          var nTop = targets[active].getBoundingClientRect().top;
+          if (nTop > pinY - hyst) active = prevActive;
+        } else if (active < prevActive) {
+          // scrolling up: require previous top to leave pin + hyst
+          if (pTop < pinY + hyst && pNext > pinY) active = prevActive;
+        }
+      }
+    }
+    panel._spineActiveIndex = active;
 
     // Near max scroll: if last heading is still below the reading line, keep
     // the previous section unless the last block is clearly more visible.

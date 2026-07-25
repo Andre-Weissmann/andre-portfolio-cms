@@ -3760,3 +3760,145 @@ a.brief-tool-btn.brief-github-btn {
   pointer-events: none;
   height: 0;
 }
+
+
+/* SPINE CONTAIN PASS — numbers/marks stay inside list items, no clip bounce */
+.brief-spine {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  /* kill any leftover absolute track line from older CSS */
+}
+.brief-spine::before,
+.brief-spine::after {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+.brief-spine-list {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  gap: 6px !important;
+  padding: 2px 2px 8px 2px !important;
+}
+.brief-spine-item {
+  display: grid !important;
+  grid-template-columns: 32px minmax(0, 1fr) !important; /* drop trailing mark column */
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important; /* contain badge + accent */
+  padding: 10px 12px 10px 10px !important;
+  margin: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  transform: none !important;
+  position: relative !important;
+  isolation: isolate !important;
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease !important;
+  /* stable left accent rail lives inside padding box */
+  box-shadow: none !important;
+}
+.brief-spine-item::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 8px !important;
+  bottom: 8px !important;
+  width: 3px !important;
+  border-radius: 0 3px 3px 0 !important;
+  background: transparent !important;
+  opacity: 1 !important;
+  display: block !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+.brief-spine-item:hover {
+  transform: none !important;
+}
+.brief-spine-item:hover::before {
+  background: color-mix(in oklab, var(--dd-border2, var(--dd-border)) 80%, transparent) !important;
+}
+.brief-spine-num {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  box-sizing: border-box !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  transform: none !important;
+  box-shadow: none !important; /* external rings were clipped → looked like bounce-off */
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+}
+.brief-spine-label {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important; /* single line prevents height thrash */
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  font-size: 12.5px !important;
+  font-weight: 650 !important;
+  line-height: 1.25 !important;
+}
+.brief-spine-mark {
+  display: none !important; /* trailing dot was overflowing the card edge */
+}
+.brief-spine-item.is-done .brief-spine-num {
+  box-shadow: none !important;
+  transform: none !important;
+}
+.brief-spine-item.active {
+  transform: none !important;
+  box-shadow: none !important;
+  background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)) !important;
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, transparent) !important;
+}
+.brief-spine-item.active::before {
+  background: var(--dd-accent) !important;
+}
+.brief-spine-item.active .brief-spine-num {
+  color: #fff !important;
+  background: var(--dd-accent) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  outline: none !important;
+}
+.brief-spine-item.active .brief-spine-label {
+  font-weight: 750 !important;
+}
+.brief-spine-item.active .brief-spine-mark {
+  display: none !important;
+  box-shadow: none !important;
+}
+/* Kill legacy scale/transform on dots if any leak back */
+.brief-spine-item .brief-spine-dot,
+.brief-spine-dot,
+.brief-spine-dot.active {
+  display: none !important;
+  transform: none !important;
+}
+/* Progress fill is a bar in the header only — never a vertical line in the list */
+.brief-spine > .brief-spine-fill:not(.brief-spine-progress-fill) {
+  display: none !important;
+}
+.brief-spine-progress,
+.brief-spine-progress-fill {
+  transform: none !important;
+}
+.brief-spine-progress {
+  overflow: hidden !important;
+}
