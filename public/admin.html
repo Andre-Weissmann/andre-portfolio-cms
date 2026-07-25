@@ -539,7 +539,7 @@
           <div class="preview-frame-inner" id="frame-inner">
             <div class="device-frame desktop-frame" id="device-frame">
               <div id="annotation-overlay" onclick="handleAnnotationClick(event)"></div>
-              <iframe id="preview-iframe" src="https://andre-weissmann-data-portfolio.pplx.app" title="Portfolio Preview"></iframe>
+              <iframe id="preview-iframe" src="https://andre-weissmann-my-data-portfolio.pplx.app" title="Portfolio Preview"></iframe>
             </div>
           </div>
         </div>
@@ -823,7 +823,7 @@ Example:
       iframe.contentWindow.document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' });
     } catch(e) {
       // Cross-origin fallback: reload with hash
-      const base = 'https://andre-weissmann-data-portfolio.pplx.app';
+      const base = 'https://andre-weissmann-my-data-portfolio.pplx.app';
       iframe.src = base + '/' + hash;
     }
   }
