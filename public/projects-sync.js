@@ -196,22 +196,14 @@
   }
 
   function applyPortfolioTiers(data) {
+    // Catalog drives resume + optional grid. Project blocks stay in HTML order
+    // with no extra chrome so the page keeps the clean selected-work layout.
     var projects = published(data.projects);
     projects.forEach(function (p) {
       var el = document.getElementById(p.anchor);
       if (!el) return;
       el.setAttribute('data-tier', p.tier || 'catalog');
       el.setAttribute('data-project-id', p.id);
-      el.classList.toggle('project-block--featured-tier', p.tier === 'featured');
-      el.classList.toggle('project-block--catalog-tier', p.tier !== 'featured');
-      // Featured ribbon (same on every viewport — no content removed)
-      var meta = el.querySelector('.project-meta-row');
-      if (meta && p.tier === 'featured' && !meta.querySelector('.proj-featured-tag')) {
-        var tag = document.createElement('span');
-        tag.className = 'proj-featured-tag';
-        tag.textContent = 'Featured';
-        meta.insertBefore(tag, meta.firstChild);
-      }
     });
   }
 
