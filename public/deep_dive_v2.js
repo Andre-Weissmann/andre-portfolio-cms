@@ -418,6 +418,7 @@ function renderThinkingTrail(container, steps) {
 function initSpine(panel) {
   var spine = panel.querySelector('.brief-spine');
   var chapters = panel.querySelectorAll('.brief-chapter');
+  var items = panel.querySelectorAll('.brief-spine-item');
   var dots = panel.querySelectorAll('.brief-spine-dot');
   if (!spine || !chapters.length) return;
   var content = panel.querySelector('.brief-scroll-body');
@@ -428,12 +429,16 @@ function initSpine(panel) {
     var pct = scrollH > 0 ? Math.min(scrollTop / scrollH, 1) : 0;
     var fill = spine.querySelector('.brief-spine-fill');
     if (fill) fill.style.height = (pct * 100) + '%';
+
+    var active = 0;
     chapters.forEach(function(ch, i) {
-      var top = ch.offsetTop - content.clientHeight * 0.4;
-      if (scrollTop >= top && dots[i]) dots[i].classList.add('active');
+      if (ch.offsetTop - 48 <= scrollTop) active = i;
     });
+    items.forEach(function(it, i) { it.classList.toggle('active', i === active); });
+    dots.forEach(function(d, i) { d.classList.toggle('active', i === active); });
   }
   content.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -1108,6 +1113,32 @@ function renderDrawer(key) {
     '</div>';
   body.appendChild(hdr);
 
+  /* Single scroll stream: intro + chapters + ask all live in one column.
+     Prevents desktop flex collapse where header/KPI/ask steal height from chapters. */
+  var layout = document.createElement('div');
+  layout.className = 'brief-layout';
+
+  var spine = document.createElement('div');
+  spine.className = 'brief-spine';
+  var spineItems = [{ id: 'ch-overview', title: 'Overview' }].concat(p.chapters || []);
+  spine.innerHTML = '<div class="brief-spine-fill"></div>' +
+    spineItems.map(function(ch) {
+      return '<button type="button" class="brief-spine-item" data-target="' + ch.id + '" title="' + ch.title + '">' +
+        '<span class="brief-spine-dot" aria-hidden="true"></span>' +
+        '<span class="brief-spine-label">' + ch.title + '</span>' +
+      '</button>';
+    }).join('');
+  layout.appendChild(spine);
+
+  var scrollBody = document.createElement('div');
+  scrollBody.className = 'brief-scroll-body';
+
+  /* Overview anchor */
+  var overview = document.createElement('div');
+  overview.className = 'brief-chapter brief-chapter--overview';
+  overview.id = 'ch-overview';
+  scrollBody.appendChild(overview);
+
   /* ── Decision Brief ── */
   if (p.decision) {
     var db = document.createElement('div');
@@ -1125,7 +1156,7 @@ function renderDrawer(key) {
         '<span class="brief-decision-pill next">What To Do Next</span>' +
         '<span class="brief-decision-text">' + p.decision.next + '</span>' +
       '</div>';
-    body.appendChild(db);
+    overview.appendChild(db);
   }
 
   /* ── Insight Headline ── */
@@ -1133,7 +1164,7 @@ function renderDrawer(key) {
   headline.className = 'brief-headline';
   headline.innerHTML = '<div class="brief-headline-label">The Key Finding</div>' +
     '<div class="brief-headline-text">' + p.insight + '</div>';
-  body.appendChild(headline);
+  overview.appendChild(headline);
 
   /* ── KPI Strip ── */
   var kpiStrip = document.createElement('div');
@@ -1146,7 +1177,7 @@ function renderDrawer(key) {
       '<div class="brief-kpi-label">' + k.label + '</div>';
     kpiStrip.appendChild(card);
   });
-  body.appendChild(kpiStrip);
+  overview.appendChild(kpiStrip);
 
   /* ── Explore This Project (question-based lens) ── */
   if (p.stakeholders && p.stakeholders.length) {
@@ -1196,23 +1227,8 @@ function renderDrawer(key) {
 
     sl.appendChild(slCards);
     sl.appendChild(slAnswer);
-    body.appendChild(sl);
+    overview.appendChild(sl);
   }
-
-  /* ── Spine + Scroll body ── */
-  var layout = document.createElement('div');
-  layout.className = 'brief-layout';
-
-  var spine = document.createElement('div');
-  spine.className = 'brief-spine';
-  spine.innerHTML = '<div class="brief-spine-fill"></div>' +
-    p.chapters.map(function(ch, i) {
-      return '<div class="brief-spine-dot" title="' + ch.title + '"></div>';
-    }).join('');
-  layout.appendChild(spine);
-
-  var scrollBody = document.createElement('div');
-  scrollBody.className = 'brief-scroll-body';
 
   p.sections.forEach(function(sec, si) {
     var chapter = p.chapters[si] || p.chapters[p.chapters.length - 1];
@@ -1291,9 +1307,6 @@ function renderDrawer(key) {
     scrollBody.appendChild(chWrap);
   });
 
-  layout.appendChild(scrollBody);
-  body.appendChild(layout);
-
   /* ── Ask This Project ── */
   if (p.context) {
     var askWrap = document.createElement('div');
@@ -1347,7 +1360,7 @@ function renderDrawer(key) {
         }).join('') +
       '</div>' +
       '<div class="brief-ask-response" style="display:none"></div>';
-    body.appendChild(askWrap);
+    scrollBody.appendChild(askWrap);
 
     var askResp = askWrap.querySelector('.brief-ask-response');
 
@@ -1371,6 +1384,18 @@ function renderDrawer(key) {
       });
     });
   }
+
+
+  layout.appendChild(scrollBody);
+  body.appendChild(layout);
+
+  /* Spine nav: click label/dot to jump */
+  spine.querySelectorAll('.brief-spine-item').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var t = scrollBody.querySelector('#' + btn.getAttribute('data-target'));
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
 
   /* ── KPI count-up on intersection ── */
   var kpiObs = new IntersectionObserver(function(entries) {

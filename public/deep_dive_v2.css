@@ -20,7 +20,7 @@
   --dd-red:           #c0614a;
   --dd-gold:          #d4a030;
   --dd-green:         #4d8c2a;
-  --dd-panel-w:       min(820px, 95vw);
+  --dd-panel-w:       min(920px, 96vw);
   --dd-radius:        12px;
   --dd-ease:          cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -104,6 +104,7 @@
   right: 0;
   width: var(--dd-panel-w);
   height: 100dvh;
+  max-height: 100dvh;
   background: var(--dd-bg);
   border-left: 1px solid var(--dd-border);
   z-index: 8100;
@@ -118,7 +119,8 @@
 
 /* ── Body (flex container) ── */
 #dd-body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0; /* critical: allow child scroll area to shrink/grow */
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -356,7 +358,8 @@
 ═══════════════════════════════════ */
 .brief-layout {
   display: flex;
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0; /* critical: fill remaining panel height under header */
   overflow: hidden;
 }
 /* Spine */
@@ -367,8 +370,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
   position: relative;
   border-right: 1px solid var(--dd-border);
+  overflow: hidden;
 }
 .brief-spine::before {
   content: '';
@@ -412,13 +418,16 @@
 
 /* Scroll body */
 .brief-scroll-body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   scroll-behavior: smooth;
   padding: 0 24px 48px;
   scrollbar-width: thin;
   scrollbar-color: var(--dd-border2) transparent;
+  -webkit-overflow-scrolling: touch;
 }
 .brief-scroll-body::-webkit-scrollbar { width: 4px; }
 .brief-scroll-body::-webkit-scrollbar-thumb {
@@ -1409,7 +1418,6 @@
   height: 7px;
   border-radius: 50%;
   background: var(--dd-accent);
-  box-shadow: 0 0 0 0 color-mix(in oklab, var(--dd-accent) 50%, transparent);
   animation: brief-live-pulse 1.8s ease-out infinite;
 }
 @keyframes brief-live-pulse {
@@ -1419,30 +1427,164 @@
 }
 .brief-sql__run { display: none !important; }
 
-@media (min-width: 1024px) {
+/* Spine items (dot + label) — labels show from tablet landscape up */
+.brief-spine-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--dd-text-faint);
+  cursor: pointer;
+  padding: 7px 10px 7px 0;
+  text-align: left;
+  position: relative;
+  z-index: 3;
+}
+.brief-spine-item .brief-spine-dot {
+  margin: 0;
+  flex-shrink: 0;
+}
+.brief-spine-label {
+  display: none;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brief-spine-item:hover { color: var(--dd-text); }
+.brief-spine-item.active { color: var(--dd-accent); }
+.brief-spine-item.active .brief-spine-dot {
+  border-color: var(--dd-accent);
+  background: var(--dd-accent);
+  transform: scale(1.25);
+}
+
+.brief-chapter--overview {
+  padding-top: 0 !important;
+}
+.brief-chapter--overview .brief-decision,
+.brief-chapter--overview .brief-headline,
+.brief-chapter--overview .brief-kpi-strip,
+.brief-chapter--overview .brief-explore-wrap {
+  border-left: none;
+  border-right: none;
+}
+
+@media (min-width: 900px) {
   :root {
-    --dd-panel-w: min(1040px, 90vw);
+    --dd-panel-w: min(1080px, 78vw);
     --brief-panel-w: var(--dd-panel-w);
   }
 
-  #dd-panel {
-    box-shadow: -24px 0 80px rgba(0,0,0,0.4);
+  #dd-body {
+    min-height: 0;
   }
+
+  .brief-layout {
+    min-height: 0;
+  }
+
+  .brief-hdr-content {
+    padding: 18px 28px 20px;
+  }
+
+  .brief-hdr-title {
+    font-size: clamp(1.35rem, 1.8vw, 1.75rem);
+    max-width: 28ch;
+  }
+
+  .brief-hdr-sub {
+    font-size: 14px;
+    max-width: 62ch;
+  }
+
+  /* Labeled chapter rail */
+  .brief-spine {
+    width: 168px;
+    align-items: stretch;
+    padding: 28px 12px 28px 14px;
+  }
+  .brief-spine::before,
+  .brief-spine-fill {
+    left: 22px;
+  }
+  .brief-spine-label { display: block; }
+  .brief-spine-item { padding-left: 4px; }
 
   .brief-scroll-body {
-    padding: 8px 36px 72px;
+    padding: 0 32px 80px 20px;
   }
+
+  .brief-decision {
+    margin: 18px 0 0;
+    border-radius: 14px;
+    border: 1px solid var(--dd-border);
+    overflow: hidden;
+  }
+  .brief-decision-row {
+    padding: 14px 18px;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .brief-decision-text {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .brief-headline {
+    padding: 22px 4px 18px;
+  }
+  .brief-headline-text {
+    font-size: 16.5px;
+    line-height: 1.65;
+    max-width: 62ch;
+  }
+
+  .brief-kpi-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border: 1px solid var(--dd-border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 4px 0 18px;
+  }
+  .brief-kpi-val { font-size: 24px; }
+  .brief-kpi-label { font-size: 10.5px; }
+
+  .brief-explore-wrap {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.2fr);
+    gap: 0;
+    border: 1px solid var(--dd-border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .brief-explore-hdr {
+    display: none;
+  }
+  .brief-explore-cards {
+    border-right: 1px solid var(--dd-border);
+    max-height: none;
+  }
+  .brief-explore-answer {
+    min-height: 160px;
+  }
+  .bec-question { font-size: 13.5px; }
+  .bep-text { font-size: 14.5px; line-height: 1.65; }
 
   .brief-chapter {
-    padding: 28px 8px 20px;
+    padding: 28px 4px 22px;
   }
-
   .brief-section-title {
     font-size: 11px;
     letter-spacing: 0.14em;
     margin-bottom: 14px;
   }
-
   .brief-insight-block {
     font-size: 15.5px;
     line-height: 1.7;
@@ -1455,21 +1597,13 @@
     grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
-
   .brief-impact-text-card {
     height: 100%;
     padding: 16px 18px;
     border-radius: 12px;
   }
-
-  .bitc-heading {
-    font-size: 14px;
-  }
-
-  .bitc-text {
-    font-size: 13px;
-    line-height: 1.55;
-  }
+  .bitc-heading { font-size: 14px; }
+  .bitc-text { font-size: 13px; line-height: 1.55; }
 
   .brief-impact-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1480,17 +1614,14 @@
     padding: 22px 24px;
     border-radius: 14px;
   }
-
   .brief-whatif__question {
     font-size: 15px;
     margin-bottom: 18px;
   }
-
   .brief-whatif__slabel {
     min-width: 150px;
     font-size: 12px;
   }
-
   .brief-whatif__result {
     margin-top: 8px;
     padding-top: 14px;
@@ -1500,48 +1631,108 @@
   .brief-sql-runner {
     padding: 18px;
     border-radius: 14px;
+    border: 1px solid var(--dd-border);
+    background: var(--dd-surface);
   }
+  .brief-sql__tabs { flex-wrap: wrap; gap: 8px; }
+  .brief-sql__editor { font-size: 13px; line-height: 1.55; }
+  .brief-sql__table { font-size: 12.5px; }
 
-  .brief-sql__tabs {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  .brief-conviction-row { gap: 22px; }
+  .brief-trail__text { font-size: 14px; line-height: 1.65; }
 
-  .brief-sql__editor {
-    font-size: 13px;
-    line-height: 1.55;
+  .brief-ask-wrap {
+    margin: 12px 0 24px;
+    border: 1px solid var(--dd-border);
+    border-radius: 14px;
+    overflow: hidden;
   }
-
-  .brief-sql__table {
-    font-size: 12.5px;
-  }
-
-  .brief-conviction-row {
-    gap: 22px;
-  }
-
-  .brief-headline-text {
-    font-size: clamp(1.15rem, 1.6vw, 1.45rem);
-    line-height: 1.45;
-    max-width: 52rem;
-  }
-
-  .brief-trail__text {
-    font-size: 14px;
-    line-height: 1.65;
-  }
+  .brief-ask-header { padding: 16px 18px 12px; }
+  .brief-ask-chips-only { padding: 0 18px 16px; }
+  .brief-ask-response { margin: 0 18px 16px; }
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1280px) {
   :root {
-    --dd-panel-w: min(1180px, 70vw);
+    --dd-panel-w: min(1180px, 68vw);
+  }
+
+  .brief-spine {
+    width: 190px;
   }
 
   .brief-scroll-body {
-    padding: 12px 44px 80px;
+    padding: 0 40px 96px 24px;
   }
 
-  .brief-impact-text-grid {
+  .brief-hdr-title {
+    font-size: clamp(1.5rem, 1.7vw, 1.9rem);
+  }
+
+  .brief-explore-wrap {
+    grid-template-columns: minmax(240px, 0.85fr) minmax(0, 1.25fr);
+  }
+}
+
+/* Very large desktops: almost a reading stage, not a skinny drawer */
+@media (min-width: 1600px) {
+  :root {
+    --dd-panel-w: min(1280px, 62vw);
+  }
+}
+
+
+/* Desktop reading measure + SQL side-by-side */
+@media (min-width: 900px) {
+  .brief-insight-block,
+  .brief-decision-text,
+  .brief-trail__text,
+  .bep-text,
+  .brief-ask-answer {
+    max-width: 68ch;
+  }
+
+  .brief-sql-runner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     gap: 16px;
+    align-items: start;
+  }
+  .brief-sql__header {
+    grid-column: 1 / -1;
+  }
+  .brief-sql__tabs {
+    grid-column: 1 / -1;
+  }
+  .brief-sql__live-status {
+    grid-column: 1 / -1;
+  }
+  .brief-sql__editor-wrap,
+  .brief-sql__pane {
+    min-height: 220px;
+  }
+
+  #dd-close {
+    width: 40px;
+    height: 40px;
+    margin-right: 4px;
+  }
+  .brief-hdr-top-row::after {
+    content: 'Esc';
+    position: absolute;
+    right: 56px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--dd-text-faint);
+    border: 1px solid var(--dd-border);
+    border-radius: 6px;
+    padding: 3px 6px;
+    pointer-events: none;
+  }
+  .brief-hdr-top-row {
+    position: relative;
   }
 }
