@@ -52,3 +52,9 @@ Admin login only works when `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in the en
 ## Author
 
 **Andre Weissmann** · Chicago · Data analyst
+
+## Live URL
+
+Canonical public site: https://andre-weissmann-data-portfolio-full.pplx.app
+
+See [docs/PORTFOLIO_URLS.md](docs/PORTFOLIO_URLS.md) for subdomain history and publish rules.
