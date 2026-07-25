@@ -1225,7 +1225,7 @@
     flex: none !important;
     overflow: visible !important;
   }
-  .brief-spine { display: none !important; }
+  .brief-spine { display: none !important; } /* section list moves to .brief-mob-chapters */
   .brief-scroll-body {
     overflow: visible !important;
     flex: none !important;
@@ -1399,9 +1399,14 @@
   .brief-conviction-row { justify-content: flex-start !important; padding: 0 !important; }
 
   /* Morph table: 2 cols */
-  .brief-morph-row { grid-template-columns: repeat(2, 1fr) !important; }
+  /* Same columns as desktop — horizontal scroll instead of dropping fields */
+  .brief-morph-tbl { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .brief-morph-row {
+    grid-template-columns: repeat(4, minmax(7.5rem, 1fr)) !important;
+    min-width: 32rem !important;
+  }
   .brief-morph-cell:nth-child(n+3),
-  .brief-morph-head .brief-morph-cell:nth-child(n+3) { display: none !important; }
+  .brief-morph-head .brief-morph-cell:nth-child(n+3) { display: flex !important; }
   .brief-morph-cell { padding: 9px 10px !important; font-size: 11px !important; }
 
   /* What-if */
@@ -1418,6 +1423,7 @@
   }
 
   /* Bottom bar: hidden (close is in header) */
+  /* bottom bar optional; exit bar is the persistent control */
   #dd-bottom-bar { display: none !important; }
 }
 /* ── end mobile ── */
@@ -2045,4 +2051,156 @@ body.dd-open {
 .brief-chart-label,
 .brief-chart-val {
   font-family: inherit;
+}
+
+
+/* ── Mobile/tablet chapter strip = same info as desktop spine ── */
+.brief-mob-chapters {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  margin: 0 0 12px;
+  padding: 10px 0 8px;
+  background: color-mix(in oklab, var(--brief-bg, var(--dd-bg, #0b1220)) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid color-mix(in oklab, var(--dd-border, #334155) 70%, transparent);
+}
+.brief-mob-chapters-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brief-text-dim, #94a3b8);
+  padding: 0 16px 6px;
+}
+.brief-mob-chapters-track {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 4px;
+  scrollbar-width: none;
+}
+.brief-mob-chapters-track::-webkit-scrollbar { display: none; }
+.brief-mob-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid color-mix(in oklab, var(--dd-border, #334155) 80%, transparent);
+  background: color-mix(in oklab, var(--brief-surface, #111827) 88%, transparent);
+  color: var(--brief-text, #e2e8f0);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.brief-mob-chip-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  background: color-mix(in oklab, var(--dd-accent, #0d9488) 18%, transparent);
+  color: var(--dd-accent, #0d9488);
+}
+.brief-mob-chip.active {
+  border-color: color-mix(in oklab, var(--dd-accent, #0d9488) 55%, transparent);
+  background: color-mix(in oklab, var(--dd-accent, #0d9488) 14%, transparent);
+  color: var(--dd-accent, #0d9488);
+}
+
+/* Show chapter chips when spine is hidden; hide chips when spine is visible */
+@media (max-width: 899px) {
+  .brief-mob-chapters { display: block; }
+  .brief-spine { display: none !important; }
+  .brief-layout {
+    display: block !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .brief-mob-chapters { display: none !important; }
+  .brief-spine { display: flex !important; }
+}
+
+/* Keep decision pills + KPIs + outcome readable on all widths — same content, reflow only */
+@media (max-width: 640px) {
+  .brief-decision {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .brief-decision-row {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+  .brief-kpi-strip {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  .brief-explore-cards {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .brief-outcome-text {
+    font-size: 1.05rem !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .brief-kpi-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .brief-kpi-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Exit controls always reachable — same actions on every device */
+.brief-exit-bar {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+  z-index: 80 !important;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  max-width: min(560px, calc(100vw - 24px));
+  width: max-content;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--brief-surface, #0f172a) 94%, transparent);
+  border: 1px solid color-mix(in oklab, var(--dd-border, #334155) 80%, transparent);
+  box-shadow: 0 10px 40px rgba(0,0,0,.35);
+  pointer-events: auto;
+}
+@media (max-width: 899px) {
+  .brief-exit-bar {
+    width: calc(100vw - 20px) !important;
+    max-width: none !important;
+    justify-content: space-between;
+  }
+  .brief-exit-hint { display: none !important; }
+  .brief-back-label { display: inline !important; }
+  /* Keep header close visible while scrolling the stage */
+  .brief-hdr {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 20 !important;
+  }
 }
