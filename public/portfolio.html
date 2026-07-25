@@ -15,10 +15,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=1784982000" />
+  <link rel="stylesheet" href="style.css?v=1784984000" />
   <link rel="stylesheet" href="portfolio_os.css?v=1784980001" />
   <link rel="stylesheet" href="data_rail.css?v=1784201441" />
-  <link rel="stylesheet" href="deep_dive_v2.css?v=1784201441" />
+  <link rel="stylesheet" href="deep_dive_v2.css?v=1784984000" />
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Data Analyst | Healthcare Operations and Analytics","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
@@ -352,10 +352,10 @@
             <div class="project-block-demo">
               <div class="demo-header">
                 <span class="demo-badge"><span class="live-dot"></span>Live SQL Sandbox</span>
-                <p class="demo-hint">56,477 Nashville housing records. Pick a query to run it instantly.</p>
+                <p class="demo-hint">56,477 Nashville housing records. Results load live — pick any query to update instantly.</p>
               </div>
               <div class="sql-sandbox">
-                <p class="sql-preset-label">Choose a query to explore the Nashville housing dataset live ↓</p>
+                <p class="sql-preset-label">Live SQL sandbox · results update as you explore</p>
                 <div class="sql-examples">
                   <button class="sql-ex" data-query="SELECT ParcelID, LandUse, SaleDate, SalePrice, LegalReference FROM housing LIMIT 10;">Preview rows</button>
                   <button class="sql-ex" data-query="SELECT LandUse, COUNT(*) as total, ROUND(AVG(SalePrice),0) as avg_price FROM housing GROUP BY LandUse ORDER BY total DESC;">By land use</button>
@@ -368,7 +368,7 @@
                   <pre class="sql-code-block" id="sql-code-display"></pre>
                 </div>
                 <div class="sql-results" id="sql-results-nashville">
-                  <div class="sql-placeholder">Click any preset above to run a live query against 56,477 Nashville housing records.</div>
+                  <div class="sql-placeholder">Loading live query results…</div>
                 </div>
               </div>
             </div>
@@ -390,7 +390,7 @@
             <div class="project-block-demo">
               <div class="demo-header">
                 <span class="demo-badge"><span class="live-dot"></span>Live Python Program</span>
-                <p class="demo-hint">Pick a preset scenario or enter your own measurements below.</p>
+                <p class="demo-hint">Live calculator · results update as you change height, weight, or WHR.</p>
               </div>
               <div class="bmi-app">
                 <div class="bmi-presets">
@@ -460,8 +460,8 @@
                     </div>
                   </div>
                 </div>
-                <button class="bmi-run-btn" id="bmi-run-btn">Analyze My Health Data</button>
-                <div id="bmi-output" style="display:none;"></div>
+                <div class="bmi-live-status" id="bmi-live-status" aria-live="polite">Live · updates as you type</div>
+                <div id="bmi-output"></div>
               </div>
             </div>
           </article>
@@ -1049,11 +1049,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <script src="style-tokens.js?v=1783788854"></script>
-  <script src="script.js?v=1784201441"></script>
+  <script src="script.js?v=1784984000"></script>
   <!-- modals.js removed: Deep Dive system lives in portfolio.html directly -->
   <script src="portfolio_os.js?v=1784980001"></script>
   <script src="data_rail.js?v=1784201441"></script>
-  <script src="deep_dive_v2.js?v=1784201441"></script>
+  <script src="deep_dive_v2.js?v=1784984000"></script>
   <script src="powerbi.js?v=1783788854"></script>
   <script src="tableau.js?v=1783788854"></script>
   <script src="excel.js?v=1783788854"></script>
