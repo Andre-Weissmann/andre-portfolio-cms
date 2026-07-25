@@ -825,6 +825,9 @@ input, select, textarea { font-family: inherit; }
   font-style: italic;
   color: var(--color-text);
   line-height: 1.5;
+
+  max-width: 38ch;
+  line-height: 1.45;
 }
 
 /* ── Stat cards ── */
