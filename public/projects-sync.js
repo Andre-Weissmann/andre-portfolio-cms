@@ -180,7 +180,7 @@
     });
 
     root.innerHTML = projects.map(function (p) {
-      var tierLabel = p.tier === 'featured' ? 'Featured' : 'More work';
+      var tierLabel = p.tier === 'featured' ? 'Featured' : 'In this portfolio';
       return (
         '<a class="all-proj-card" href="#' + escapeHtml(p.anchor) + '" data-project-id="' + escapeHtml(p.id) + '">' +
           '<div class="all-proj-card-top">' +
@@ -189,7 +189,7 @@
           '</div>' +
           '<h3 class="all-proj-title">' + escapeHtml(p.resumeTitle) + '</h3>' +
           '<p class="all-proj-blurb">' + escapeHtml(p.cardBlurb || '') + '</p>' +
-          '<span class="all-proj-go">Open project →</span>' +
+          '<span class="all-proj-go">Jump to project →</span>' +
         '</a>'
       );
     }).join('');
@@ -202,28 +202,16 @@
       if (!el) return;
       el.setAttribute('data-tier', p.tier || 'catalog');
       el.setAttribute('data-project-id', p.id);
-      if (p.tier === 'featured') {
-        el.classList.add('project-block--featured-tier');
-      } else {
-        el.classList.add('project-block--catalog-tier');
+      el.classList.toggle('project-block--featured-tier', p.tier === 'featured');
+      el.classList.toggle('project-block--catalog-tier', p.tier !== 'featured');
+      // Featured ribbon (same on every viewport — no content removed)
+      var meta = el.querySelector('.project-meta-row');
+      if (meta && p.tier === 'featured' && !meta.querySelector('.proj-featured-tag')) {
+        var tag = document.createElement('span');
+        tag.className = 'proj-featured-tag';
+        tag.textContent = 'Featured';
+        meta.insertBefore(tag, meta.firstChild);
       }
-    });
-
-    // Move blocks into the correct lists if wrappers exist
-    var featuredList = document.getElementById('featured-projects-list');
-    var catalogList = document.getElementById('catalog-projects-list');
-    if (!featuredList || !catalogList) return;
-
-    var featured = projects.filter(function (p) { return p.tier === 'featured'; }).sort(byFeaturedOrder);
-    var catalog = projects.filter(function (p) { return p.tier !== 'featured'; }).sort(byResumeOrder);
-
-    featured.forEach(function (p) {
-      var el = document.getElementById(p.anchor);
-      if (el) featuredList.appendChild(el);
-    });
-    catalog.forEach(function (p) {
-      var el = document.getElementById(p.anchor);
-      if (el) catalogList.appendChild(el);
     });
   }
 

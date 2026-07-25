@@ -2438,8 +2438,28 @@ select.bmi-input {
     gap: var(--sp-2);
     background: var(--color-surface2);
   }
-  .pdm-sidebar-title { display: none; }
-  .pdm-sidebar-stat { display: none; }
+  .pdm-sidebar-title {
+    display: block;
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .pdm-sidebar-stat {
+    display: flex;
+    flex-direction: column;
+    min-width: 4.5rem;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  .pdm-sidebar-stat .pdm-stat-n,
+  .pdm-sidebar-stat strong {
+    font-size: 0.85rem;
+  }
+  .pdm-sidebar-stat .pdm-stat-l,
+  .pdm-sidebar-stat span {
+    font-size: 0.65rem;
+  }
   .pdm-toc {
     flex-direction: row;
     gap: var(--sp-2);
@@ -2510,59 +2530,52 @@ select.bmi-input {
    core identity + CTAs stay in hero-left on every breakpoint. */
 
 
-/* ── Option A: featured + all projects ── */
-.view-all-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-3);
-  margin-top: var(--sp-12);
-  padding-top: var(--sp-8);
-  border-top: 1px solid var(--color-border);
-  text-align: center;
+
+/* ── Projects jump strip + featured badges (content parity) ── */
+.projects-jump {
+  margin: 0 0 var(--sp-10);
+  padding: var(--sp-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface2);
 }
 
-.view-all-btn {
-  min-height: 44px;
-  font-weight: 700;
-}
-
-.view-all-hint {
-  margin: 0;
-  font-size: 0.88rem;
+.projects-jump-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--color-text-faint);
-  max-width: 36rem;
+  margin-bottom: var(--sp-4);
 }
 
-.all-projects-section {
-  background: color-mix(in oklab, var(--color-surface2) 55%, transparent);
-}
-
+.projects-jump-row,
 .all-projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--sp-5);
-  margin-bottom: var(--sp-12);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--sp-3);
 }
 
 .all-proj-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: var(--sp-5);
-  border-radius: var(--radius-xl);
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   text-decoration: none;
   color: inherit;
-  min-height: 180px;
+  min-height: 44px;
   transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.all-proj-card:hover {
-  border-color: color-mix(in oklab, var(--color-teal) 45%, var(--color-border));
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+.all-proj-card:hover,
+.all-proj-card:focus-visible {
+  border-color: color-mix(in oklab, var(--color-teal) 50%, var(--color-border));
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.16);
+  outline: none;
 }
 
 .all-proj-card-top {
@@ -2573,7 +2586,7 @@ select.bmi-input {
 }
 
 .all-proj-tier {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2582,57 +2595,83 @@ select.bmi-input {
 
 .all-proj-title {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 400;
   line-height: 1.25;
-  letter-spacing: -0.02em;
-  color: var(--color-text);
   margin: 0;
+  color: var(--color-text);
 }
 
 .all-proj-blurb {
   margin: 0;
-  flex: 1;
-  font-size: 0.88rem;
-  line-height: 1.55;
+  font-size: 0.82rem;
+  line-height: 1.5;
   color: var(--color-text-muted);
+  flex: 1;
 }
 
 .all-proj-go {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--color-teal);
 }
 
-.all-projects-detail-heading {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 400;
-  margin: 0 0 var(--sp-2);
-  color: var(--color-text);
-}
-
-.all-projects-detail-sub {
-  margin-bottom: var(--sp-8) !important;
+.proj-featured-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-teal);
+  border: 1px solid color-mix(in oklab, var(--color-teal) 40%, transparent);
+  background: color-mix(in oklab, var(--color-teal) 12%, transparent);
+  border-radius: 999px;
+  padding: 2px 8px;
 }
 
 .project-block--featured-tier {
-  /* full weight in selected work */
+  border: 1px solid color-mix(in oklab, var(--color-teal) 28%, var(--color-border));
+  border-radius: var(--radius-xl);
+  padding: var(--sp-4);
+  background: color-mix(in oklab, var(--color-teal) 6%, transparent);
 }
 
-.project-block--catalog-tier {
-  opacity: 1;
+/* Never hide project demos or descriptions by viewport */
+.project-block,
+.project-block-demo,
+.project-block-desc,
+.project-block-info {
+  visibility: visible !important;
+}
+
+@media (max-width: 900px) {
+  /* Keep hero identity visible: photo + facts stay in hero-left.
+     Do not hide unique project content on tablet/phone. */
+  .hero-photo-top,
+  .hero-fact-row,
+  .hero-stack,
+  .hero-cta-row {
+    display: flex;
+  }
+  .hero-photo-top { display: block; }
 }
 
 @media (max-width: 640px) {
+  .projects-jump-row,
   .all-projects-grid {
     grid-template-columns: 1fr;
   }
-  .view-all-wrap {
-    margin-top: var(--sp-8);
-    padding-top: var(--sp-6);
-  }
   .all-proj-card {
     min-height: 0;
+  }
+  .project-block--featured-tier {
+    padding: var(--sp-3);
+  }
+  /* Full project text on mobile — same words as desktop */
+  .project-block-desc {
+    font-size: 0.95rem;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 }

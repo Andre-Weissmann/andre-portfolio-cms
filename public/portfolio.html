@@ -15,10 +15,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=1784999000" />
-  <link rel="stylesheet" href="portfolio_os.css?v=1784999000" />
-  <link rel="stylesheet" href="data_rail.css?v=1784999000" />
-  <link rel="stylesheet" href="deep_dive_v2.css?v=1785010000" />
+  <link rel="stylesheet" href="style.css?v=1785012000" />
+  <link rel="stylesheet" href="portfolio_os.css?v=1785012000" />
+  <link rel="stylesheet" href="data_rail.css?v=1785012000" />
+  <link rel="stylesheet" href="deep_dive_v2.css?v=1785012000" />
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Data Analyst | Healthcare Operations and Analytics","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
@@ -40,7 +40,7 @@
       <ul class="nav-links" role="list">
         <li><a href="#about">About</a></li>
         <li><a href="#skills">Capabilities</a></li>
-        <li><a href="#projects">Projects</a></li>
+        <li><a href="#projects">All projects</a></li>
         <li><a href="#experience">Experience</a></li>
         <li><a href="#contact-form" class="nav-cta">Contact</a></li>
       </ul>
@@ -59,7 +59,7 @@
       <ul role="list">
         <li><a href="#about" class="mobile-link">About</a></li>
         <li><a href="#skills" class="mobile-link">Capabilities</a></li>
-        <li><a href="#projects" class="mobile-link">Projects</a></li>
+        <li><a href="#projects" class="mobile-link">All projects</a></li>
         <li><a href="#experience" class="mobile-link">Experience</a></li>
         <li><a href="#contact-form" class="mobile-link">Contact</a></li>
       </ul>
@@ -70,7 +70,7 @@
   <nav id="mobile-section-nav" class="nav-hidden" aria-label="Section navigation">
     <a href="#about" class="msn-pill" data-msn="about">About</a>
     <a href="#skills" class="msn-pill" data-msn="skills">Capabilities</a>
-    <a href="#projects" class="msn-pill" data-msn="projects">Projects</a>
+    <a href="#projects" class="msn-pill" data-msn="projects">All projects</a>
     <a href="#experience" class="msn-pill" data-msn="experience">Experience</a>
     <a href="#contact-form" class="msn-pill" data-msn="contact">Contact</a>
   </nav>
@@ -146,7 +146,7 @@
           </div>
 
           <div class="hero-cta-row">
-            <a href="#projects" class="btn btn-primary" onclick="instantJump(event,'projects')">See My Projects</a>
+            <a href="#projects" class="btn btn-primary" onclick="instantJump(event,'projects')">View all projects</a>
             <a href="#contact" class="btn btn-outline" onclick="instantJump(event,'contact')">Get in Touch</a>
             <a href="resume.html" id="resume-btn" class="btn btn-resume">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -328,15 +328,21 @@
     </section>
 
     <!-- ══ PROJECTS ══ -->
-    <section class="section projects-section" id="projects">
+        <section class="section projects-section" id="projects">
       <div class="container">
-        <div class="section-eyebrow">Selected work</div>
-        <h2 class="section-heading">Featured case studies</h2>
-        <p class="section-sub">Start here. Full interactive proof for the strongest analyst stories. Same content on phone and desktop — layout flexes, nothing is removed.</p>
+        <div class="section-eyebrow">Portfolio</div>
+        <h2 class="section-heading">Data projects</h2>
+        <p class="section-sub">The same projects on phone and desktop. Layout stacks on small screens; nothing is removed. Start with the featured case studies, then keep scrolling for the full set.</p>
+
+        <!-- Jump strip: button-like cards for every project (same set every viewport) -->
+        <div class="projects-jump" id="projects-jump" aria-label="Jump to a project">
+          <div class="projects-jump-label">Jump to a project</div>
+          <div class="projects-jump-row" id="all-projects-grid">
+            <!-- Filled by projects-sync.js from projects-catalog.json -->
+          </div>
+        </div>
 
         <div class="projects-list" id="featured-projects-list">
-
-          <!-- PROJECT 1: Nashville SQL -->
           <article class="project-block" id="proj-nashville">
             <div class="project-block-info">
               <div class="project-meta-row">
@@ -374,8 +380,37 @@
             </div>
           </article>
 
-          <!-- PROJECT 2: BMI Python -->
-          <article class="project-block project-block--flip" id="proj-bmi">
+<article class="project-block" id="proj-survey">
+            <div class="project-block-info">
+              <div class="project-meta-row">
+                <span class="proj-badge badge-powerbi">Power BI</span>
+                <span class="proj-year">2023</span>
+                <button class="proj-explore-btn" data-explore="survey">Deep Dive &rarr;</button>
+              </div>
+              <h3 class="project-block-title">Data Professionals Survey: Does Education Level Actually Drive Salary?</h3>
+              <p class="project-block-desc">630 data professionals across the US, India, Canada, and UK reported their salaries, tools, and satisfaction. The central question was whether education level predicts compensation. The Power BI dashboard I built across five charts and two KPI cards answers it clearly: PhD holders average $206K, yet bachelor's degree data scientists average $93K and outperform associates and masters tiers in total employment volume. Education level alone is not the salary driver people assume. The real signal is role, not credential. That distinction matters to every hiring manager setting compensation bands and every early-career analyst deciding whether to go back to school.</p>
+              <div class="project-tech-row"><span>Power BI</span><span>Survey Analysis</span><span>DAX</span><span>Data Visualization</span></div>
+              <a href="powerbi-dashboard.html" target="_blank" rel="noopener noreferrer" class="project-block-img-link" aria-label="Open Power BI Dashboard"><img src="images/powerbi-dashboard.png" alt="Power BI Dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></a>
+            </div>
+
+          </article>
+
+<article class="project-block project-block--flip" id="proj-airbnb">
+            <div class="project-block-info">
+              <div class="project-meta-row">
+                <span class="proj-badge badge-tableau">Tableau</span>
+                <span class="proj-year">2023</span>
+                <button class="proj-explore-btn" data-explore="airbnb">Deep Dive &rarr;</button>
+              </div>
+              <h3 class="project-block-title">Seattle Airbnb 2016: The Three Variables That Explain Every Pricing Decision</h3>
+              <p class="project-block-desc">323,346 booking records across Seattle's Airbnb market. Seven missing zip codes manually corrected through neighborhood cross-referencing. An inner join across Listings and Calendar tables to connect property attributes to revenue timing. What emerged were three clean levers any host can act on: zip code 98134 commands the city's highest average nightly rate, a four-bedroom generates nearly four times the revenue of a one-bedroom, and the week of December 25th ($2,110,350 in city-wide revenue) outperforms the week of March 27th ($1,906,735). Gut-feel pricing ignores all three. This Tableau dashboard makes all three visible and interactive.</p>
+              <div class="project-tech-row"><span>Tableau</span><span>Geospatial</span><span>Time Series</span><span>Airbnb Data</span></div>
+              <a href="tableau-dashboard.html" target="_blank" rel="noopener noreferrer" class="project-block-img-link" aria-label="Open Tableau Dashboard"><img src="images/airbnb-dashboard.png" alt="Airbnb Seattle Tableau Dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></a>
+            </div>
+
+          </article>
+
+<article class="project-block project-block--flip" id="proj-bmi">
             <div class="project-block-info">
               <div class="project-meta-row">
                 <span class="proj-badge badge-python">Python</span>
@@ -466,40 +501,7 @@
             </div>
           </article>
 
-          <!-- PROJECT 3: Power BI Survey -->
-          <article class="project-block" id="proj-survey">
-            <div class="project-block-info">
-              <div class="project-meta-row">
-                <span class="proj-badge badge-powerbi">Power BI</span>
-                <span class="proj-year">2023</span>
-                <button class="proj-explore-btn" data-explore="survey">Deep Dive &rarr;</button>
-              </div>
-              <h3 class="project-block-title">Data Professionals Survey: Does Education Level Actually Drive Salary?</h3>
-              <p class="project-block-desc">630 data professionals across the US, India, Canada, and UK reported their salaries, tools, and satisfaction. The central question was whether education level predicts compensation. The Power BI dashboard I built across five charts and two KPI cards answers it clearly: PhD holders average $206K, yet bachelor's degree data scientists average $93K and outperform associates and masters tiers in total employment volume. Education level alone is not the salary driver people assume. The real signal is role, not credential. That distinction matters to every hiring manager setting compensation bands and every early-career analyst deciding whether to go back to school.</p>
-              <div class="project-tech-row"><span>Power BI</span><span>Survey Analysis</span><span>DAX</span><span>Data Visualization</span></div>
-              <a href="powerbi-dashboard.html" target="_blank" rel="noopener noreferrer" class="project-block-img-link" aria-label="Open Power BI Dashboard"><img src="images/powerbi-dashboard.png" alt="Power BI Dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></a>
-            </div>
-
-          </article>
-
-          <!-- PROJECT 4: Airbnb Tableau -->
-          <article class="project-block project-block--flip" id="proj-airbnb">
-            <div class="project-block-info">
-              <div class="project-meta-row">
-                <span class="proj-badge badge-tableau">Tableau</span>
-                <span class="proj-year">2023</span>
-                <button class="proj-explore-btn" data-explore="airbnb">Deep Dive &rarr;</button>
-              </div>
-              <h3 class="project-block-title">Seattle Airbnb 2016: The Three Variables That Explain Every Pricing Decision</h3>
-              <p class="project-block-desc">323,346 booking records across Seattle's Airbnb market. Seven missing zip codes manually corrected through neighborhood cross-referencing. An inner join across Listings and Calendar tables to connect property attributes to revenue timing. What emerged were three clean levers any host can act on: zip code 98134 commands the city's highest average nightly rate, a four-bedroom generates nearly four times the revenue of a one-bedroom, and the week of December 25th ($2,110,350 in city-wide revenue) outperforms the week of March 27th ($1,906,735). Gut-feel pricing ignores all three. This Tableau dashboard makes all three visible and interactive.</p>
-              <div class="project-tech-row"><span>Tableau</span><span>Geospatial</span><span>Time Series</span><span>Airbnb Data</span></div>
-              <a href="tableau-dashboard.html" target="_blank" rel="noopener noreferrer" class="project-block-img-link" aria-label="Open Tableau Dashboard"><img src="images/airbnb-dashboard.png" alt="Airbnb Seattle Tableau Dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></a>
-            </div>
-
-          </article>
-
-          <!-- PROJECT 5: Bike Sales Excel -->
-          <article class="project-block" id="proj-bikes">
+<article class="project-block" id="proj-bikes">
             <div class="project-block-info">
               <div class="project-meta-row">
                 <span class="proj-badge badge-excel">Excel</span>
@@ -513,32 +515,10 @@
             </div>
 
           </article>
-
         </div>
 
-        <div class="view-all-wrap">
-          <a class="btn btn-outline view-all-btn" href="#all-projects" onclick="instantJump(event,'all-projects')">View all projects →</a>
-          <p class="view-all-hint">SQL, Python, Power BI, Tableau, and Excel — full catalog one click away.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══ ALL PROJECTS ══ -->
-    <section class="section all-projects-section" id="all-projects">
-      <div class="container">
-        <div class="section-eyebrow">Catalog</div>
-        <h2 class="section-heading">All projects</h2>
-        <p class="section-sub">Every published data project on this site. Featured work is repeated here so this section works if someone lands on it directly.</p>
-
-        <div class="all-projects-grid" id="all-projects-grid" aria-live="polite">
-          <!-- Filled by projects-sync.js from projects-catalog.json -->
-        </div>
-
-        <h3 class="all-projects-detail-heading">Full interactive detail</h3>
-        <p class="section-sub all-projects-detail-sub">Catalog-tier projects keep their live demos below. Featured blocks stay under Selected work above.</p>
-        <div class="projects-list projects-list--catalog" id="catalog-projects-list">
-          <!-- catalog-tier blocks moved here by projects-sync.js -->
-        </div>
+        <!-- Hidden empty catalog list kept for older anchors / sync script safety -->
+        <div class="projects-list projects-list--catalog" id="catalog-projects-list" hidden></div>
       </div>
     </section>
 
@@ -1077,7 +1057,7 @@
   <!-- modals.js removed: Deep Dive system lives in portfolio.html directly -->
   <script src="portfolio_os.js?v=1784999000"></script>
   <script src="data_rail.js?v=1784999000"></script>
-  <script src="deep_dive_v2.js?v=1785010000"></script>
+  <script src="deep_dive_v2.js?v=1785012000"></script>
   <script src="powerbi.js?v=1784999000"></script>
   <script src="tableau.js?v=1784999000"></script>
   <script src="excel.js?v=1784999000"></script>
@@ -1195,7 +1175,7 @@
   var tocItems = document.querySelectorAll('.toc-item[data-section]');
   var msnPills = document.querySelectorAll('.msn-pill[data-msn]');
   var desktopNavLinks = document.querySelectorAll('.nav-links a[href^="#"]');
-  var allSectionIds = ['about','skills','projects','all-projects','experience','contact'];
+  var allSectionIds = ['about','skills','projects','experience','contact'];
   var trackedSections = allSectionIds.map(function(id) {
     return document.getElementById(id);
   }).filter(Boolean);
@@ -1427,6 +1407,6 @@ window.addEventListener('pageshow', function(e) {
 })();
 </script>
 
-  <script src="projects-sync.js?v=1785010000"></script>
+  <script src="projects-sync.js?v=1785012000"></script>
 </body>
 </html>

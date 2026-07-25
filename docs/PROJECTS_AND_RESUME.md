@@ -29,9 +29,9 @@ Resume HTML updates automatically from the catalog. No separate resume project e
 
 ## Featured vs all projects (Option A)
 
-- Homepage **Selected work**: projects with `"tier": "featured"` (full interactive blocks).
-- **View all projects →** jumps to `#all-projects`.
-- **All projects**: card grid of every published project + full blocks for catalog-tier work below.
+- Homepage shows **every published project** as a full interactive block (same on desktop and mobile).
+- **View all projects** is a hero/nav button to `#projects`.
+- A jump-strip of buttons at the top of Projects lists every project; `tier: featured` only adds a badge and highlight, it does not hide work.
 
 ## PDF / DOCX
 
