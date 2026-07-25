@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="style.css?v=1784999000" />
   <link rel="stylesheet" href="portfolio_os.css?v=1784999000" />
   <link rel="stylesheet" href="data_rail.css?v=1784999000" />
-  <link rel="stylesheet" href="deep_dive_v2.css?v=1785002000" />
+  <link rel="stylesheet" href="deep_dive_v2.css?v=1785010000" />
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Data Analyst | Healthcare Operations and Analytics","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
@@ -330,11 +330,11 @@
     <!-- ══ PROJECTS ══ -->
     <section class="section projects-section" id="projects">
       <div class="container">
-        <div class="section-eyebrow">Portfolio</div>
-        <h2 class="section-heading">Interactive data projects</h2>
-        <p class="section-sub">Don't just read about it. Run it. Every project below is fully interactive: enter your own data, run preset queries, filter dashboards, and explore the findings firsthand.</p>
+        <div class="section-eyebrow">Selected work</div>
+        <h2 class="section-heading">Featured case studies</h2>
+        <p class="section-sub">Start here. Full interactive proof for the strongest analyst stories. Same content on phone and desktop — layout flexes, nothing is removed.</p>
 
-        <div class="projects-list">
+        <div class="projects-list" id="featured-projects-list">
 
           <!-- PROJECT 1: Nashville SQL -->
           <article class="project-block" id="proj-nashville">
@@ -514,6 +514,30 @@
 
           </article>
 
+        </div>
+
+        <div class="view-all-wrap">
+          <a class="btn btn-outline view-all-btn" href="#all-projects" onclick="instantJump(event,'all-projects')">View all projects →</a>
+          <p class="view-all-hint">SQL, Python, Power BI, Tableau, and Excel — full catalog one click away.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ ALL PROJECTS ══ -->
+    <section class="section all-projects-section" id="all-projects">
+      <div class="container">
+        <div class="section-eyebrow">Catalog</div>
+        <h2 class="section-heading">All projects</h2>
+        <p class="section-sub">Every published data project on this site. Featured work is repeated here so this section works if someone lands on it directly.</p>
+
+        <div class="all-projects-grid" id="all-projects-grid" aria-live="polite">
+          <!-- Filled by projects-sync.js from projects-catalog.json -->
+        </div>
+
+        <h3 class="all-projects-detail-heading">Full interactive detail</h3>
+        <p class="section-sub all-projects-detail-sub">Catalog-tier projects keep their live demos below. Featured blocks stay under Selected work above.</p>
+        <div class="projects-list projects-list--catalog" id="catalog-projects-list">
+          <!-- catalog-tier blocks moved here by projects-sync.js -->
         </div>
       </div>
     </section>
@@ -1053,7 +1077,7 @@
   <!-- modals.js removed: Deep Dive system lives in portfolio.html directly -->
   <script src="portfolio_os.js?v=1784999000"></script>
   <script src="data_rail.js?v=1784999000"></script>
-  <script src="deep_dive_v2.js?v=1785002000"></script>
+  <script src="deep_dive_v2.js?v=1785010000"></script>
   <script src="powerbi.js?v=1784999000"></script>
   <script src="tableau.js?v=1784999000"></script>
   <script src="excel.js?v=1784999000"></script>
@@ -1171,7 +1195,7 @@
   var tocItems = document.querySelectorAll('.toc-item[data-section]');
   var msnPills = document.querySelectorAll('.msn-pill[data-msn]');
   var desktopNavLinks = document.querySelectorAll('.nav-links a[href^="#"]');
-  var allSectionIds = ['about','skills','projects','experience','contact'];
+  var allSectionIds = ['about','skills','projects','all-projects','experience','contact'];
   var trackedSections = allSectionIds.map(function(id) {
     return document.getElementById(id);
   }).filter(Boolean);
@@ -1403,5 +1427,6 @@ window.addEventListener('pageshow', function(e) {
 })();
 </script>
 
+  <script src="projects-sync.js?v=1785010000"></script>
 </body>
 </html>

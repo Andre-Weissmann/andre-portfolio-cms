@@ -69,6 +69,8 @@ const STATIC_ASSETS = [
   "tableau-dashboard.html",
   "modals.js",
   "script.js",
+  "projects-catalog.json",
+  "projects-sync.js",
   "style.css",
   "style-tokens.js",
   "powerbi.js",
