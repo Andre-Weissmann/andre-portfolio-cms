@@ -2819,7 +2819,9 @@ a.brief-tool-btn.brief-github-btn {
 }
 .brief-github-icon {
   flex-shrink: 0;
-  display: block;
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
 }
 #dd-theme-icon {
   font-size: 14px;
@@ -2879,8 +2881,10 @@ a.brief-tool-btn.brief-github-btn {
     font-size: 16px !important;
   }
   .brief-github-icon {
-    width: 16px !important;
-    height: 16px !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    width: auto !important;
+    height: auto !important;
   }
 
   .brief-hdr-title {
@@ -4589,9 +4593,12 @@ a.brief-tool-btn.brief-github-btn {
   color: var(--brief-text);
 }
 
-.brief-github-label,
-.brief-close-text {
-  display: inline !important;
+/* Desktop: keep labels visible next to icons. Mobile handled by @media (max-width: 640px) above. */
+@media (min-width: 641px) {
+  .brief-github-label,
+  .brief-close-text {
+    display: inline !important;
+  }
 }
 .brief-tool-btn {
   gap: 0.35rem;
