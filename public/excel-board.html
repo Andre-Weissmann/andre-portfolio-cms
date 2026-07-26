@@ -46,6 +46,18 @@
   }
 
   .board-badge { color: #217346; border-color: color-mix(in srgb, #217346 40%, #ccc); background: color-mix(in srgb, #217346 10%, #fff); }
+
+  .board-dl {
+    font-size: 12px;
+    font-weight: 600;
+    color: inherit;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+    white-space: nowrap;
+  }
+  .board-dl:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
 </style>
 </head>
 <body>
@@ -55,11 +67,12 @@
       <span class="board-title">Bike Sales · Interactive board</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
-      <span class="board-badge">Excel replica</span>
+      <a class="board-dl" href="files/Bike_Sales_Dashboard.xlsx" download>Download original .xlsx</a>
+      <span class="board-badge">Web recreation · not Excel Online</span>
     </div>
   </header>
   <main class="board-main">
-    <p class="board-hint">Use the left slicers to filter all charts at once. Interactive replica of the Excel pivot and slicer dashboard.</p>
+    <p class="board-hint">Use the left slicers to filter all charts at once. This is a browser recreation of the pivot and slicer dashboard. Download the original .xlsx to open it in Excel.</p>
     <div class="board-stage">
       <div id="excel-bike-dashboard"></div>
     </div>

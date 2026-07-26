@@ -46,6 +46,18 @@
   }
 
   .board-badge { color: #118DFF; border-color: color-mix(in srgb, #118DFF 40%, #ccc); background: color-mix(in srgb, #118DFF 10%, #fff); }
+
+  .board-dl {
+    font-size: 12px;
+    font-weight: 600;
+    color: inherit;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+    white-space: nowrap;
+  }
+  .board-dl:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
 </style>
 </head>
 <body>
@@ -55,11 +67,12 @@
       <span class="board-title">Data Professionals Survey · Interactive board</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
-      <span class="board-badge">Power BI replica</span>
+      <a class="board-dl" href="files/DataProfessionals_Survey.pbix" download>Download original .pbix</a>
+      <span class="board-badge">Web recreation · not Power BI Service</span>
     </div>
   </header>
   <main class="board-main">
-    <p class="board-hint">Click any country bar to cross-filter the whole board. Click again to clear. This is the interactive replica of the Power BI report, not a case-study write-up.</p>
+    <p class="board-hint">Click any country bar to cross-filter the whole board. Click again to clear. This is a browser recreation of the findings for instant play. Download the original .pbix to open it in free Power BI Desktop.</p>
     <div class="board-stage">
       <div id="powerbi-replica"></div>
     </div>
