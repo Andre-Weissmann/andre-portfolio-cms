@@ -1844,9 +1844,306 @@ excel: {
 
 }; // end PROJECTS
 
+/* ═══════════════════════════════════════════════════════════════
+   PLAYABLE EPISODES — skim-first path for every deep dive
+   Beats jump to real chapters. Limits + wrong turns stay honest.
+═══════════════════════════════════════════════════════════════ */
+var PLAYABLE = {
+  nashville: {
+    tagline: 'Play this analysis',
+    sub: 'Five beats. Real SQL and cleaning proof. Skip anything you already get.',
+    beats: [
+      { title: 'Land the result', blurb: '56,477 sales. Blank addresses gone. Duplicates gone.', target: 'ch-overview' },
+      { title: 'Feel the mess', blurb: 'Scrub before vs after on real field patterns.', target: 'ch-morph' },
+      { title: 'Run a lens', blurb: 'SQL dashboard answers one business question at a time.', target: 'ch-dash' },
+      { title: 'Query it yourself', blurb: 'Live lab in the browser on the cleaning grain.', target: 'ch-sql' },
+      { title: 'See what it unlocks', blurb: 'Impact for maps, counts, and one clean vocabulary.', target: 'ch-impact' }
+    ],
+    wrongTurns: [
+      { title: 'Delete blank-address rows', looked: 'Fast completeness win on a filter.', killed: 'Self-join on ParcelID restored all 29 addresses. Deleting would have erased real homes.' },
+      { title: 'Treat Y/N/Yes/No as four categories', looked: 'Raw SoldAsVacant distribution.', killed: 'CASE standardization collapsed labels so vacant counts stopped double-counting spellings.' },
+      { title: 'Count every sale row as a unique closing', looked: 'Simple COUNT(*).', killed: 'ROW_NUMBER duplicates showed 104 same-day double bookings that inflated volume.' }
+    ],
+    limits: [
+      'Public Metro Nashville housing sales only. Not a fraud or owner-intent investigation.',
+      'Cleaning improves analytic readiness. It does not create new market prices or appraisals.',
+      'Demo table grain in the live lab is compact so the UI stays instant. Project metrics reflect the full 56,477-row cleaning work.',
+      'No claim of production warehouse deployment or client engagement.'
+    ],
+    peels: {
+      'Sales Records Reviewed': 'Full municipal sales extract reviewed end to end before any row was dropped or fixed.',
+      'Cleaning Methods': 'Seven SQL methods: null address recovery, duplicate drop, date cast, address split, vacant label standardize, and related fixes.',
+      'Duplicate Sales Removed': 'ROW_NUMBER() partitioned on sale identity keys. 104 same-day duplicate closings removed.',
+      'Addresses Restored': 'ISNULL self-join on ParcelID filled 29 blank PropertyAddress values from sibling rows. Zero homes deleted for null address.'
+    }
+  },
+  python: {
+    tagline: 'Play this analysis',
+    sub: 'Move the sliders. Watch categories update. No submit button.',
+    beats: [
+      { title: 'Land the result', blurb: 'Live BMI tool with transparent CDC math.', target: 'ch-overview' },
+      { title: 'Challenge the default', blurb: 'BMI screens. It does not diagnose. Trail shows why WHR was added.', target: 'ch-trail' },
+      { title: 'Build a scenario', blurb: 'Drag height, weight, waist, hip. Categories update live.', target: 'ch-slider' },
+      { title: 'See the spread', blurb: 'Sample distribution across four BMI categories.', target: 'ch-bar' },
+      { title: 'Read the value', blurb: 'What a care team can and cannot use this for.', target: 'ch-impact' }
+    ],
+    wrongTurns: [
+      { title: 'BMI-only output as a health verdict', looked: 'One number, four neat bins.', killed: 'CDC language: screening tool, not diagnosis. WHR added as a second independent signal.' },
+      { title: 'Hide the formula behind a black box', looked: 'Cleaner consumer UI.', killed: 'Care teams need explainable math. Formula stays visible and interactive.' },
+      { title: 'Skip sex-specific WHR thresholds', looked: 'One cutoff is simpler.', killed: 'WHO thresholds differ by sex. A single cut misclassifies risk bands.' }
+    ],
+    limits: [
+      'Educational screening demo. Not medical advice and not a clinical device.',
+      'Sample distribution chart uses program sample data, not a patient population study.',
+      'BMI and WHR are incomplete pictures of health. Lab work, history, and clinician judgment are out of scope.',
+      'No real patient or PHI data is used.'
+    ],
+    peels: {
+      'BMI Categories': 'Four CDC adult bins: underweight, healthy, overweight, obesity range.',
+      'WHR Risk Tiers': 'WHO sex-specific waist-to-hip thresholds layered on top of BMI.',
+      'Program Steps': 'Eight explicit program steps from inputs through plain-English assessment.',
+      'Retry Attempts (WHR)': 'Bounded retries when waist/hip inputs are missing or inconsistent.'
+    }
+  },
+  powerbi: {
+    tagline: 'Play this analysis',
+    sub: 'Filter the story the way a stakeholder would. Role beats degree.',
+    beats: [
+      { title: 'Land the result', blurb: '630 professionals. Role and country move pay more than degree.', target: 'ch-overview' },
+      { title: 'See the trail', blurb: 'Free-text salary and messy titles had to become measures first.', target: 'ch-trail' },
+      { title: 'Language mix', blurb: 'Who prefers Python vs other tools.', target: 'ch-lang' },
+      { title: 'Salary by education', blurb: 'Hold role steady. Watch the degree story weaken.', target: 'ch-salary' },
+      { title: 'Workforce takeaways', blurb: 'What hiring and people teams can actually use.', target: 'ch-impact' }
+    ],
+    wrongTurns: [
+      { title: 'Treat free-text salary as already numeric', looked: 'Column named salary.', killed: 'Ranges like 60k-80k needed a multi-step DAX midpoint before any average was honest.' },
+      { title: 'Keep 86 write-in job titles as separate careers', looked: 'More categories feel richer.', killed: 'Power Query consolidation kept signal without exploding the legend.' },
+      { title: 'Generalize from 5 PhD rows', looked: 'Highest average at the top of the chart.', killed: 'Sample size too small. Role volume tells the stable story.' }
+    ],
+    limits: [
+      'Survey sample, not a census of the global data workforce.',
+      'Country filter used four preselected markets. Other write-ins were excluded.',
+      'Original .pbix is not fully embedded here. Azure AD and Premium capacity block anonymous embed. Screenshots and interactive recreations carry the story.',
+      'Currency comparisons need purchasing-power context before cross-country pay claims harden.'
+    ],
+    peels: {
+      'Survey Respondents': '630 completed responses after cleaning empty columns and consolidating titles.',
+      'Avg Salary Satisfaction': 'Self-reported satisfaction on a 10-point scale, not actual comp fairness.',
+      'Python Preference': 'Share preferring Python among respondents with a language preference.',
+      'Avg Work/Life Balance': 'Self-reported balance score. Below midpoint in this sample.'
+    }
+  },
+  tableau: {
+    tagline: 'Play this analysis',
+    sub: 'Seasonality and joins, not a static screenshot wall.',
+    beats: [
+      { title: 'Land the result', blurb: '323k records. One peak week that gut-feel pricing missed.', target: 'ch-overview' },
+      { title: 'Follow the trail', blurb: 'Missing zips and join choices before the charts.', target: 'ch-trail' },
+      { title: 'Weekly revenue', blurb: 'Trace the year. Find the holiday spike.', target: 'ch-line' },
+      { title: 'Price by bedrooms', blurb: 'Where the premium actually sits.', target: 'ch-price' },
+      { title: 'Host takeaways', blurb: 'What a host or market analyst can act on.', target: 'ch-impact' }
+    ],
+    wrongTurns: [
+      { title: 'Drop rows with missing zip codes', looked: 'Cleaner map layer.', killed: 'Neighborhood cross-reference recovered 7 zips without throwing out revenue.' },
+      { title: 'Chart listings without fixing the grain', looked: 'Fast visual.', killed: 'Inner join across worksheets had to be validated so revenue did not double-count.' },
+      { title: 'Average price only, ignore calendar', looked: 'One KPI tile.', killed: 'Weekly revenue showed Dec 25 as the real story, not the mean nightly rate alone.' }
+    ],
+    limits: [
+      'Seattle Airbnb 2016 historical snapshot. Not current market rates.',
+      'Dashboard here is a faithful interactive recreation path, not a live Tableau Cloud embed of the original workbook.',
+      'Revenue figures follow the project joins and calendar aggregation documented in the trail.',
+      'No claim about current host strategy or platform policy.'
+    ],
+    peels: {
+      'Records Analyzed': '323,346 listing-calendar grain rows after join and cleaning.',
+      'Peak Revenue (Dec 25 wk)': 'City-wide weekly revenue peak on the week of Dec 25, 2016: the calendar story gut-feel pricing missed.',
+      'Listings at 1 Bedroom': 'One-bedroom inventory share in the cleaned join, used as a baseline product mix signal.',
+      'Missing Zip Codes Fixed': 'Seven missing zips restored via neighborhood cross-reference instead of dropping map rows.'
+    }
+  },
+  excel: {
+    tagline: 'Play this analysis',
+    sub: 'Region, commute, and scenario levers on real bike-buyer patterns.',
+    beats: [
+      { title: 'Land the result', blurb: 'Which regions and profiles actually convert.', target: 'ch-overview' },
+      { title: 'Trail the logic', blurb: 'How the sales question was framed before the pivot.', target: 'ch-trail' },
+      { title: 'Commute conversion', blurb: 'Distance and purchase behavior in one view.', target: 'ch-commute' },
+      { title: 'Regional split', blurb: 'Where income and volume concentrate.', target: 'ch-region' },
+      { title: 'Run a scenario', blurb: 'Move levers. Watch the story update.', target: 'ch-scenario' }
+    ],
+    wrongTurns: [
+      { title: 'Rank regions by headcount only', looked: 'Biggest bar wins.', killed: 'Income and commute patterns flipped which region looked like the best growth bet.' },
+      { title: 'Ignore purchaser profile mix', looked: 'One regional average.', killed: 'Homeowner and commute segments changed the conversion read.' },
+      { title: 'Static pivot as the final deliverable', looked: 'Familiar Excel finish line.', killed: 'Scenario controls let stakeholders test the assumption instead of accepting one freeze.' }
+    ],
+    limits: [
+      'Bike sales training/analysis dataset. Not a live retailer feed.',
+      'Scenario tools illustrate sensitivity. They are not a production demand forecast.',
+      'Regional labels follow the source workbook definitions.',
+      'No claim of client engagement or inventory optimization deployment.'
+    ],
+    peels: {
+      'Records (Raw)': 'Starting row count before Excel dedup and shape fixes.',
+      'After Deduplication': 'Row count after removing duplicate buyer or transaction noise.',
+      'Regions Surveyed': 'Regions kept in the regional comparison and scenario views.',
+      'Pivot Tables Built': 'Pivot layouts used to move from flat rows to decision-ready cuts.'
+    }
+  }
+};
+
+
+
 /* ═══════════════════════════════════════════════════════════════════
    DRAWER RENDERER
 ═══════════════════════════════════════════════════════════════════ */
+
+function renderPlayableEpisode(container, key, p, goToId) {
+  var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
+  if (!cfg) return;
+
+  var ep = document.createElement('div');
+  ep.className = 'brief-playable';
+  ep.innerHTML =
+    '<div class="brief-playable-head">' +
+      '<div class="brief-playable-kicker">Episode</div>' +
+      '<div class="brief-playable-title">' + (cfg.tagline || 'Play this analysis') + '</div>' +
+      '<p class="brief-playable-sub">' + (cfg.sub || '') + '</p>' +
+    '</div>';
+
+  var track = document.createElement('div');
+  track.className = 'brief-playable-track';
+  track.setAttribute('role', 'list');
+  (cfg.beats || []).forEach(function(beat, i) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'brief-playable-beat';
+    btn.setAttribute('role', 'listitem');
+    btn.innerHTML =
+      '<span class="brief-playable-num">' + (i + 1) + '</span>' +
+      '<span class="brief-playable-beat-body">' +
+        '<span class="brief-playable-beat-title">' + beat.title + '</span>' +
+        '<span class="brief-playable-beat-blurb">' + beat.blurb + '</span>' +
+      '</span>' +
+      '<span class="brief-playable-go" aria-hidden="true">Go</span>';
+    btn.addEventListener('click', function() {
+      track.querySelectorAll('.brief-playable-beat').forEach(function(b) { b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+      if (typeof goToId === 'function') goToId(beat.target);
+      else {
+        var el = document.getElementById(beat.target);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+    track.appendChild(btn);
+  });
+  ep.appendChild(track);
+
+  var first = track.querySelector('.brief-playable-beat');
+  if (first) first.classList.add('is-active');
+  container.appendChild(ep);
+}
+
+function renderPlayableDepth(container, key) {
+  var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
+  if (!cfg) return;
+
+  if (cfg.wrongTurns && cfg.wrongTurns.length) {
+    var wt = document.createElement('div');
+    wt.className = 'brief-wrong-turns';
+    wt.innerHTML = '<h3 class="brief-section-title">Wrong turns that looked right</h3>' +
+      '<p class="brief-section-sub">Senior signal: what was tried and what killed it.</p>';
+    var grid = document.createElement('div');
+    grid.className = 'brief-wrong-grid';
+    cfg.wrongTurns.forEach(function(w) {
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'brief-wrong-card is-collapsed';
+      card.setAttribute('aria-expanded', 'false');
+      card.innerHTML =
+        '<div class="brief-wrong-title">' + w.title + '</div>' +
+        '<div class="brief-wrong-meta">Tap for what looked good vs what killed it</div>' +
+        '<div class="brief-wrong-detail">' +
+          '<div class="brief-wrong-label">Looked right</div>' +
+          '<div class="brief-wrong-text">' + w.looked + '</div>' +
+          '<div class="brief-wrong-label">What killed it</div>' +
+          '<div class="brief-wrong-text">' + w.killed + '</div>' +
+        '</div>';
+      card.addEventListener('click', function() {
+        var open = card.classList.contains('is-open');
+        grid.querySelectorAll('.brief-wrong-card.is-open').forEach(function(c) {
+          if (c !== card) {
+            c.classList.remove('is-open');
+            c.classList.add('is-collapsed');
+            c.setAttribute('aria-expanded', 'false');
+          }
+        });
+        if (open) {
+          card.classList.remove('is-open');
+          card.classList.add('is-collapsed');
+          card.setAttribute('aria-expanded', 'false');
+        } else {
+          card.classList.add('is-open');
+          card.classList.remove('is-collapsed');
+          card.setAttribute('aria-expanded', 'true');
+        }
+      });
+      grid.appendChild(card);
+    });
+    wt.appendChild(grid);
+    container.appendChild(wt);
+  }
+
+  if (cfg.limits && cfg.limits.length) {
+    var lim = document.createElement('div');
+    lim.className = 'brief-limits';
+    lim.innerHTML = '<div class="brief-limits-kicker">Honest limits</div>' +
+      '<ul class="brief-limits-list">' +
+      cfg.limits.map(function(line) { return '<li>' + line + '</li>'; }).join('') +
+      '</ul>';
+    container.appendChild(lim);
+  }
+}
+
+function attachKpiPeels(kpiStrip, key) {
+  var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
+  if (!cfg || !cfg.peels || !kpiStrip) return;
+  var peelBox = document.createElement('div');
+  peelBox.className = 'brief-kpi-peel';
+  peelBox.hidden = true;
+  kpiStrip.insertAdjacentElement('afterend', peelBox);
+
+  kpiStrip.querySelectorAll('.brief-kpi-card').forEach(function(card) {
+    card.classList.add('brief-kpi-card--peelable');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
+    var labelEl = card.querySelector('.brief-kpi-label');
+    var label = labelEl ? labelEl.textContent.trim() : '';
+    var peel = cfg.peels[label];
+    if (!peel) return;
+    card.setAttribute('aria-label', label + '. Show proof.');
+    function showPeel() {
+      kpiStrip.querySelectorAll('.brief-kpi-card').forEach(function(c) { c.classList.remove('is-peeled'); });
+      card.classList.add('is-peeled');
+      peelBox.hidden = false;
+      peelBox.innerHTML =
+        '<div class="brief-kpi-peel-label">Proof under the number</div>' +
+        '<div class="brief-kpi-peel-title">' + label + '</div>' +
+        '<p class="brief-kpi-peel-text">' + peel + '</p>' +
+        '<button type="button" class="brief-disclose-btn brief-disclose-btn--inline brief-kpi-peel-hide">Hide proof</button>';
+      var hide = peelBox.querySelector('.brief-kpi-peel-hide');
+      if (hide) hide.addEventListener('click', function() {
+        peelBox.hidden = true;
+        card.classList.remove('is-peeled');
+      });
+    }
+    card.addEventListener('click', showPeel);
+    card.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showPeel(); }
+    });
+  });
+}
+
+
 function renderDrawer(key) {
   var p = PROJECTS[key];
   if (!p) return;
@@ -2074,14 +2371,36 @@ function renderDrawer(key) {
     kpiStrip.appendChild(card);
   });
   overview.appendChild(kpiStrip);
+  attachKpiPeels(kpiStrip, key);
+
+  /* Playable episode: beats jump into real chapters */
+  function goToPlayableTarget(id) {
+    var idx = -1;
+    for (var si = 0; si < spineItems.length; si++) {
+      if (spineItems[si].id === id) { idx = si; break; }
+    }
+    if (idx >= 0) goToSpineIndex(idx);
+    else {
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  renderPlayableEpisode(overview, key, p, goToPlayableTarget);
 
   overview.id = 'ch-overview';
   scrollBody.appendChild(overview);
 
-  /* ── Decision Brief ── */
+  /* ── Decision Brief (collapsed by default) ── */
   if (p.decision) {
+    var dbWrap = document.createElement('div');
+    dbWrap.className = 'brief-decision-wrap';
+    var dbToggle = document.createElement('button');
+    dbToggle.type = 'button';
+    dbToggle.className = 'brief-disclose-btn';
+    dbToggle.textContent = 'Why this mattered';
     var db = document.createElement('div');
     db.className = 'brief-decision';
+    db.hidden = true;
     db.innerHTML =
       '<div class="brief-decision-row">' +
         '<span class="brief-decision-pill what">The Situation</span>' +
@@ -2095,17 +2414,42 @@ function renderDrawer(key) {
         '<span class="brief-decision-pill next">What Clean Data Unlocks</span>' +
         '<span class="brief-decision-text">' + p.decision.next + '</span>' +
       '</div>';
-    overview.appendChild(db);
+    dbToggle.addEventListener('click', function() {
+      var on = db.hidden;
+      db.hidden = !on;
+      dbToggle.textContent = on ? 'Hide context' : 'Why this mattered';
+    });
+    dbWrap.appendChild(dbToggle);
+    dbWrap.appendChild(db);
+    overview.appendChild(dbWrap);
   }
 
-  /* ── Insight Headline ── */
+  /* ── Insight Headline (lead only if long) ── */
   var headline = document.createElement('div');
   headline.className = 'brief-headline';
+  var insightFull = String(p.insight || '');
+  var insightLead = insightFull.split(/(?<=[.!?])\s+/)[0] || insightFull;
+  var insightRest = insightFull.slice(insightLead.length).trim();
   headline.innerHTML = '<div class="brief-headline-label">The Key Finding</div>' +
-    '<div class="brief-headline-text">' + p.insight + '</div>';
+    '<div class="brief-headline-text">' + insightLead + '</div>';
   overview.appendChild(headline);
-
-  /* KPI strip already rendered at top of first screen */
+  if (insightRest && insightRest.length > 30) {
+    var moreH = document.createElement('button');
+    moreH.type = 'button';
+    moreH.className = 'brief-disclose-btn brief-disclose-btn--inline';
+    moreH.textContent = 'Full finding';
+    var restH = document.createElement('div');
+    restH.className = 'brief-headline-text brief-headline-text--rest';
+    restH.hidden = true;
+    restH.textContent = insightRest;
+    moreH.addEventListener('click', function() {
+      var on = restH.hidden;
+      restH.hidden = !on;
+      moreH.textContent = on ? 'Less' : 'Full finding';
+    });
+    overview.appendChild(moreH);
+    overview.appendChild(restH);
+  }
 
   /* ── Explore This Project (question-based lens) ── */
   if (p.stakeholders && p.stakeholders.length) {
@@ -2157,6 +2501,8 @@ function renderDrawer(key) {
     sl.appendChild(slAnswer);
     overview.appendChild(sl);
   }
+
+  renderPlayableDepth(overview, key);
 
   p.sections.forEach(function(sec, si) {
     var chapter = p.chapters[si] || p.chapters[p.chapters.length - 1];

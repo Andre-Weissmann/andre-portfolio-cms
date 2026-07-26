@@ -4192,3 +4192,235 @@ a.brief-tool-btn.brief-github-btn {
 .brief-chapter + .brief-chapter {
   border-top: 1px solid var(--dd-border);
 }
+
+
+/* DD PLAYABLE EPISODE V1 */
+.brief-playable {
+  margin: 18px 0 8px;
+  padding: 16px 16px 14px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 28%, var(--dd-border));
+  background:
+    radial-gradient(ellipse 90% 80% at 0% 0%, color-mix(in oklab, var(--dd-accent) 14%, transparent), transparent 55%),
+    color-mix(in oklab, var(--dd-surface) 92%, transparent);
+  max-width: 68ch;
+}
+.brief-playable-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+  margin-bottom: 4px;
+}
+.brief-playable-title {
+  font-size: 18px;
+  font-weight: 780;
+  line-height: 1.25;
+  color: var(--dd-text);
+}
+.brief-playable-sub {
+  margin: 6px 0 0;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--dd-text-dim);
+  max-width: 52ch;
+}
+.brief-playable-track {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+.brief-playable-beat {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 10px 12px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--dd-border);
+  background: color-mix(in oklab, var(--dd-surface) 88%, transparent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.brief-playable-beat:hover {
+  border-color: color-mix(in oklab, var(--dd-accent) 42%, var(--dd-border));
+  transform: translateY(-1px);
+}
+.brief-playable-beat.is-active {
+  border-color: color-mix(in oklab, var(--dd-accent) 55%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 10%, var(--dd-surface));
+}
+.brief-playable-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--dd-accent);
+  background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface));
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 30%, var(--dd-border));
+}
+.brief-playable-beat-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--dd-text);
+  line-height: 1.25;
+}
+.brief-playable-beat-blurb {
+  display: block;
+  margin-top: 2px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--dd-text-dim);
+}
+.brief-playable-go {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+}
+
+.brief-kpi-card--peelable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.brief-kpi-card--peelable:hover,
+.brief-kpi-card--peelable.is-peeled {
+  border-color: color-mix(in oklab, var(--dd-accent) 45%, var(--dd-border));
+  transform: translateY(-1px);
+}
+.brief-kpi-peel {
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 28%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface));
+  max-width: 62ch;
+}
+.brief-kpi-peel-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+}
+.brief-kpi-peel-title {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--dd-text);
+}
+.brief-kpi-peel-text {
+  margin: 6px 0 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--dd-text-dim);
+}
+
+.brief-wrong-turns {
+  margin: 18px 0 8px;
+  max-width: 68ch;
+}
+.brief-wrong-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.brief-wrong-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--dd-border);
+  background: color-mix(in oklab, var(--dd-surface) 90%, transparent);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.brief-wrong-card:hover {
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, var(--dd-border));
+}
+.brief-wrong-card.is-open {
+  border-color: color-mix(in oklab, var(--dd-accent) 48%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface));
+}
+.brief-wrong-title {
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--dd-text);
+}
+.brief-wrong-meta {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--dd-text-dim);
+}
+.brief-wrong-card.is-collapsed .brief-wrong-detail { display: none; }
+.brief-wrong-card.is-open .brief-wrong-detail { display: block; margin-top: 10px; }
+.brief-wrong-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+  margin-top: 8px;
+}
+.brief-wrong-text {
+  margin-top: 3px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--dd-text-dim);
+}
+
+.brief-limits {
+  margin: 16px 0 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed color-mix(in oklab, var(--dd-text-dim) 35%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-surface) 85%, transparent);
+  max-width: 62ch;
+}
+.brief-limits-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dd-text-dim);
+  margin-bottom: 8px;
+}
+.brief-limits-list {
+  margin: 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 6px;
+}
+.brief-limits-list li {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--dd-text-dim);
+}
+
+.brief-decision-wrap { margin: 12px 0; }
+.brief-headline-text--rest {
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--dd-text-dim);
+  max-width: 62ch;
+}
+
+@media (max-width: 700px) {
+  .brief-playable { padding: 14px 12px; }
+  .brief-playable-title { font-size: 17px; }
+  .brief-playable-beat { grid-template-columns: 28px minmax(0, 1fr); }
+  .brief-playable-go { display: none; }
+}
