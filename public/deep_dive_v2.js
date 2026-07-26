@@ -407,21 +407,91 @@ function renderWhatIf(container, wi) {
    THINKING TRAIL - decision log with branching paths
 ───────────────────────────────────────────────────────────────── */
 function renderThinkingTrail(container, steps) {
+  steps = steps || [];
   var wrap = document.createElement('div');
-  wrap.className = 'brief-trail';
+  wrap.className = 'brief-trail brief-trail--progressive';
+
+  var skim = document.createElement('div');
+  skim.className = 'brief-skim-note';
+  skim.innerHTML = '<span class="brief-skim-note__label">Skim</span> ' +
+    '<span class="brief-skim-note__text">' + steps.length +
+    ' analytical moves. Open a step only if you want the full reasoning.</span>';
+  wrap.appendChild(skim);
+
+  var list = document.createElement('div');
+  list.className = 'brief-trail__list';
+  var iconMap = { assume: '?', find: '!', pivot: '↻', insight: '★', limit: '⚠' };
+  var PREVIEW = 3; // first N open-ready collapsed rows always visible
+
   steps.forEach(function(step, i) {
-    var div = document.createElement('div');
-    div.className = 'brief-trail__step';
-    div.style.animationDelay = (i * 60) + 'ms';
-    var iconMap = { assume: '?', find: '!', pivot: '↻', insight: '★', limit: '⚠' };
-    div.innerHTML = '<div class="brief-trail__icon ' + step.type + '">' + (iconMap[step.type] || '•') + '</div>' +
+    var div = document.createElement('button');
+    div.type = 'button';
+    div.className = 'brief-trail__step is-collapsed' + (i >= PREVIEW ? ' is-extra' : '');
+    if (i >= PREVIEW) div.hidden = true;
+    div.style.animationDelay = (Math.min(i, PREVIEW) * 50) + 'ms';
+    div.setAttribute('aria-expanded', 'false');
+
+    var preview = String(step.text || '');
+    // One-line preview: first clause or hard clip
+    var short = preview.split(/[.!?]/)[0].trim();
+    if (short.length > 110) short = short.slice(0, 107).replace(/\s+\S*$/, '') + '…';
+    if (!/[.!?]$/.test(short) && short.length < preview.length) short += '…';
+
+    div.innerHTML =
+      '<div class="brief-trail__icon ' + step.type + '" aria-hidden="true">' + (iconMap[step.type] || '•') + '</div>' +
       '<div class="brief-trail__body">' +
-      '<div class="brief-trail__type">' + step.type.toUpperCase() + '</div>' +
-      '<div class="brief-trail__text">' + step.text + '</div>' +
-      (step.result ? '<div class="brief-trail__result">' + step.result + '</div>' : '') +
+        '<div class="brief-trail__top">' +
+          '<span class="brief-trail__type">' + String(step.type || 'step').toUpperCase() + '</span>' +
+          '<span class="brief-trail__toggle" aria-hidden="true">Details</span>' +
+        '</div>' +
+        '<div class="brief-trail__text brief-trail__text--preview">' + short + '</div>' +
+        '<div class="brief-trail__text brief-trail__text--full">' + preview + '</div>' +
+        (step.result ? '<div class="brief-trail__result">' + step.result + '</div>' : '') +
       '</div>';
-    wrap.appendChild(div);
+
+    div.addEventListener('click', function() {
+      var open = div.classList.contains('is-open');
+      list.querySelectorAll('.brief-trail__step.is-open').forEach(function(el) {
+        if (el !== div) {
+          el.classList.remove('is-open');
+          el.classList.add('is-collapsed');
+          el.setAttribute('aria-expanded', 'false');
+          var t0 = el.querySelector('.brief-trail__toggle');
+          if (t0) t0.textContent = 'Details';
+        }
+      });
+      var tog = div.querySelector('.brief-trail__toggle');
+      if (open) {
+        div.classList.remove('is-open');
+        div.classList.add('is-collapsed');
+        div.setAttribute('aria-expanded', 'false');
+        if (tog) tog.textContent = 'Details';
+      } else {
+        div.classList.add('is-open');
+        div.classList.remove('is-collapsed');
+        div.setAttribute('aria-expanded', 'true');
+        if (tog) tog.textContent = 'Hide';
+      }
+    });
+    list.appendChild(div);
   });
+  wrap.appendChild(list);
+
+  if (steps.length > PREVIEW) {
+    var more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'brief-disclose-btn';
+    more.textContent = 'Show all ' + steps.length + ' moves';
+    more.addEventListener('click', function() {
+      var expanded = wrap.classList.toggle('is-trail-expanded');
+      list.querySelectorAll('.brief-trail__step.is-extra').forEach(function(el) {
+        el.hidden = !expanded;
+      });
+      more.textContent = expanded ? 'Show fewer moves' : ('Show all ' + steps.length + ' moves');
+    });
+    wrap.appendChild(more);
+  }
+
   container.appendChild(wrap);
 }
 
@@ -2095,8 +2165,34 @@ function renderDrawer(key) {
     chWrap.id = chapter.id;
 
     if (sec.type === 'insight-card') {
-      chWrap.innerHTML = '<h3 class="brief-section-title">The Problem</h3>' +
-        '<div class="brief-insight-block">' + sec.text + '</div>';
+      chWrap.innerHTML = '<h3 class="brief-section-title">The Problem</h3>';
+      var insightWrap = document.createElement('div');
+      insightWrap.className = 'brief-insight-progressive';
+      var full = String(sec.text || '');
+      var lead = full.split(/(?<=[.!?])\s+/)[0] || full;
+      var rest = full.slice(lead.length).trim();
+      var leadEl = document.createElement('div');
+      leadEl.className = 'brief-insight-block brief-insight-block--lead';
+      leadEl.textContent = lead;
+      insightWrap.appendChild(leadEl);
+      if (rest && rest.length > 40) {
+        var restEl = document.createElement('div');
+        restEl.className = 'brief-insight-block brief-insight-block--rest';
+        restEl.hidden = true;
+        restEl.textContent = rest;
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'brief-disclose-btn brief-disclose-btn--inline';
+        btn.textContent = 'More context';
+        btn.addEventListener('click', function() {
+          var on = restEl.hidden;
+          restEl.hidden = !on;
+          btn.textContent = on ? 'Less context' : 'More context';
+        });
+        insightWrap.appendChild(btn);
+        insightWrap.appendChild(restEl);
+      }
+      chWrap.appendChild(insightWrap);
 
     } else if (sec.type === 'thinking-trail') {
       chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Thinking Trail') + '</h3>';
@@ -2156,15 +2252,44 @@ function renderDrawer(key) {
       chWrap.innerHTML = '<h3 class="brief-section-title">' + itTitle + '</h3>';
       var itGrid = document.createElement('div');
       itGrid.className = 'brief-impact-text-grid';
+      var itSkim = document.createElement('div');
+      itSkim.className = 'brief-skim-note';
+      itSkim.innerHTML = '<span class="brief-skim-note__label">Skim</span> ' +
+        '<span class="brief-skim-note__text">Headlines first. Open a card only if you want the proof.</span>';
+      chWrap.appendChild(itSkim);
       (sec.items || []).forEach(function(item) {
-        var card = document.createElement('div');
-        card.className = 'brief-impact-text-card';
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'brief-impact-text-card is-collapsed';
+        card.setAttribute('aria-expanded', 'false');
         card.innerHTML =
-          '<div class="bitc-icon">' + (item.icon || '') + '</div>' +
+          '<div class="bitc-icon" aria-hidden="true">' + (item.icon || '') + '</div>' +
           '<div class="bitc-body">' +
-            '<div class="bitc-heading">' + (item.heading || '') + '</div>' +
+            '<div class="bitc-heading-row">' +
+              '<div class="bitc-heading">' + (item.heading || '') + '</div>' +
+              '<span class="bitc-toggle">Why</span>' +
+            '</div>' +
             '<div class="bitc-text">' + (item.body || '') + '</div>' +
           '</div>';
+        card.addEventListener('click', function() {
+          var open = card.classList.contains('is-open');
+          itGrid.querySelectorAll('.brief-impact-text-card.is-open').forEach(function(el) {
+            if (el !== card) {
+              el.classList.remove('is-open');
+              el.classList.add('is-collapsed');
+              el.setAttribute('aria-expanded', 'false');
+            }
+          });
+          if (open) {
+            card.classList.remove('is-open');
+            card.classList.add('is-collapsed');
+            card.setAttribute('aria-expanded', 'false');
+          } else {
+            card.classList.add('is-open');
+            card.classList.remove('is-collapsed');
+            card.setAttribute('aria-expanded', 'true');
+          }
+        });
         itGrid.appendChild(card);
       });
       chWrap.appendChild(itGrid);
