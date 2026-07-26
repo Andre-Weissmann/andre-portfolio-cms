@@ -2284,8 +2284,8 @@ var DD_DASHBOARDS = {
       { src: 'images/powerbi-dashboard.png', alt: 'Power BI dashboard for the data professionals survey' }
     ],
     caption: 'Dashboard built in Power BI Desktop. Screenshots carry the visual proof. Story and measures are in this deep dive.',
-    fileHref: 'files/DataProfessionals_Survey.pbix',
-    fileLabel: 'Original .pbix (Power BI Desktop)'
+    fileHref: '',
+    fileLabel: ''
   },
   tableau: {
     tool: 'Tableau',
@@ -2304,8 +2304,8 @@ var DD_DASHBOARDS = {
       { src: 'images/bike-sales.png', alt: 'Excel bike sales dashboard with pivots and slicers' }
     ],
     caption: 'Dashboard built in Excel with pivot tables and slicers. Screenshots carry the visual proof. Findings are in this deep dive.',
-    fileHref: 'files/Bike_Sales_Dashboard.xlsx',
-    fileLabel: 'Original .xlsx (Excel)'
+    fileHref: '',
+    fileLabel: ''
   }
 };
 
@@ -2513,9 +2513,7 @@ function renderDashboardCard(container, key) {
       '<img src="' + s.src + '" alt="' + (s.alt || (cfg.tool + ' dashboard screenshot')) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '" />' +
       '</figure>';
   }).join('');
-  var fileLine = cfg.fileHref
-    ? ('<p class="brief-shot-file">Original file: <a href="' + cfg.fileHref + '" download>' + (cfg.fileLabel || 'Download workbook') + '</a></p>')
-    : '';
+  var fileLine = ''; /* no download links under BI screenshots */
   card.innerHTML =
     '<div class="brief-dash-card__body">' +
       '<div class="brief-dash-card__kicker">' + cfg.tool + ' · dashboard screenshots</div>' +
