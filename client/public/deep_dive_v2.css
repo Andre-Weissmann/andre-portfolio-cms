@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════
-   THE BRIEF v5 — Redesigned for readability across light + dark
+   THE BRIEF v5 - Redesigned for readability across light + dark
    Clean typography, clear hierarchy, easy close, visible GitHub.
 ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Design tokens — dark (default) ── */
+/* ── Design tokens - dark (default) ── */
 :root {
   --dd-bg:            #111318;
   --dd-surface:       #191d26;
@@ -14,9 +14,9 @@
   --dd-accent:        #20808D;
   --dd-accent-h:      #2aa0af;
   --dd-accent-glow:   rgba(32,128,141,0.15);
-  --dd-text:          #edf0f7;
-  --dd-text-dim:      #9aa3b8;
-  --dd-text-faint:    #5c6680;
+  --dd-text:          #f4f6fb;
+  --dd-text-dim:      #c4cad8;
+  --dd-text-faint:    #9aa3b8;
   --dd-red:           #c0614a;
   --dd-gold:          #d4a030;
   --dd-green:         #4d8c2a;
@@ -58,9 +58,9 @@
   --dd-accent:        #01696f;
   --dd-accent-h:      #0c4e54;
   --dd-accent-glow:   rgba(1,105,111,0.09);
-  --dd-text:          #1e1c18;
-  --dd-text-dim:      #4e4b44;
-  --dd-text-faint:    #8a877e;
+  --dd-text:          #141311;
+  --dd-text-dim:      #3a3833;
+  --dd-text-faint:    #5c5952;
   --dd-red:           #a13544;
   --dd-gold:          #7a5a00;
   --dd-green:         #2d5a14;
@@ -140,7 +140,7 @@
 }
 
 /* ═══════════════════════════════════
-   HEADER — completely redesigned
+   HEADER - completely redesigned
 ═══════════════════════════════════ */
 .brief-hdr {
   flex-shrink: 0;
@@ -193,7 +193,7 @@
   box-shadow: 0 1px 6px rgba(0,0,0,0.25);
 }
 
-/* Close button — top right of header */
+/* Close button - top right of header */
 #dd-close {
   display: flex;
   align-items: center;
@@ -220,7 +220,7 @@
 
 /* Title row */
 .brief-hdr-title {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--dd-text);
   margin: 0;
@@ -228,7 +228,7 @@
   letter-spacing: -0.025em;
 }
 .brief-hdr-sub {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--dd-text-dim);
   margin: -4px 0 0;
   line-height: 1.4;
@@ -267,7 +267,7 @@
 }
 .brief-github-btn:active { transform: translateY(0); }
 
-/* Theme toggle button — subtle, text style */
+/* Theme toggle button - subtle, text style */
 #dd-theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -319,8 +319,8 @@
   flex-shrink: 0;
 }
 .brief-headline-text {
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.75;
   color: var(--dd-text);
   font-weight: 500;
   letter-spacing: 0.01em;
@@ -357,7 +357,7 @@
   letter-spacing: -0.02em;
 }
 .brief-kpi-label {
-  font-size: 9.5px;
+  font-size: 11px;
   color: var(--dd-text-dim);
   margin-top: 4px;
   line-height: 1.3;
@@ -459,7 +459,7 @@
 .brief-chapter:last-child { border-bottom: none; padding-bottom: 20px; }
 
 .brief-section-title {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: .11em;
   text-transform: uppercase;
@@ -477,13 +477,13 @@
   border-radius: 1px;
 }
 .brief-section-sub {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--dd-text);
   margin: -8px 0 14px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 .brief-insight-block {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.8;
   color: var(--dd-text);
   padding: 16px 18px;
@@ -533,10 +533,10 @@
 #dd-panel.brief-light .brief-decision-pill.why  { background: rgba(161,53,68,0.12);  color: #8a2030; }
 #dd-panel.brief-light .brief-decision-pill.next { background: rgba(45,90,20,0.12);   color: #2d5a14; }
 .brief-decision-text {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--dd-text);
   flex: 1;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 /* ═══════════════════════════════════
@@ -1170,10 +1170,10 @@
 .brief-tooltip.visible { opacity: 1; }
 
 /* ═══════════════════════════════════
-   BOTTOM BAR (close + theme) — desktop
+   BOTTOM BAR (close + theme) - desktop
 ═══════════════════════════════════ */
 #dd-bottom-bar {
-  display: none; /* Hidden — close is now in header */
+  display: none; /* Hidden - close is now in header */
 }
 
 /* ═══════════════════════════════════
@@ -1187,7 +1187,7 @@
 #dd-panel.brief-light .brief-kpi-card { background: var(--dd-surface); }
 
 /* ═══════════════════════════════════
-   MOBILE — full redesign
+   MOBILE - full redesign
    max-width: 640px
 ═══════════════════════════════════ */
 @media (max-width: 640px) {
@@ -1245,29 +1245,8 @@
   .brief-hdr-sub {
     font-size: 12px !important;
   }
-  /* GitHub button: full-width pill on mobile */
-  .brief-hdr-actions {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-  }
-  .brief-github-btn {
-    justify-content: center !important;
-    padding: 11px 18px !important;
-    font-size: 13.5px !important;
-    border-radius: 10px !important;
-  }
-  #dd-theme-toggle {
-    justify-content: center !important;
-    padding: 9px 14px !important;
-    font-size: 12.5px !important;
-  }
-  /* Close button: slightly larger touch target */
-  #dd-close {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 16px !important;
-  }
+  /* Header actions moved into .brief-hdr-tools (see MOBILE DD POLISH) */
+  .brief-hdr-actions { display: none !important; }
 
   /* Key Finding */
   .brief-headline {
@@ -1399,7 +1378,7 @@
   .brief-conviction-row { justify-content: flex-start !important; padding: 0 !important; }
 
   /* Morph table: 2 cols */
-  /* Same columns as desktop — horizontal scroll instead of dropping fields */
+  /* Same columns as desktop - horizontal scroll instead of dropping fields */
   .brief-morph-tbl { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
   .brief-morph-row {
     grid-template-columns: repeat(4, minmax(7.5rem, 1fr)) !important;
@@ -1457,7 +1436,7 @@
 }
 .brief-sql__run { display: none !important; }
 
-/* Spine items (dot + label) — labels show from tablet landscape up */
+/* Spine items (dot + label) - labels show from tablet landscape up */
 .brief-spine-item {
   display: flex;
   align-items: center;
@@ -1696,7 +1675,7 @@
   }
 
   .brief-scroll-body {
-    padding: 0 40px 96px 24px;
+    padding: 0 40px 48px 24px;
   }
 
   .brief-hdr-title {
@@ -1799,7 +1778,7 @@ body.dd-open {
     padding: 20px 32px 18px;
   }
   .brief-scroll-body {
-    padding-bottom: 56px;
+    padding-bottom: 48px;
   }
   /* Wider spine labels on stage */
   .brief-spine {
@@ -1811,13 +1790,13 @@ body.dd-open {
     width: 220px;
   }
   .brief-scroll-body {
-    padding: 0 36px 72px 28px;
+    padding: 0 36px 48px 28px;
   }
 }
 
 
 /* ═══════════════════════════════════
-   NAVIGATION — back / close / exit bar
+   NAVIGATION - back / close / exit bar
 ═══════════════════════════════════ */
 .brief-hdr-nav {
   display: flex;
@@ -1905,7 +1884,7 @@ body.dd-open {
   color: var(--dd-accent);
 }
 
-/* Sticky footer exit — always on screen */
+/* Sticky footer exit - always on screen */
 .brief-exit-bar {
   flex-shrink: 0;
   display: flex;
@@ -2130,7 +2109,7 @@ body.dd-open {
   .brief-spine { display: flex !important; }
 }
 
-/* Keep decision pills + KPIs + outcome readable on all widths — same content, reflow only */
+/* Keep decision pills + KPIs + outcome readable on all widths - same content, reflow only */
 @media (max-width: 640px) {
   .brief-decision {
     display: flex !important;
@@ -2170,7 +2149,7 @@ body.dd-open {
   }
 }
 
-/* Exit controls always reachable — same actions on every device */
+/* Exit controls always reachable - same actions on every device */
 .brief-exit-bar {
   position: fixed !important;
   left: 50% !important;
@@ -2661,17 +2640,9 @@ body.dd-open {
 }
 
 
-/* ── Exit bar clearance: floating pill must not cover content ── */
-.brief-scroll-body {
-  padding-bottom: 110px !important;
-}
+/* ── Exit bar clearance (base; refined in BOTTOM PAD PASS) ── */
 .brief-chapter:last-child {
-  padding-bottom: 48px !important;
-}
-@media (min-width: 900px) {
-  .brief-scroll-body {
-    padding-bottom: 120px !important;
-  }
+  padding-bottom: 24px;
 }
 /* Morph table: keep SaleDate readable, horizontal scroll not clip */
 .brief-morph-tbl {
@@ -2690,3 +2661,1945 @@ body.dd-open {
 .brief-morph-cell:nth-child(2) { flex: 1 1 220px; min-width: 180px; }
 .brief-morph-cell:nth-child(3) { flex: 0 0 168px; max-width: 180px; font-variant-numeric: tabular-nums; }
 .brief-morph-cell:nth-child(4) { flex: 0 0 110px; max-width: 120px; }
+
+
+/* READABILITY PASS - body copy easy to read in light and dark */
+#dd-panel,
+#dd-body {
+  color: var(--dd-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.brief-scroll-body p,
+.brief-insight-block,
+.brief-decision-text,
+.brief-section-sub,
+.brief-headline-text,
+.brief-trail__result,
+.brief-trail__body,
+.brief-impact-label,
+.brief-impact-sub,
+.nq-why,
+.sq-why,
+.sq-result-note,
+.brief-ask-sub {
+  line-height: 1.75;
+  color: var(--dd-text);
+}
+.brief-scroll-body p,
+.brief-insight-block,
+.brief-decision-text,
+.brief-section-sub,
+.brief-headline-text,
+.brief-trail__result,
+.brief-trail__body,
+.nq-why,
+.sq-why,
+.sq-result-note {
+  font-size: 16px;
+}
+.brief-impact-sub,
+.brief-ask-sub,
+.brief-sql__hint {
+  font-size: 14px;
+  color: var(--dd-text-dim);
+}
+.brief-kpi-label,
+.brief-explore-label,
+.brief-headline-label {
+  font-size: 11px !important;
+  color: var(--dd-text-dim) !important;
+}
+.brief-kpi-val {
+  font-size: 22px;
+  color: var(--dd-text);
+}
+/* Hide legacy next-steps if any leftover markup */
+.brief-next-steps,
+.brief-next-text {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  .brief-scroll-body p,
+  .brief-insight-block,
+  .brief-decision-text,
+  .brief-section-sub,
+  .brief-headline-text,
+  .brief-trail__result,
+  .brief-trail__body,
+  .nq-why,
+  .sq-why,
+  .sq-result-note {
+    font-size: 15.5px !important;
+    line-height: 1.75 !important;
+    color: var(--dd-text) !important;
+  }
+  .brief-section-title { font-size: 11.5px !important; }
+  .brief-kpi-label { font-size: 10.5px !important; color: var(--dd-text-dim) !important; }
+}
+
+
+/* LAST SECTION: no giant empty scroll on desktop (see BOTTOM PAD PASS) */
+.brief-chapter:last-child {
+  min-height: 0;
+}
+.brief-ask-wrap.brief-chapter {
+  margin-top: 8px;
+}
+
+
+/* HDR TOOLS CLUSTER - GitHub / theme / close as one compact control group */
+.brief-hdr-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.brief-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--dd-border2);
+  background: var(--dd-surface);
+  color: var(--dd-text);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  box-sizing: border-box;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.brief-tool-btn:hover {
+  border-color: var(--dd-accent);
+  color: var(--dd-accent);
+  background: var(--dd-accent-glow, rgba(32,128,141,0.1));
+}
+.brief-tool-btn:focus-visible {
+  outline: 2px solid var(--dd-accent);
+  outline-offset: 2px;
+}
+a.brief-tool-btn.brief-github-btn {
+  padding: 0 12px;
+  border-radius: 999px;
+  box-shadow: none;
+  font-size: 12.5px;
+}
+#dd-theme-toggle.brief-tool-btn {
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--dd-surface);
+  color: var(--dd-text);
+  border: 1px solid var(--dd-border2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+#dd-close.brief-tool-btn,
+#dd-close.brief-close-btn {
+  width: auto !important;
+  height: 36px !important;
+  min-width: 36px;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-size: 12.5px !important;
+  background: var(--dd-surface2);
+}
+#dd-close.brief-tool-btn:hover {
+  background: color-mix(in oklab, #c23b3b 14%, var(--dd-surface2));
+  border-color: color-mix(in oklab, #c23b3b 45%, var(--dd-border2));
+  color: #c23b3b;
+}
+.brief-github-icon {
+  flex-shrink: 0;
+  display: block;
+}
+#dd-theme-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+
+/* MOBILE DD POLISH */
+@media (max-width: 640px) {
+  .brief-hdr-actions { display: none !important; }
+
+  .brief-hdr-content {
+    padding: 10px 12px 12px !important;
+    gap: 6px !important;
+  }
+  .brief-hdr-top-row {
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .brief-badge {
+    max-width: min(48vw, 160px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 9px !important;
+    padding: 4px 9px !important;
+  }
+  .brief-hdr-tools {
+    gap: 6px !important;
+  }
+  .brief-tool-btn,
+  a.brief-tool-btn.brief-github-btn,
+  #dd-theme-toggle.brief-tool-btn,
+  #dd-close.brief-tool-btn,
+  #dd-close.brief-close-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    font-size: 15px !important;
+    box-shadow: none !important;
+  }
+  .brief-github-label,
+  .brief-theme-label,
+  .brief-close-text {
+    display: none !important;
+  }
+  .brief-close-x {
+    font-size: 15px !important;
+    line-height: 1 !important;
+  }
+  #dd-theme-icon {
+    font-size: 16px !important;
+  }
+  .brief-github-icon {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .brief-hdr-title {
+    font-size: 17px !important;
+    line-height: 1.28 !important;
+    padding-right: 4px;
+  }
+  .brief-hdr-sub {
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
+    color: var(--dd-text-dim) !important;
+    max-width: 100%;
+  }
+
+  .brief-mob-chapters {
+    margin: 0 0 10px !important;
+    padding: 8px 0 6px !important;
+  }
+  .brief-mob-chapters-label {
+    padding: 0 14px 5px !important;
+    font-size: 0.62rem !important;
+  }
+  .brief-mob-chapters-track {
+    padding: 0 14px 2px !important;
+    gap: 6px !important;
+  }
+  .brief-mob-chip {
+    padding: 6px 10px !important;
+    font-size: 0.74rem !important;
+  }
+
+  .brief-scroll-body {
+    padding: 0 0 calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .brief-chapter {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .brief-chapter--overview {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .brief-outcome {
+    margin: 0 14px 12px !important;
+    padding: 0.85rem 1rem !important;
+  }
+  .brief-outcome-text {
+    font-size: 1.02rem !important;
+    line-height: 1.4 !important;
+  }
+  .brief-outcome-bridge {
+    font-size: 0.86rem !important;
+    line-height: 1.5 !important;
+  }
+  .brief-decision {
+    margin: 0 14px 12px !important;
+    border-radius: 12px !important;
+    border-left: 1px solid var(--dd-border) !important;
+    border-right: 1px solid var(--dd-border) !important;
+  }
+  .brief-decision-row {
+    padding: 12px 14px !important;
+  }
+  .brief-headline {
+    padding: 14px 14px 12px !important;
+  }
+  .brief-headline-text {
+    font-size: 14.5px !important;
+    line-height: 1.6 !important;
+  }
+
+  .brief-kpi-strip {
+    margin: 0 0 8px !important;
+  }
+  .brief-kpi-card {
+    padding: 12px 10px !important;
+    min-width: 0 !important;
+  }
+  .brief-kpi-val {
+    font-size: 17px !important;
+    word-break: break-word;
+  }
+  .brief-kpi-label {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+  }
+
+  .brief-exit-bar {
+    width: calc(100vw - 16px) !important;
+    max-width: none !important;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 8px !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+  .brief-exit-back {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 42px;
+    height: 42px;
+    font-size: 14px !important;
+  }
+  .brief-exit-close {
+    flex: 0 0 auto;
+    margin-left: 0 !important;
+    min-height: 42px;
+    height: 42px;
+    padding: 0 14px !important;
+  }
+  .brief-exit-hint { display: none !important; }
+
+  .brief-ask-wrap,
+  .brief-ask-wrap.brief-chapter {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .brief-scroll-body,
+  #dd-body,
+  .brief-chapter {
+    overflow-x: clip;
+  }
+  .brief-chapter pre,
+  .brief-sql__editor,
+  .brief-table-wrap,
+  table {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 899px) {
+  .brief-hdr-tools { gap: 8px; }
+  .brief-tool-btn {
+    height: 38px;
+    padding: 0 12px;
+  }
+  #dd-close.brief-tool-btn {
+    width: auto !important;
+    height: 38px !important;
+  }
+}
+
+
+/* AUDIT MOBILE PASS */
+.brief-conviction {
+  flex: 1 1 120px;
+  max-width: 160px;
+  min-width: 0;
+}
+.brief-conviction-label {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--dd-text-dim);
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  max-width: 100%;
+  padding: 0 4px;
+}
+.brief-conviction svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+.brief-mob-swipe-hint {
+  display: none;
+  margin-left: 6px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--dd-accent);
+  opacity: 0.9;
+}
+.brief-mob-chapters.has-overflow .brief-mob-swipe-hint {
+  display: inline;
+}
+.brief-mob-chapters-track,
+.sql-dash__lenses,
+.brief-morph-tbl {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.brief-mob-chapters.has-overflow .brief-mob-chapters-track,
+.sql-dash__lenses,
+.brief-morph-tbl {
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, #000 0%, #000 88%, transparent 100%);
+}
+.brief-sql__table td,
+.brief-sql__table th {
+  white-space: nowrap;
+}
+.brief-sql__table {
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .brief-tool-btn,
+  a.brief-tool-btn.brief-github-btn,
+  #dd-theme-toggle.brief-tool-btn,
+  #dd-close.brief-tool-btn,
+  #dd-close.brief-close-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+  }
+  .brief-hdr-tools { gap: 8px !important; }
+
+  .brief-hdr.is-compact .brief-hdr-sub { display: none !important; }
+  .brief-hdr.is-compact .brief-hdr-title {
+    font-size: 15px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brief-hdr.is-compact .brief-hdr-content {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    gap: 4px !important;
+  }
+
+  .brief-mob-chapters {
+    position: relative !important;
+    top: auto !important;
+    z-index: 3 !important;
+  }
+
+  .brief-morph-tbl {
+    overflow-x: auto !important;
+  }
+  .brief-morph-row {
+    grid-template-columns: minmax(5.5rem, 0.85fr) minmax(9rem, 1.4fr) minmax(5.5rem, 0.9fr) minmax(4.5rem, 0.7fr) !important;
+    min-width: 26rem !important;
+  }
+  .brief-morph-cell {
+    font-size: 11px !important;
+    padding: 8px 8px !important;
+  }
+  .brief-morph-table::after {
+    content: "Swipe table for all columns";
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--dd-text-faint);
+    padding: 6px 12px 8px;
+    background: var(--dd-surface);
+    border-top: 1px solid var(--dd-border);
+  }
+
+  .brief-conviction-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    justify-items: stretch !important;
+    padding: 0 4px !important;
+  }
+  .brief-conviction {
+    max-width: none;
+    flex: none;
+    width: 100%;
+  }
+  .brief-conviction-label {
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+  .brief-conviction svg {
+    width: 108px;
+    height: 70px;
+  }
+
+  .sql-dash__lenses {
+    padding-bottom: 4px;
+    gap: 6px;
+  }
+}
+
+
+/* MOBILE CHAPTER RAIL - sticky, always useful while scrolling */
+.brief-mob-rail {
+  display: none;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 19;
+  background: color-mix(in oklab, var(--dd-bg, #0b1220) 94%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in oklab, var(--dd-border, #334155) 75%, transparent);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+.brief-mob-rail-progress {
+  height: 3px;
+  width: 100%;
+  background: color-mix(in oklab, var(--dd-border, #334155) 55%, transparent);
+  overflow: hidden;
+}
+.brief-mob-rail-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--dd-accent, #0d9488), color-mix(in oklab, var(--dd-accent, #0d9488) 55%, #fff));
+  /* No width transition - must track scroll in real time */
+  transition: none;
+  border-radius: 0 2px 2px 0;
+  will-change: width;
+}
+.brief-mob-rail-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px 9px;
+}
+.brief-mob-rail-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--dd-border2, var(--dd-border));
+  background: var(--dd-surface, #111827);
+  color: var(--dd-text);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.brief-mob-rail-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.brief-mob-rail-btn:not(:disabled):hover {
+  border-color: var(--dd-accent);
+  color: var(--dd-accent);
+}
+.brief-mob-rail-current {
+  min-width: 0;
+  height: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in oklab, var(--dd-accent, #0d9488) 35%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent, #0d9488) 10%, var(--dd-surface, #111827));
+  color: var(--dd-text);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.brief-mob-rail-current:active {
+  transform: scale(0.99);
+}
+.brief-mob-rail-meta {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.brief-mob-rail-count {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--dd-accent, #0d9488);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.brief-mob-rail-hint {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-text-faint, #94a3b8);
+}
+.brief-mob-rail-title {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--dd-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.brief-mob-rail-chevron {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-size: 14px;
+  color: var(--dd-accent, #0d9488);
+  transition: transform 0.2s ease;
+}
+.brief-mob-rail.sheet-open .brief-mob-rail-chevron {
+  transform: rotate(180deg);
+}
+
+/* Expandable section sheet */
+.brief-mob-sheet {
+  border-top: 1px solid var(--dd-border);
+  background: var(--dd-bg, #0b1220);
+  max-height: min(52vh, 420px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  animation: mobSheetIn 0.18s ease;
+}
+@keyframes mobSheetIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.brief-mob-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-text-faint);
+  position: sticky;
+  top: 0;
+  background: var(--dd-bg, #0b1220);
+  z-index: 1;
+}
+.brief-mob-sheet-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--dd-border2, var(--dd-border));
+  background: var(--dd-surface);
+  color: var(--dd-text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+.brief-mob-sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 10px 8px;
+}
+.brief-mob-sheet-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 18px;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--dd-text);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+}
+.brief-mob-sheet-item:hover {
+  background: var(--dd-surface);
+}
+.brief-mob-sheet-item.active {
+  background: color-mix(in oklab, var(--dd-accent, #0d9488) 14%, transparent);
+  border-color: color-mix(in oklab, var(--dd-accent, #0d9488) 40%, transparent);
+  color: var(--dd-accent, #0d9488);
+}
+.brief-mob-sheet-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  background: color-mix(in oklab, var(--dd-accent, #0d9488) 16%, transparent);
+  color: var(--dd-accent, #0d9488);
+  font-variant-numeric: tabular-nums;
+}
+.brief-mob-sheet-item.active .brief-mob-sheet-num {
+  background: var(--dd-accent, #0d9488);
+  color: #fff;
+}
+.brief-mob-sheet-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.brief-mob-sheet-check {
+  opacity: 0;
+  color: var(--dd-accent);
+  font-size: 12px;
+}
+.brief-mob-sheet-item.active .brief-mob-sheet-check {
+  opacity: 1;
+}
+.brief-mob-sheet-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  padding: 2px 12px 10px;
+}
+.brief-mob-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--dd-text-faint, #94a3b8) 55%, transparent);
+  transition: transform 0.15s, background 0.15s;
+}
+.brief-mob-dot.active {
+  background: var(--dd-accent, #0d9488);
+  transform: scale(1.35);
+}
+
+/* Theme emoji icon sizing */
+.dd-theme-emoji,
+#dd-theme-icon.dd-theme-emoji {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  display: block;
+  filter: none;
+}
+
+/* Show rail on phone/tablet; hide old chip strip */
+@media (max-width: 899px) {
+  .brief-mob-rail { display: block; }
+  .brief-mob-chapters { display: none !important; }
+  /* Stick below compact header - body is scroll root on phone */
+  .brief-hdr { z-index: 20; }
+  .brief-mob-rail {
+    top: 0;
+    /* When both sticky inside #dd-body, rail sits under header naturally in document flow */
+  }
+}
+@media (min-width: 900px) {
+  .brief-mob-rail { display: none !important; }
+}
+
+@media (max-width: 640px) {
+  /* Keep rail sticky for the whole scroll */
+  .brief-mob-rail {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 18 !important;
+  }
+  /* Header no longer needs to steal as much; rail is the nav */
+  .brief-hdr.is-compact + .brief-mob-rail {
+    box-shadow: 0 8px 22px rgba(0,0,0,0.16);
+  }
+  /* Mobile: room for floating exit bar only */
+  .brief-scroll-body {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+
+/* RAIL STICKY WINS - header scrolls away; chapter rail stays */
+@media (max-width: 899px) {
+  #dd-panel .brief-hdr {
+    position: relative !important;
+    top: auto !important;
+  }
+  .brief-mob-rail {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 25 !important;
+  }
+}
+
+
+/* BOTTOM PAD PASS - kill dead desktop scroll past last nav item */
+/* Desktop/tablet stage: small clearance for floating exit pill only */
+@media (min-width: 900px) {
+  .brief-scroll-body {
+    padding-bottom: 64px !important;
+  }
+  .brief-chapter:last-child,
+  .brief-ask-wrap.brief-chapter:last-child {
+    padding-bottom: 20px !important;
+    min-height: 0 !important;
+  }
+  /* Do not force last chapter to fill the viewport */
+  .brief-chapter:last-of-type {
+    min-height: 0 !important;
+  }
+  /* Exit bar sits over content edge - 64px is enough; no 18vh spacer */
+  .brief-exit-bar {
+    bottom: 16px !important;
+  }
+}
+
+/* Phones: keep enough room for exit bar + home indicator */
+@media (max-width: 899px) {
+  .brief-scroll-body {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #dd-body {
+    /* when body is scroll root, same clearance */
+    padding-bottom: 0;
+  }
+}
+
+
+/* SPINE REDESIGN V3 - numbered section list, no line through numbers */
+.brief-spine {
+  width: 200px !important;
+  flex-shrink: 0 !important;
+  padding: 18px 12px 20px 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  position: relative !important;
+  border-right: 1px solid color-mix(in oklab, var(--dd-border) 85%, transparent) !important;
+  overflow: hidden auto !important;
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--dd-surface, #111827) 55%, transparent) 0%,
+      transparent 48px),
+    transparent !important;
+  scrollbar-width: thin;
+}
+
+/* Kill the old continuous vertical track that sliced through numbers */
+.brief-spine::before,
+.brief-spine::after {
+  content: none !important;
+  display: none !important;
+}
+.brief-spine > .brief-spine-fill:not(.brief-spine-progress-fill) {
+  display: none !important;
+}
+.brief-spine-dot {
+  display: none !important;
+}
+
+.brief-spine-head {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+  padding: 0 4px 12px;
+  border-bottom: 1px solid color-mix(in oklab, var(--dd-border) 70%, transparent);
+}
+.brief-spine-title {
+  display: block !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: var(--dd-text-faint) !important;
+  padding: 0 0 10px !important;
+  width: auto !important;
+}
+.brief-spine-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--dd-border) 70%, transparent);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.brief-spine-progress-fill,
+.brief-spine .brief-spine-fill {
+  display: block !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  width: 0%;
+  height: 100% !important;
+  min-height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--dd-accent), color-mix(in oklab, var(--dd-accent) 55%, #fff));
+  transition: none !important;
+  z-index: auto !important;
+}
+.brief-spine-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brief-spine-progress-count {
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--dd-accent);
+}
+
+.brief-spine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+
+.brief-spine-item {
+  display: grid !important;
+  grid-template-columns: 28px minmax(0, 1fr) 10px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--dd-text-dim) !important;
+  cursor: pointer !important;
+  padding: 9px 10px !important;
+  text-align: left !important;
+  position: relative !important;
+  z-index: 1 !important;
+  border-radius: 12px !important;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
+}
+.brief-spine-item:hover {
+  color: var(--dd-text) !important;
+  background: color-mix(in oklab, var(--dd-surface) 80%, transparent) !important;
+  border-color: color-mix(in oklab, var(--dd-border) 80%, transparent) !important;
+}
+.brief-spine-item:focus-visible {
+  outline: 2px solid var(--dd-accent);
+  outline-offset: 2px;
+}
+.brief-spine-num {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 999px;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--dd-text-dim) !important;
+  background: color-mix(in oklab, var(--dd-surface2, var(--dd-surface)) 90%, transparent);
+  border: 1px solid color-mix(in oklab, var(--dd-border) 85%, transparent);
+  line-height: 1;
+}
+.brief-spine-label {
+  display: block !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  line-height: 1.3 !important;
+  color: inherit !important;
+  white-space: normal !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.brief-spine-mark {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  justify-self: end;
+}
+.brief-spine-item.is-done {
+  color: var(--dd-text-dim) !important;
+  opacity: 0.88;
+}
+.brief-spine-item.is-done .brief-spine-num {
+  color: var(--dd-accent) !important;
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 12%, transparent);
+}
+.brief-spine-item.is-done .brief-spine-mark {
+  background: color-mix(in oklab, var(--dd-accent) 55%, transparent);
+}
+.brief-spine-item.active {
+  color: var(--dd-text) !important;
+  background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)) !important;
+  border-color: color-mix(in oklab, var(--dd-accent) 42%, transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 12%, transparent) inset;
+}
+.brief-spine-item.active .brief-spine-num {
+  color: #fff !important;
+  background: var(--dd-accent) !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--dd-accent) 18%, transparent);
+}
+.brief-spine-item.active .brief-spine-label {
+  font-weight: 750 !important;
+  color: var(--dd-text) !important;
+}
+.brief-spine-item.active .brief-spine-mark {
+  background: var(--dd-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--dd-accent) 22%, transparent);
+}
+
+@media (min-width: 1280px) {
+  .brief-spine {
+    width: 220px !important;
+    padding: 20px 14px 22px 16px !important;
+  }
+  .brief-spine-label {
+    font-size: 12.5px !important;
+  }
+}
+
+/* Keep spine hidden on small screens - mobile uses shared-language rail */
+@media (max-width: 899px) {
+  .brief-spine { display: none !important; }
+}
+
+/* MOBILE RAIL - same visual language as desktop spine */
+.brief-mob-rail-progress {
+  height: 4px !important;
+  background: color-mix(in oklab, var(--dd-border) 70%, transparent) !important;
+}
+.brief-mob-rail-fill {
+  background: linear-gradient(90deg, var(--dd-accent), color-mix(in oklab, var(--dd-accent) 55%, #fff)) !important;
+}
+.brief-mob-rail-current {
+  border-radius: 14px !important;
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 35%, var(--dd-border)) !important;
+  background: color-mix(in oklab, var(--dd-accent) 12%, var(--dd-surface)) !important;
+}
+.brief-mob-rail-count {
+  color: var(--dd-accent) !important;
+  font-weight: 800 !important;
+}
+.brief-mob-sheet-item {
+  border-radius: 12px !important;
+}
+.brief-mob-sheet-num {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 999px !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  border: 1px solid color-mix(in oklab, var(--dd-border) 85%, transparent);
+}
+.brief-mob-sheet-item.active {
+  background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)) !important;
+  border-color: color-mix(in oklab, var(--dd-accent) 42%, transparent) !important;
+}
+.brief-mob-sheet-item.active .brief-mob-sheet-num {
+  background: var(--dd-accent) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--dd-accent) 18%, transparent);
+}
+.brief-mob-sheet-item.is-done .brief-mob-sheet-num,
+.brief-mob-sheet-item.active ~ .brief-mob-sheet-item .brief-mob-sheet-num {
+  /* upcoming stay muted; done handled via JS class if present */
+}
+
+
+/* Dynamic end spacer for fair section pinning (height set in JS) */
+.brief-scroll-spacer {
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: none;
+  height: 0;
+}
+
+
+/* SPINE CONTAIN PASS - numbers/marks stay inside list items, no clip bounce */
+.brief-spine {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  /* kill any leftover absolute track line from older CSS */
+}
+.brief-spine::before,
+.brief-spine::after {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+.brief-spine-list {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  gap: 6px !important;
+  padding: 2px 2px 8px 2px !important;
+}
+.brief-spine-item {
+  display: grid !important;
+  grid-template-columns: 32px minmax(0, 1fr) !important; /* drop trailing mark column */
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important; /* contain badge + accent */
+  padding: 10px 12px 10px 10px !important;
+  margin: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  transform: none !important;
+  position: relative !important;
+  isolation: isolate !important;
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease !important;
+  /* stable left accent rail lives inside padding box */
+  box-shadow: none !important;
+}
+.brief-spine-item::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 8px !important;
+  bottom: 8px !important;
+  width: 3px !important;
+  border-radius: 0 3px 3px 0 !important;
+  background: transparent !important;
+  opacity: 1 !important;
+  display: block !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+.brief-spine-item:hover {
+  transform: none !important;
+}
+.brief-spine-item:hover::before {
+  background: color-mix(in oklab, var(--dd-border2, var(--dd-border)) 80%, transparent) !important;
+}
+.brief-spine-num {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  box-sizing: border-box !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  transform: none !important;
+  box-shadow: none !important; /* external rings were clipped → looked like bounce-off */
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+}
+.brief-spine-label {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important; /* single line prevents height thrash */
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  font-size: 12.5px !important;
+  font-weight: 650 !important;
+  line-height: 1.25 !important;
+}
+.brief-spine-mark {
+  display: none !important; /* trailing dot was overflowing the card edge */
+}
+.brief-spine-item.is-done .brief-spine-num {
+  box-shadow: none !important;
+  transform: none !important;
+}
+.brief-spine-item.active {
+  transform: none !important;
+  box-shadow: none !important;
+  background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)) !important;
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, transparent) !important;
+}
+.brief-spine-item.active::before {
+  background: var(--dd-accent) !important;
+}
+.brief-spine-item.active .brief-spine-num {
+  color: #fff !important;
+  background: var(--dd-accent) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  outline: none !important;
+}
+.brief-spine-item.active .brief-spine-label {
+  font-weight: 750 !important;
+}
+.brief-spine-item.active .brief-spine-mark {
+  display: none !important;
+  box-shadow: none !important;
+}
+/* Kill legacy scale/transform on dots if any leak back */
+.brief-spine-item .brief-spine-dot,
+.brief-spine-dot,
+.brief-spine-dot.active {
+  display: none !important;
+  transform: none !important;
+}
+/* Progress fill is a bar in the header only - never a vertical line in the list */
+.brief-spine > .brief-spine-fill:not(.brief-spine-progress-fill) {
+  display: none !important;
+}
+.brief-spine-progress,
+.brief-spine-progress-fill {
+  transform: none !important;
+}
+.brief-spine-progress {
+  overflow: hidden !important;
+}
+
+
+/* DD READ COMFORT V1 - larger type + progressive disclosure
+   Research baseline: body ≥16px, long-form 17-18px, line-height ≥1.5,
+   measure ~45-75ch. Skim layer first; detail on demand. */
+.brief-scroll-body {
+  font-size: 17px !important;
+  line-height: 1.65 !important;
+  color: var(--dd-text) !important;
+}
+.brief-scroll-body p,
+.brief-insight-block,
+.brief-decision-text,
+.brief-section-sub,
+.brief-trail__text,
+.brief-trail__result,
+.brief-ask-answer,
+.brief-ask-response,
+.bitc-text,
+.bep-text,
+.brief-outcome-text,
+.brief-outcome-bridge,
+.brief-headline-text {
+  font-size: 17px !important;
+  line-height: 1.7 !important;
+  max-width: 62ch;
+}
+.brief-section-title {
+  font-size: 12px !important;
+  letter-spacing: 0.12em !important;
+  margin-bottom: 10px !important;
+}
+.brief-hdr-title {
+  font-size: clamp(1.35rem, 1.6vw, 1.75rem) !important;
+  line-height: 1.2 !important;
+}
+.brief-hdr-sub {
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+  max-width: 60ch;
+}
+.brief-kpi-val { font-size: 24px !important; }
+.brief-kpi-label { font-size: 12px !important; line-height: 1.35 !important; }
+.brief-headline-text {
+  font-size: 18px !important;
+  line-height: 1.55 !important;
+  font-weight: 650 !important;
+}
+
+/* Skim notes */
+.brief-skim-note {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface));
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 22%, var(--dd-border));
+  max-width: 62ch;
+}
+.brief-skim-note__label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dd-accent) !important;
+}
+.brief-skim-note__text {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+  color: var(--dd-text-dim) !important;
+  font-weight: 600;
+}
+
+/* Disclose buttons */
+.brief-disclose-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 4px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 35%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 10%, var(--dd-surface));
+  color: var(--dd-text) !important;
+  font-size: 14px !important;
+  font-weight: 750 !important;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.brief-disclose-btn:hover {
+  background: color-mix(in oklab, var(--dd-accent) 16%, var(--dd-surface));
+  border-color: var(--dd-accent);
+}
+.brief-disclose-btn--inline {
+  margin: 8px 0 12px;
+}
+
+/* Thinking trail - collapsed by default */
+.brief-trail--progressive {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 64ch;
+}
+.brief-trail__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.brief-trail__step {
+  display: grid !important;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--dd-border) !important;
+  background: color-mix(in oklab, var(--dd-surface) 88%, transparent) !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.brief-trail__step:hover {
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, var(--dd-border)) !important;
+}
+.brief-trail__step.is-open {
+  border-color: color-mix(in oklab, var(--dd-accent) 45%, var(--dd-border)) !important;
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface)) !important;
+}
+.brief-trail__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.brief-trail__toggle {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dd-accent) !important;
+  opacity: 0.9;
+}
+.brief-trail__type {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+}
+.brief-trail__text {
+  font-size: 16px !important;
+  line-height: 1.55 !important;
+  color: var(--dd-text) !important;
+  max-width: none !important;
+}
+.brief-trail__step.is-collapsed .brief-trail__text--full { display: none !important; }
+.brief-trail__step.is-collapsed .brief-trail__result { display: none !important; }
+.brief-trail__step.is-open .brief-trail__text--preview { display: none !important; }
+.brief-trail__step.is-open .brief-trail__text--full { display: block !important; }
+.brief-trail__step.is-open .brief-trail__result {
+  display: block !important;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--dd-accent) 12%, var(--dd-surface2, var(--dd-surface)));
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1.5 !important;
+  color: var(--dd-text) !important;
+}
+.brief-trail__step.is-open .brief-trail__toggle::after { content: none; }
+.brief-trail__step.is-open .brief-trail__toggle { content: 'Hide'; }
+.brief-trail__icon {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 14px !important;
+}
+
+/* Insight progressive */
+.brief-insight-block--lead {
+  font-size: 18px !important;
+  line-height: 1.55 !important;
+  font-weight: 650 !important;
+  max-width: 60ch;
+}
+.brief-insight-block--rest {
+  font-size: 16.5px !important;
+  line-height: 1.7 !important;
+  margin-top: 10px;
+  color: var(--dd-text-dim) !important;
+  max-width: 62ch;
+}
+
+/* Impact cards - headline first */
+.brief-impact-text-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  max-width: 64ch;
+}
+.brief-impact-text-card {
+  display: grid !important;
+  grid-template-columns: 40px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--dd-border) !important;
+  background: color-mix(in oklab, var(--dd-surface) 90%, transparent) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.brief-impact-text-card:hover {
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, var(--dd-border)) !important;
+}
+.brief-impact-text-card.is-open {
+  border-color: color-mix(in oklab, var(--dd-accent) 45%, var(--dd-border)) !important;
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface)) !important;
+}
+.bitc-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bitc-heading {
+  font-size: 16.5px !important;
+  font-weight: 750 !important;
+  line-height: 1.35 !important;
+  color: var(--dd-text) !important;
+}
+.bitc-toggle {
+  flex-shrink: 0;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-accent) !important;
+  padding-top: 2px;
+}
+.brief-impact-text-card.is-collapsed .bitc-text { display: none !important; }
+.brief-impact-text-card.is-open .bitc-text {
+  display: block !important;
+  margin-top: 8px;
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+  color: var(--dd-text-dim) !important;
+}
+.bitc-icon { font-size: 22px !important; line-height: 1.2 !important; }
+
+/* Decision / SQL keep readable but not tiny */
+.brief-decision-text { font-size: 16px !important; }
+.brief-sql__editor, .brief-sql__table, .sql-dash__sql { font-size: 14px !important; }
+.brief-sql__tab, .sql-dash__lens { font-size: 13px !important; }
+
+/* Mobile: keep ≥16px body - never shrink the story below comfort */
+@media (max-width: 700px) {
+  .brief-scroll-body { font-size: 16.5px !important; }
+  .brief-insight-block,
+  .brief-decision-text,
+  .brief-section-sub,
+  .brief-trail__text,
+  .bitc-text,
+  .brief-ask-answer {
+    font-size: 16.5px !important;
+    line-height: 1.65 !important;
+  }
+  .brief-insight-block--lead,
+  .brief-headline-text {
+    font-size: 17px !important;
+  }
+  .brief-hdr-sub { font-size: 14.5px !important; }
+  .bitc-heading { font-size: 16px !important; }
+}
+
+/* Calm chapter spacing - less wall-of-text feel */
+.brief-chapter {
+  padding: 26px 0 22px !important;
+}
+.brief-chapter + .brief-chapter {
+  border-top: 1px solid var(--dd-border);
+}
+
+
+/* DD PLAYABLE EPISODE V1 */
+.brief-playable {
+  margin: 18px 0 8px;
+  padding: 16px 16px 14px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 28%, var(--dd-border));
+  background:
+    radial-gradient(ellipse 90% 80% at 0% 0%, color-mix(in oklab, var(--dd-accent) 14%, transparent), transparent 55%),
+    color-mix(in oklab, var(--dd-surface) 92%, transparent);
+  max-width: 68ch;
+}
+.brief-playable-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+  margin-bottom: 4px;
+}
+.brief-playable-title {
+  font-size: 18px;
+  font-weight: 780;
+  line-height: 1.25;
+  color: var(--dd-text);
+}
+.brief-playable-sub {
+  margin: 6px 0 0;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--dd-text-dim);
+  max-width: 52ch;
+}
+.brief-playable-track {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+.brief-playable-beat {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 10px 12px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--dd-border);
+  background: color-mix(in oklab, var(--dd-surface) 88%, transparent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.brief-playable-beat:hover {
+  border-color: color-mix(in oklab, var(--dd-accent) 42%, var(--dd-border));
+  transform: translateY(-1px);
+}
+.brief-playable-beat.is-active {
+  border-color: color-mix(in oklab, var(--dd-accent) 55%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 10%, var(--dd-surface));
+}
+.brief-playable-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--dd-accent);
+  background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface));
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 30%, var(--dd-border));
+}
+.brief-playable-beat-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--dd-text);
+  line-height: 1.25;
+}
+.brief-playable-beat-blurb {
+  display: block;
+  margin-top: 2px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--dd-text-dim);
+}
+.brief-playable-go {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+}
+
+.brief-kpi-card--peelable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.brief-kpi-card--peelable:hover,
+.brief-kpi-card--peelable.is-peeled {
+  border-color: color-mix(in oklab, var(--dd-accent) 45%, var(--dd-border));
+  transform: translateY(-1px);
+}
+.brief-kpi-peel {
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 28%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface));
+  max-width: 62ch;
+}
+.brief-kpi-peel-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+}
+.brief-kpi-peel-title {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--dd-text);
+}
+.brief-kpi-peel-text {
+  margin: 6px 0 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--dd-text-dim);
+}
+
+.brief-wrong-turns {
+  margin: 18px 0 8px;
+  max-width: 68ch;
+}
+.brief-wrong-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.brief-wrong-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--dd-border);
+  background: color-mix(in oklab, var(--dd-surface) 90%, transparent);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.brief-wrong-card:hover {
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, var(--dd-border));
+}
+.brief-wrong-card.is-open {
+  border-color: color-mix(in oklab, var(--dd-accent) 48%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface));
+}
+.brief-wrong-title {
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--dd-text);
+}
+.brief-wrong-meta {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--dd-text-dim);
+}
+.brief-wrong-card.is-collapsed .brief-wrong-detail { display: none; }
+.brief-wrong-card.is-open .brief-wrong-detail { display: block; margin-top: 10px; }
+.brief-wrong-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dd-accent);
+  margin-top: 8px;
+}
+.brief-wrong-text {
+  margin-top: 3px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--dd-text-dim);
+}
+
+.brief-limits {
+  margin: 16px 0 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed color-mix(in oklab, var(--dd-text-dim) 35%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-surface) 85%, transparent);
+  max-width: 62ch;
+}
+.brief-limits-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dd-text-dim);
+  margin-bottom: 8px;
+}
+.brief-limits-list {
+  margin: 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 6px;
+}
+.brief-limits-list li {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--dd-text-dim);
+}
+
+.brief-decision-wrap { margin: 12px 0; }
+.brief-headline-text--rest {
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--dd-text-dim);
+  max-width: 62ch;
+}
+
+@media (max-width: 700px) {
+  .brief-playable { padding: 14px 12px; }
+  .brief-playable-title { font-size: 17px; }
+  .brief-playable-beat { grid-template-columns: 28px minmax(0, 1fr); }
+  .brief-playable-go { display: none; }
+}
+
+
+/* ═══ Proof Bench: cold open + disclosure + KPI proof ═══ */
+.brief-cold-open {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--brief-accent) 35%, var(--brief-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brief-accent) 10%, var(--brief-surface)) 0%, var(--brief-surface) 55%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brief-accent) 12%, transparent);
+}
+.brief-cold-open__kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brief-accent);
+  margin-bottom: 0.25rem;
+}
+.brief-cold-open__caption {
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--brief-text);
+  font-weight: 600;
+}
+.brief-cold-open__stage { display: flex; flex-direction: column; gap: 0.75rem; }
+.brief-cold-open__jump { align-self: flex-start; margin-top: 0.25rem; }
+.brief-cold-open__secondary {
+  margin-top: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--brief-border);
+}
+.brief-cold-open__disclaimer,
+.brief-section-sub.brief-cold-open__disclaimer {
+  font-size: 0.82rem;
+  color: var(--brief-text-faint);
+  font-style: italic;
+  margin: 0.25rem 0 0.5rem;
+}
+.brief-cold-open__peak-note {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, #E8AF34 18%, var(--brief-surface2));
+  border: 1px solid color-mix(in srgb, #E8AF34 40%, var(--brief-border));
+  color: var(--brief-text);
+}
+
+.brief-morph-scrub-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.65rem 0 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: var(--brief-surface2);
+  border: 1px solid var(--brief-border);
+}
+.brief-morph-scrub-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--brief-text);
+}
+.brief-morph-scrub {
+  width: 100%;
+  accent-color: var(--brief-accent);
+  height: 1.5rem;
+  cursor: pointer;
+}
+.brief-morph-scrub-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--brief-text-faint);
+  font-weight: 600;
+}
+.brief-morph-scrub-pct { color: var(--brief-accent); }
+
+.brief-filter-bench {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.brief-filter-bench__title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--brief-text);
+}
+.brief-filter-bench__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.brief-filter-chip {
+  appearance: none;
+  border: 1px solid var(--brief-border);
+  background: var(--brief-surface2);
+  color: var(--brief-text);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 36px;
+}
+.brief-filter-chip.is-active {
+  background: color-mix(in srgb, var(--brief-accent) 18%, var(--brief-surface));
+  border-color: var(--brief-accent);
+  color: var(--brief-text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brief-accent) 35%, transparent);
+}
+.brief-filter-bench__count {
+  font-size: 0.78rem;
+  color: var(--brief-text-faint);
+  font-weight: 600;
+}
+
+.brief-kpi-proof-cue {
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brief-accent);
+  opacity: 0.9;
+}
+.brief-kpi-card--peelable {
+  cursor: pointer;
+  position: relative;
+}
+.brief-kpi-card--peelable:hover,
+.brief-kpi-card--peelable:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brief-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+.brief-kpi-card--peelable.is-peeled {
+  box-shadow: inset 0 0 0 2px var(--brief-accent);
+}
+
+.brief-decision--open {
+  margin: 0.85rem 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: var(--brief-surface2);
+  border: 1px solid var(--brief-border);
+}
+.brief-decision-kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--brief-text-faint);
+  margin-bottom: 0.35rem;
+}
+.brief-decision-open-text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--brief-text);
+}
+
+.brief-github-label,
+.brief-close-text {
+  display: inline !important;
+}
+.brief-tool-btn {
+  gap: 0.35rem;
+  min-height: 40px;
+  padding: 0.35rem 0.65rem;
+}
+
+@media (max-width: 640px) {
+  .brief-cold-open { padding: 0.85rem 0.8rem; }
+  .brief-filter-chip { min-height: 40px; }
+}
