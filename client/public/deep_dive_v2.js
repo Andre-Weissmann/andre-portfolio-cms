@@ -2742,11 +2742,9 @@ var DD_DASHBOARDS = {
   tableau: {
     tool: 'Tableau',
     shots: [
-      { src: 'images/airbnb-dashboard.png', alt: 'Tableau Airbnb Seattle dashboard overview', caption: 'Full Tableau dashboard' },
-      { src: 'images/tableau-sheet1.png', alt: 'Tableau worksheet: listing and neighborhood detail', caption: 'Listing and neighborhood detail' },
-      { src: 'images/tableau-sheet2.png', alt: 'Tableau worksheet: revenue pattern detail', caption: 'Revenue pattern detail' }
+      { src: 'images/airbnb-dashboard.png', alt: 'Tableau Airbnb Seattle dashboard overview', caption: 'Full Tableau dashboard' }
     ],
-    caption: 'Full Tableau dashboard plus two worksheet views. Interactive charts below let you inspect the spikes.',
+    caption: 'Full Tableau dashboard. Interactive charts below let you inspect the spikes.',
     fileHref: '',
     fileLabel: ''
   },
@@ -2962,6 +2960,7 @@ function renderDashboardCard(container, key) {
   card.className = 'brief-dash-card brief-dash-card--shots' + (multi ? ' brief-dash-card--multi' : ' brief-dash-card--single');
   if (!multi && key === 'powerbi') card.classList.add('brief-dash-card--powerbi');
   if (!multi && key === 'excel') card.classList.add('brief-dash-card--excel');
+  if (!multi && key === 'tableau') card.classList.add('brief-dash-card--tableau');
   card.setAttribute('aria-label', cfg.tool + (multi ? ' dashboard screenshots' : ' dashboard screenshot'));
   var galleryClass = 'brief-shot-gallery' + (multi ? ' brief-shot-gallery--multi' : ' brief-shot-gallery--single');
   var gallery = shots.map(function(s, i) {
