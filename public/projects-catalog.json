@@ -1,7 +1,7 @@
 {
   "portfolioBaseUrl": "https://andre-weissmann-data-portfolio-view.pplx.app",
   "updatedAt": "2026-07-26",
-  "notes": "Featured strip = nashville, survey, airbnb. BMI + bikes = light archive only. Resume still lists all published.",
+  "notes": "Homepage shows all interactive demos. Expandable archive is a scannable index. tier=featured is signal for future spotlight, not homepage hide.",
   "projects": [
     {
       "id": "nashville",
