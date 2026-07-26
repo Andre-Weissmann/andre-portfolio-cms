@@ -580,8 +580,8 @@ function renderThinkingTrail(container, steps) {
   steps.forEach(function(step, i) {
     var div = document.createElement('button');
     div.type = 'button';
-    div.className = 'brief-trail__step is-collapsed' + (i >= PREVIEW ? ' is-extra' : '');
-    if (i >= PREVIEW) div.hidden = true;
+    div.className = 'brief-trail__step is-collapsed' + (i >= PREVIEW ? ' is-extra is-extra-hidden' : '');
+    if (i >= PREVIEW) { div.hidden = true; div.setAttribute('hidden', ''); }
     div.style.animationDelay = (Math.min(i, PREVIEW) * 50) + 'ms';
     div.setAttribute('aria-expanded', 'false');
 
@@ -634,14 +634,30 @@ function renderThinkingTrail(container, steps) {
   if (steps.length > PREVIEW) {
     var more = document.createElement('button');
     more.type = 'button';
-    more.className = 'brief-disclose-btn';
-    more.textContent = 'Show all ' + steps.length + ' trail moves';
-    more.addEventListener('click', function() {
-      var expanded = wrap.classList.toggle('is-trail-expanded');
+    more.className = 'brief-disclose-btn brief-trail__more';
+    more.setAttribute('aria-expanded', 'false');
+    var extraCount = steps.length - PREVIEW;
+    more.textContent = 'Show ' + extraCount + ' more trail moves';
+    more.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var expanded = !wrap.classList.contains('is-trail-expanded');
+      wrap.classList.toggle('is-trail-expanded', expanded);
       list.querySelectorAll('.brief-trail__step.is-extra').forEach(function(el) {
-        el.hidden = !expanded;
+        if (expanded) {
+          el.hidden = false;
+          el.classList.remove('is-extra-hidden');
+          el.removeAttribute('hidden');
+        } else {
+          el.hidden = true;
+          el.classList.add('is-extra-hidden');
+          el.setAttribute('hidden', '');
+        }
       });
-      more.textContent = expanded ? ('Hide extra trail moves') : ('Show all ' + steps.length + ' trail moves');
+      more.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      more.textContent = expanded
+        ? ('Hide ' + extraCount + ' extra trail moves')
+        : ('Show ' + extraCount + ' more trail moves');
     });
     wrap.appendChild(more);
   }
@@ -2345,6 +2361,7 @@ function renderPlayableEpisode(container, key, p, goToId) {
   var panel = document.getElementById('dd-panel');
   var activeIdx = -1;
   var visited = {};
+  var dockVisible = false;
 
   var ep = document.createElement('div');
   ep.className = 'brief-playable';
@@ -2353,7 +2370,7 @@ function renderPlayableEpisode(container, key, p, goToId) {
     '<div class="brief-playable-head">' +
       '<div class="brief-playable-kicker">Episode</div>' +
       '<div class="brief-playable-title">' + (cfg.tagline || 'Play this analysis') + '</div>' +
-      '<p class="brief-playable-sub">' + (cfg.sub || 'Tap a beat. Controls stay with you while you move through the story.') + '</p>' +
+      '<p class="brief-playable-sub">' + (cfg.sub || 'Tap a beat, then use Next to keep going in order.') + '</p>' +
     '</div>';
 
   var track = document.createElement('div');
@@ -2363,34 +2380,45 @@ function renderPlayableEpisode(container, key, p, goToId) {
   var nav = document.createElement('div');
   nav.className = 'brief-playable-nav';
   nav.innerHTML =
-    '<button type="button" class="brief-playable-nav-btn" data-nav="prev" disabled>Previous beat</button>' +
+    '<button type="button" class="brief-playable-nav-btn" data-nav="prev" disabled>Previous</button>' +
     '<span class="brief-playable-nav-status" data-nav-status>Pick beat 1 to start</span>' +
-    '<button type="button" class="brief-playable-nav-btn" data-nav="next">Next beat</button>';
+    '<button type="button" class="brief-playable-nav-btn brief-playable-nav-btn--primary" data-nav="next">Next beat</button>';
+
+  function getFooter() {
+    return panel ? panel.querySelector('.brief-dd-footer') : null;
+  }
 
   function ensureDock() {
-    if (!panel) return null;
-    var dock = panel.querySelector('.brief-episode-dock');
+    var footer = getFooter();
+    if (!footer) return null;
+    var dock = footer.querySelector('.brief-episode-dock');
     if (!dock) {
       dock = document.createElement('div');
       dock.className = 'brief-episode-dock';
       dock.setAttribute('role', 'navigation');
-      dock.setAttribute('aria-label', 'Episode beats');
-      panel.appendChild(dock);
-      panel.classList.add('has-episode-dock');
+      dock.setAttribute('aria-label', 'Playing analysis controls');
+      // Insert dock above exit row inside footer
+      var exitRow = footer.querySelector('.brief-exit-bar');
+      if (exitRow) footer.insertBefore(dock, exitRow);
+      else footer.appendChild(dock);
     }
     return dock;
   }
 
-  function removeDock() {
-    if (!panel) return;
-    var dock = panel.querySelector('.brief-episode-dock');
-    if (dock) dock.parentNode.removeChild(dock);
-    panel.classList.remove('has-episode-dock');
+  function setDockVisible(on) {
+    dockVisible = !!on;
+    var dock = ensureDock();
+    if (!dock) return;
+    dock.hidden = !dockVisible;
+    if (panel) panel.classList.toggle('has-episode-dock', dockVisible);
+    var footer = getFooter();
+    if (footer) footer.classList.toggle('has-episode-dock', dockVisible);
+    if (dockVisible) paintDock();
   }
 
   function paintDock() {
     var dock = ensureDock();
-    if (!dock) return;
+    if (!dock || !dockVisible) return;
     var beat = activeIdx >= 0 ? beats[activeIdx] : null;
     var chips = beats.map(function(b, i) {
       var cls = 'brief-episode-dock__chip';
@@ -2404,13 +2432,12 @@ function renderPlayableEpisode(container, key, p, goToId) {
     dock.innerHTML =
       '<div class="brief-episode-dock__top">' +
         '<div class="brief-episode-dock__label">Playing analysis</div>' +
-        '<div class="brief-episode-dock__now">' + (beat ? ('Beat ' + (activeIdx + 1) + ': ' + beat.title) : 'Episode') + '</div>' +
+        '<div class="brief-episode-dock__now">' + (beat ? ('Beat ' + (activeIdx + 1) + ' of ' + beats.length + ' · ' + beat.title) : 'Choose a beat') + '</div>' +
       '</div>' +
       '<div class="brief-episode-dock__chips">' + chips + '</div>' +
       '<div class="brief-episode-dock__actions">' +
         '<button type="button" class="brief-episode-dock__btn" data-dock="prev"' + (activeIdx <= 0 ? ' disabled' : '') + '>Previous</button>' +
         '<button type="button" class="brief-episode-dock__btn brief-episode-dock__btn--primary" data-dock="next"' + (activeIdx >= beats.length - 1 ? ' disabled' : '') + '>Next beat</button>' +
-        '<button type="button" class="brief-episode-dock__btn" data-dock="top">Back to beats</button>' +
       '</div>';
     dock.querySelectorAll('[data-beat]').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -2419,11 +2446,10 @@ function renderPlayableEpisode(container, key, p, goToId) {
     });
     var prev = dock.querySelector('[data-dock="prev"]');
     var next = dock.querySelector('[data-dock="next"]');
-    var top = dock.querySelector('[data-dock="top"]');
     if (prev) prev.addEventListener('click', function() { if (activeIdx > 0) playBeat(activeIdx - 1); });
-    if (next) next.addEventListener('click', function() { if (activeIdx < beats.length - 1) playBeat(activeIdx + 1); });
-    if (top) top.addEventListener('click', function() {
-      ep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (next) next.addEventListener('click', function() {
+      if (activeIdx < 0) playBeat(0);
+      else if (activeIdx < beats.length - 1) playBeat(activeIdx + 1);
     });
   }
 
@@ -2438,11 +2464,12 @@ function renderPlayableEpisode(container, key, p, goToId) {
     if (status) {
       status.textContent = activeIdx < 0
         ? 'Pick beat 1 to start'
-        : ('Beat ' + (activeIdx + 1) + ' of ' + beats.length + (visited[activeIdx] ? ' · viewed' : ''));
+        : ('Beat ' + (activeIdx + 1) + ' of ' + beats.length);
     }
     if (prevB) prevB.disabled = activeIdx <= 0;
-    if (nextB) nextB.disabled = activeIdx < 0 || activeIdx >= beats.length - 1;
-    paintDock();
+    if (nextB) nextB.disabled = activeIdx >= beats.length - 1 && activeIdx >= 0;
+    if (activeIdx < 0 && nextB) nextB.disabled = false;
+    if (dockVisible) paintDock();
   }
 
   function playBeat(i) {
@@ -2490,12 +2517,17 @@ function renderPlayableEpisode(container, key, p, goToId) {
   ep.appendChild(nav);
   container.appendChild(ep);
 
-  // Clean dock when drawer closes (panel loses open class)
-  if (panel && !panel._episodeDockObserver) {
-    panel._episodeDockObserver = new MutationObserver(function() {
-      if (!panel.classList.contains('open')) removeDock();
-    });
-    panel._episodeDockObserver.observe(panel, { attributes: true, attributeFilter: ['class'] });
+  // Show sticky dock only when the episode block leaves the viewport (does not cover beats)
+  if (typeof IntersectionObserver !== 'undefined') {
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(en) {
+        // Dock when episode list is mostly off-screen and a beat has been started
+        var shouldShow = !en.isIntersecting && activeIdx >= 0;
+        setDockVisible(shouldShow);
+      });
+    }, { root: panel ? panel.querySelector('.brief-scroll-body') : null, threshold: 0.15 });
+    io.observe(ep);
+    if (panel) panel._episodeIO = io;
   }
 }
 
@@ -2639,7 +2671,7 @@ function renderDrawer(key) {
         '<div class="brief-hdr-tools">' +
           (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="Code on GitHub" title="Code on GitHub (leaves page)">' + githubSvg + '<span class="brief-github-label">Code on GitHub</span></a>' : '') +
           '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Switch to light mode" title="Dark mode" data-mode="dark"><span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">&#127769;</span></button>' +
-          '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" onclick="closeDD()" aria-label="Close deep dive" title="Close (Esc)">' +
+          '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" aria-label="Close deep dive" title="Close (Esc)">' +
             '<span class="brief-close-x" aria-hidden="true">&#x2715;</span>' +
             '<span class="brief-close-text">Close</span>' +
           '</button>' +
@@ -2649,6 +2681,14 @@ function renderDrawer(key) {
       '<p class="brief-hdr-sub">' + p.subtitle + '</p>' +
     '</div>';
   body.appendChild(hdr);
+  var hdrClose = document.getElementById('dd-close');
+  if (hdrClose) {
+    hdrClose.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.closeDD === 'function') window.closeDD(e);
+    });
+  }
 
   /* Single scroll stream: intro + chapters + ask all live in one column.
      Prevents desktop flex collapse where header/KPI/ask steal height from chapters. */
@@ -3192,17 +3232,26 @@ function renderDrawer(key) {
   layout.appendChild(scrollBody);
   body.appendChild(layout);
 
-  /* Sticky exit bar - always visible way back to portfolio */
+  /* Footer inside panel (not a floating viewport pill) */
+  var footer = document.createElement('div');
+  footer.className = 'brief-dd-footer';
   var exitBar = document.createElement('div');
-  
   exitBar.className = 'brief-exit-bar';
   exitBar.innerHTML =
-    '<button type="button" class="brief-exit-back" onclick="closeDD()">' +
+    '<button type="button" class="brief-exit-back" data-dd-close="1">' +
       '<span aria-hidden="true">&#8592;</span> Back to portfolio' +
     '</button>' +
-    '<span class="brief-exit-hint"><kbd>Esc</kbd> or click outside to close</span>' +
-    '<button type="button" class="brief-exit-close" onclick="closeDD()" aria-label="Close deep dive">Close</button>';
-  body.appendChild(exitBar);
+    '<span class="brief-exit-hint"><kbd>Esc</kbd> closes</span>' +
+    '<button type="button" class="brief-exit-close" data-dd-close="1" aria-label="Close deep dive">Close</button>';
+  footer.appendChild(exitBar);
+  body.appendChild(footer);
+  footer.querySelectorAll('[data-dd-close]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.closeDD === 'function') window.closeDD(e);
+    });
+  });
 
   /* Spine nav: click label/dot to jump */
   spine.querySelectorAll('.brief-spine-item').forEach(function(btn) {
@@ -3343,30 +3392,49 @@ window.openDD = function(key) {
   }, 40);
 };
 
-window.closeDD = function() {
+window.closeDD = function(e) {
+  if (e) {
+    try { e.preventDefault(); } catch (err0) {}
+    try { e.stopPropagation(); } catch (err1) {}
+  }
   var panel = document.getElementById('dd-panel');
   var overlay = document.getElementById('dd-overlay');
-  if (!panel || !panel.classList.contains('open')) return;
-  /* If we opened via pushState, step back once without double-close */
-  if (window.__ddHistoryPushed && !window.__ddClosingFromPop) {
-    window.__ddHistoryPushed = false;
-    try { history.back(); } catch (err) {}
-  }
-  window.__ddClosingFromPop = false;
+  if (!panel) return;
+  if (!panel.classList.contains('open') && !window.__ddClosingFromPop) return;
+
+  /* Tear down episode dock / observer first */
+  try {
+    if (panel._episodeIO) { panel._episodeIO.disconnect(); panel._episodeIO = null; }
+  } catch (err2) {}
+  var dock = panel.querySelector('.brief-episode-dock');
+  if (dock && dock.parentNode) dock.parentNode.removeChild(dock);
+  panel.classList.remove('has-episode-dock');
+  var footer = panel.querySelector('.brief-dd-footer');
+  if (footer) footer.classList.remove('has-episode-dock');
+
+  /* Close UI first so the red hover state is not the only feedback */
   panel.classList.remove('open');
   document.body.classList.remove('dd-open');
   if (overlay) overlay.classList.remove('visible');
   document.body.style.overflow = '';
-  /* Restore data-rail pill */
+
   var rail = document.getElementById('data-rail');
   if (rail) rail.style.cssText = '';
-  /* Return visitor to the same place on the portfolio */
+
+  /* History back after close, without re-entry loops */
+  var shouldBack = window.__ddHistoryPushed && !window.__ddClosingFromPop;
+  window.__ddHistoryPushed = false;
+  window.__ddClosingFromPop = false;
+  if (shouldBack) {
+    try { history.back(); } catch (err3) {}
+  }
+
   var y = window.__ddPageScrollY || 0;
   requestAnimationFrame(function() {
     window.scrollTo(0, y);
     var prev = window.__ddReturnFocus;
     if (prev && typeof prev.focus === 'function') {
-      try { prev.focus({ preventScroll: true }); } catch (err) { try { prev.focus(); } catch (e2) {} }
+      try { prev.focus({ preventScroll: true }); } catch (err4) { try { prev.focus(); } catch (e2) {} }
     }
     window.__ddReturnFocus = null;
   });
