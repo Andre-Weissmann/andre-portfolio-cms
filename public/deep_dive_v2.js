@@ -34,15 +34,59 @@ function hideTip() { if (_tip) _tip.classList.remove('visible'); }
 function renderBarChart(container, data, opts) {
   opts = opts || {};
   container.innerHTML = '';
+  container.classList.add('brief-chart-wrap--interactive');
+  var state = { pinned: -1, sort: opts.sort || 'input' }; // input | desc | asc
+  var shell = document.createElement('div');
+  shell.className = 'brief-chart-shell';
+  var tools = document.createElement('div');
+  tools.className = 'brief-chart-tools';
+  tools.innerHTML =
+    '<button type="button" class="brief-chart-tool" data-sort="desc" aria-pressed="false">Sort high → low</button>' +
+    '<button type="button" class="brief-chart-tool" data-sort="asc" aria-pressed="false">Sort low → high</button>' +
+    '<button type="button" class="brief-chart-tool" data-sort="input" aria-pressed="true">Original order</button>' +
+    '<span class="brief-chart-hint">Tap a bar for details</span>';
+  var stage = document.createElement('div');
+  stage.className = 'brief-chart-stage';
+  var readout = document.createElement('div');
+  readout.className = 'brief-chart-readout';
+  readout.setAttribute('aria-live', 'polite');
+  readout.textContent = 'Hover or tap a bar to inspect values.';
+  shell.appendChild(tools);
+  shell.appendChild(stage);
+  shell.appendChild(readout);
+  container.appendChild(shell);
+
+  function fmtVal(v) {
+    var fmt = opts.fmt || function(x) { return Number(x).toLocaleString(); };
+    return fmt(v);
+  }
+  function ordered() {
+    var rows = data.map(function(d, i) { return { d: d, i: i }; });
+    if (state.sort === 'desc') rows.sort(function(a, b) { return (Number(b.d.value)||0) - (Number(a.d.value)||0); });
+    if (state.sort === 'asc') rows.sort(function(a, b) { return (Number(a.d.value)||0) - (Number(b.d.value)||0); });
+    return rows;
+  }
+  function setReadout(d, rank, total) {
+    if (!d) {
+      readout.textContent = 'Hover or tap a bar to inspect values.';
+      return;
+    }
+    var maxV = Math.max.apply(null, data.map(function(x){ return Number(x.value)||0; })) || 1;
+    var share = Math.round(((Number(d.value)||0) / maxV) * 100);
+    readout.innerHTML = '<strong>' + d.label + '</strong> · ' + fmtVal(d.value) +
+      ' <span class="brief-chart-readout__meta">(' + share + '% of top bar' +
+      (rank != null ? ' · rank ' + rank + '/' + total : '') + ')</span>';
+  }
   function paint() {
-    container.innerHTML = '';
-    var W = Math.max(container.clientWidth || 0, 320);
-    var labelW = opts.labelW || 150;
-    var barH = opts.barH || 22;
+    stage.innerHTML = '';
+    var rows = ordered();
+    var W = Math.max(stage.clientWidth || container.clientWidth || 0, 300);
+    var labelW = opts.labelW || (W < 420 ? 88 : 130);
+    var barH = opts.barH || (W < 420 ? 26 : 24);
     var gap = opts.gap || 10;
-    var padT = 8, padB = 18, padR = 78;
-    var areaW = Math.max(W - labelW - padR, 80);
-    var H = padT + data.length * (barH + gap) - gap + padB;
+    var padT = 8, padB = 10, padR = W < 420 ? 56 : 78;
+    var areaW = Math.max(W - labelW - padR, 72);
+    var H = padT + rows.length * (barH + gap) - gap + padB;
     var maxV = Math.max.apply(null, data.map(function(d){ return Number(d.value) || 0; }));
     if (!maxV || !isFinite(maxV)) maxV = 1;
     var ns = 'http://www.w3.org/2000/svg';
@@ -50,65 +94,167 @@ function renderBarChart(container, data, opts) {
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     svg.setAttribute('width', '100%');
     svg.setAttribute('height', String(H));
-    svg.setAttribute('class', 'brief-svg-chart');
-    svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', opts.ariaLabel || 'Bar chart');
+    svg.setAttribute('class', 'brief-svg-chart brief-svg-chart--bars');
+    svg.setAttribute('role', 'list');
+    svg.setAttribute('aria-label', opts.ariaLabel || 'Interactive bar chart');
 
-    data.forEach(function(d, i) {
-      var y = padT + i * (barH + gap);
+    rows.forEach(function(row, ri) {
+      var d = row.d;
+      var origI = row.i;
+      var y = padT + ri * (barH + gap);
       var ratio = (Number(d.value) || 0) / maxV;
       var fullW = Math.max(ratio * areaW, d.value > 0 ? 4 : 0);
       var color = d.color || 'var(--brief-accent)';
+      var g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'brief-bar-row');
+      g.setAttribute('role', 'listitem');
+      g.setAttribute('tabindex', '0');
+      g.setAttribute('data-i', String(origI));
+      g.setAttribute('aria-label', d.label + ': ' + fmtVal(d.value));
+
+      var hit = document.createElementNS(ns, 'rect');
+      hit.setAttribute('class', 'brief-bar-hit');
+      hit.setAttribute('x', '0');
+      hit.setAttribute('y', String(y - 2));
+      hit.setAttribute('width', String(W));
+      hit.setAttribute('height', String(barH + 4));
+      hit.setAttribute('fill', 'transparent');
+      g.appendChild(hit);
+
       var txt = document.createElementNS(ns, 'text');
       txt.setAttribute('x', String(labelW - 10));
       txt.setAttribute('y', String(y + barH / 2 + 4));
       txt.setAttribute('text-anchor', 'end');
       txt.setAttribute('class', 'brief-chart-label');
       txt.setAttribute('fill', 'currentColor');
-      txt.setAttribute('font-size', '12');
-      txt.textContent = d.label;
-      svg.appendChild(txt);
+      txt.setAttribute('font-size', W < 420 ? '11' : '12');
+      var lab = String(d.label || '');
+      if (W < 420 && lab.length > 12) lab = lab.slice(0, 11) + '…';
+      txt.textContent = lab;
+      g.appendChild(txt);
 
       var track = document.createElementNS(ns, 'rect');
       track.setAttribute('x', String(labelW));
       track.setAttribute('y', String(y));
       track.setAttribute('width', String(areaW));
       track.setAttribute('height', String(barH));
-      track.setAttribute('rx', '4');
+      track.setAttribute('rx', '5');
+      track.setAttribute('class', 'brief-bar-track');
       track.setAttribute('fill', 'currentColor');
       track.setAttribute('opacity', '0.08');
-      svg.appendChild(track);
+      g.appendChild(track);
 
       var bar = document.createElementNS(ns, 'rect');
       bar.setAttribute('x', String(labelW));
       bar.setAttribute('y', String(y));
-      bar.setAttribute('width', String(fullW));
+      bar.setAttribute('width', '0');
       bar.setAttribute('height', String(barH));
-      bar.setAttribute('rx', '4');
+      bar.setAttribute('rx', '5');
       bar.setAttribute('fill', color);
-      bar.setAttribute('data-value', String(d.value));
-      bar.setAttribute('data-ratio', String(Math.round(ratio * 1000) / 1000));
-      svg.appendChild(bar);
+      bar.setAttribute('class', 'brief-bar-fill');
+      bar.setAttribute('data-full-w', String(fullW));
+      g.appendChild(bar);
 
       var val = document.createElementNS(ns, 'text');
-      val.setAttribute('x', String(labelW + fullW + 8));
+      val.setAttribute('x', String(labelW + 8));
       val.setAttribute('y', String(y + barH / 2 + 4));
       val.setAttribute('class', 'brief-chart-val');
       val.setAttribute('fill', 'currentColor');
-      val.setAttribute('font-size', '12');
-      val.setAttribute('font-weight', '600');
-      var fmt = opts.fmt || function(v) {
-        return Number(v).toLocaleString();
-      };
-      val.textContent = fmt(d.value);
-      svg.appendChild(val);
+      val.setAttribute('font-size', W < 420 ? '11' : '12');
+      val.setAttribute('font-weight', '700');
+      val.setAttribute('opacity', '0');
+      val.textContent = fmtVal(d.value);
+      g.appendChild(val);
+
+      function activate(pin) {
+        svg.querySelectorAll('.brief-bar-row').forEach(function(r) { r.classList.remove('is-hot', 'is-pinned'); });
+        g.classList.add('is-hot');
+        if (pin) {
+          state.pinned = origI;
+          g.classList.add('is-pinned');
+        }
+        val.setAttribute('x', String(labelW + fullW + 8));
+        setReadout(d, ri + 1, rows.length);
+        if (typeof opts.onSelect === 'function') opts.onSelect(d, origI);
+      }
+      function clearIfNotPinned() {
+        if (state.pinned === origI) return;
+        g.classList.remove('is-hot');
+        if (state.pinned < 0) setReadout(null);
+        else {
+          var pinnedRow = rows.filter(function(r){ return r.i === state.pinned; })[0];
+          if (pinnedRow) {
+            var pr = rows.findIndex(function(r){ return r.i === state.pinned; });
+            setReadout(pinnedRow.d, pr + 1, rows.length);
+          }
+        }
+      }
+      g.addEventListener('pointerenter', function() { activate(false); });
+      g.addEventListener('pointerleave', clearIfNotPinned);
+      g.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (state.pinned === origI) {
+          state.pinned = -1;
+          g.classList.remove('is-pinned', 'is-hot');
+          setReadout(null);
+        } else activate(true);
+      });
+      g.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          g.click();
+        }
+      });
+      if (state.pinned === origI) {
+        g.classList.add('is-hot', 'is-pinned');
+        val.setAttribute('x', String(labelW + fullW + 8));
+        setReadout(d, ri + 1, rows.length);
+      }
+      svg.appendChild(g);
     });
-    container.appendChild(svg);
+    stage.appendChild(svg);
+
+    // Animate bars in
+    requestAnimationFrame(function() {
+      svg.querySelectorAll('.brief-bar-fill').forEach(function(bar, bi) {
+        var fw = bar.getAttribute('data-full-w');
+        bar.style.transition = 'width 0.55s cubic-bezier(.2,.8,.2,1) ' + (bi * 0.04) + 's';
+        bar.setAttribute('width', fw);
+        var row = bar.parentNode;
+        var valEl = row && row.querySelector('.brief-chart-val');
+        if (valEl) {
+          valEl.style.transition = 'opacity 0.35s ease ' + (0.2 + bi * 0.04) + 's';
+          valEl.setAttribute('x', String(labelW + Number(fw) + 8));
+          valEl.setAttribute('opacity', '1');
+        }
+      });
+    });
   }
+
+  tools.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-sort]');
+    if (!btn) return;
+    state.sort = btn.getAttribute('data-sort') || 'input';
+    tools.querySelectorAll('[data-sort]').forEach(function(b) {
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      b.classList.toggle('is-active', b === btn);
+    });
+    paint();
+  });
+  tools.querySelector('[data-sort="input"]').classList.add('is-active');
+
   paint();
   if (typeof ResizeObserver !== 'undefined') {
-    var ro = new ResizeObserver(function() { paint(); });
-    ro.observe(container);
+    var roTimer = null;
+    var lastW = 0;
+    var ro = new ResizeObserver(function() {
+      var w = stage.clientWidth || 0;
+      if (Math.abs(w - lastW) < 8) return;
+      lastW = w;
+      if (roTimer) clearTimeout(roTimer);
+      roTimer = setTimeout(function() { paint(); }, 120);
+    });
+    ro.observe(stage);
   } else {
     setTimeout(paint, 80);
   }
@@ -119,107 +265,249 @@ function renderBarChart(container, data, opts) {
 ───────────────────────────────────────────────────────────────── */
 function renderLineChart(container, datasets, opts) {
   opts = opts || {};
-  var W = container.clientWidth || 540;
-  var H = opts.height || 160;
-  var padL = 44, padR = 20, padT = 16, padB = 32;
-  var aW = W - padL - padR, aH = H - padT - padB;
-  var ns = 'http://www.w3.org/2000/svg';
-  var svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', H);
-  svg.className.baseVal = 'brief-svg-chart';
+  container.innerHTML = '';
+  container.classList.add('brief-chart-wrap--interactive');
+  var shell = document.createElement('div');
+  shell.className = 'brief-chart-shell';
+  var tools = document.createElement('div');
+  tools.className = 'brief-chart-tools';
+  var peakBtns = '';
+  var primary = datasets && datasets[0] ? datasets[0] : { values: [] };
+  var peaks = primary.peaks || [];
+  if (peaks.length) {
+    peakBtns = peaks.map(function(pi) {
+      var lab = (opts.labels && opts.labels[pi]) ? opts.labels[pi] : ('W' + (pi + 1));
+      return '<button type="button" class="brief-chart-tool" data-peak="' + pi + '">Peak ' + lab + '</button>';
+    }).join('');
+  }
+  tools.innerHTML = peakBtns + '<span class="brief-chart-hint">Drag or tap the line to inspect weeks</span>';
+  var stage = document.createElement('div');
+  stage.className = 'brief-chart-stage';
+  var readout = document.createElement('div');
+  readout.className = 'brief-chart-readout';
+  readout.setAttribute('aria-live', 'polite');
+  readout.textContent = 'Tap the chart to inspect any week.';
+  shell.appendChild(tools);
+  shell.appendChild(stage);
+  shell.appendChild(readout);
+  container.appendChild(shell);
 
-  var allVals = [].concat.apply([], datasets.map(function(ds){ return ds.values; }));
-  var minV = opts.minV !== undefined ? opts.minV : Math.min.apply(null, allVals);
-  var maxV = opts.maxV !== undefined ? opts.maxV : Math.max.apply(null, allVals);
-  var n = datasets[0].values.length;
+  var activeIdx = peaks.length ? peaks[peaks.length - 1] : Math.max(0, Math.floor((primary.values.length || 1) / 2));
 
-  function px(i) { return padL + (i / (n - 1)) * aW; }
-  function py(v) { return padT + aH - ((v - minV) / (maxV - minV)) * aH; }
-
-  // Grid lines
-  [0, 0.25, 0.5, 0.75, 1].forEach(function(f) {
-    var v = minV + f * (maxV - minV);
-    var y = py(v);
-    var line = document.createElementNS(ns, 'line');
-    line.setAttribute('x1', padL); line.setAttribute('x2', padL + aW);
-    line.setAttribute('y1', y); line.setAttribute('y2', y);
-    line.setAttribute('stroke', 'var(--brief-border)');
-    line.setAttribute('stroke-width', '0.5');
-    svg.appendChild(line);
-    var lbl = document.createElementNS(ns, 'text');
-    lbl.setAttribute('x', padL - 6); lbl.setAttribute('y', y + 4);
-    lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('font-size', '10');
-    lbl.setAttribute('fill', 'var(--brief-text-faint)');
-    lbl.textContent = opts.yFmt ? opts.yFmt(v) : Math.round(v);
-    svg.appendChild(lbl);
-  });
-
-  // X labels
-  if (opts.labels) {
-    var step = Math.ceil(n / 8);
-    opts.labels.forEach(function(lbl, i) {
-      if (i % step !== 0 && i !== n - 1) return;
-      var t = document.createElementNS(ns, 'text');
-      t.setAttribute('x', px(i)); t.setAttribute('y', H - 4);
-      t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '9.5');
-      t.setAttribute('fill', 'var(--brief-text-faint)');
-      t.textContent = lbl;
-      svg.appendChild(t);
-    });
+  function yFmt(v) {
+    return opts.yFmt ? opts.yFmt(v) : String(Math.round(v));
+  }
+  function setReadout(i) {
+    if (i == null || i < 0) return;
+    var v = primary.values[i];
+    var lab = (opts.labels && opts.labels[i]) ? opts.labels[i] : ('Week ' + (i + 1));
+    var isPeak = peaks.indexOf(i) >= 0;
+    readout.innerHTML = '<strong>' + lab + '</strong> · ' + yFmt(v) +
+      (isPeak ? ' <span class="brief-chart-readout__meta">peak week</span>' : '') +
+      ' <span class="brief-chart-readout__meta">point ' + (i + 1) + '/' + primary.values.length + '</span>';
   }
 
-  datasets.forEach(function(ds) {
-    var pts = ds.values.map(function(v, i) { return px(i) + ',' + py(v); }).join(' ');
-    var area = document.createElementNS(ns, 'polyline');
-    area.setAttribute('points', pts);
-    area.setAttribute('fill', 'none');
-    area.setAttribute('stroke', ds.color || 'var(--brief-accent)');
-    area.setAttribute('stroke-width', ds.width || 2);
-    area.setAttribute('stroke-linejoin', 'round');
-    area.setAttribute('stroke-linecap', 'round');
-    var len = area.getTotalLength ? area.getTotalLength() : 2000;
-    area.style.strokeDasharray = len;
-    area.style.strokeDashoffset = len;
-    area.style.transition = 'stroke-dashoffset 1.2s ease';
-    svg.appendChild(area);
+  function paint() {
+    stage.innerHTML = '';
+    var W = Math.max(stage.clientWidth || container.clientWidth || 0, 300);
+    var H = opts.height || (W < 420 ? 190 : 200);
+    var padL = W < 420 ? 36 : 44, padR = 16, padT = 20, padB = 34;
+    var aW = W - padL - padR, aH = H - padT - padB;
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', String(H));
+    svg.setAttribute('class', 'brief-svg-chart brief-svg-chart--line');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', opts.ariaLabel || 'Interactive line chart');
 
-    // Gold dots for peaks (Airbnb)
-    if (ds.peaks) {
-      ds.peaks.forEach(function(pi) {
-        var dot = document.createElementNS(ns, 'circle');
-        dot.setAttribute('cx', px(pi)); dot.setAttribute('cy', py(ds.values[pi]));
-        dot.setAttribute('r', 4); dot.setAttribute('fill', '#E8AF34');
-        var peakLabel = document.createElementNS(ns, 'text');
-        peakLabel.setAttribute('x', px(pi));
-        peakLabel.setAttribute('y', Math.max(12, py(ds.values[pi]) - 10));
-        peakLabel.setAttribute('text-anchor', 'middle');
-        peakLabel.setAttribute('font-size', '9');
-        peakLabel.setAttribute('font-weight', '700');
-        peakLabel.setAttribute('fill', 'var(--brief-text)');
-        var weekLbl = (opts.labels && opts.labels[pi]) ? opts.labels[pi] : ('W' + (pi + 1));
-        peakLabel.textContent = weekLbl + ' $' + Math.round(ds.values[pi] / 1000) + 'K';
-        svg.appendChild(peakLabel);
-        dot.addEventListener('mouseenter', function(e) {
-          showTip('<strong>Week ' + (pi+1) + '</strong><br>$' + ds.values[pi].toLocaleString(), e.clientX, e.clientY);
-        });
-        dot.addEventListener('mouseleave', hideTip);
-        svg.appendChild(dot);
+    var allVals = [].concat.apply([], datasets.map(function(ds){ return ds.values; }));
+    var minV = opts.minV !== undefined ? opts.minV : Math.min.apply(null, allVals);
+    var maxV = opts.maxV !== undefined ? opts.maxV : Math.max.apply(null, allVals);
+    if (minV === maxV) { minV = minV * 0.9; maxV = maxV * 1.1 || 1; }
+    var n = datasets[0].values.length;
+    function px(i) { return padL + (n <= 1 ? aW / 2 : (i / (n - 1)) * aW); }
+    function py(v) { return padT + aH - ((v - minV) / (maxV - minV)) * aH; }
+
+    [0, 0.25, 0.5, 0.75, 1].forEach(function(f) {
+      var v = minV + f * (maxV - minV);
+      var y = py(v);
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', padL); line.setAttribute('x2', padL + aW);
+      line.setAttribute('y1', y); line.setAttribute('y2', y);
+      line.setAttribute('stroke', 'var(--brief-border)');
+      line.setAttribute('stroke-width', '0.5');
+      svg.appendChild(line);
+      var lbl = document.createElementNS(ns, 'text');
+      lbl.setAttribute('x', padL - 6); lbl.setAttribute('y', y + 4);
+      lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('font-size', '10');
+      lbl.setAttribute('fill', 'var(--brief-text-faint)');
+      lbl.textContent = yFmt(v);
+      svg.appendChild(lbl);
+    });
+
+    if (opts.labels) {
+      var step = Math.max(1, Math.ceil(n / (W < 420 ? 5 : 8)));
+      opts.labels.forEach(function(lbl, i) {
+        if (i % step !== 0 && i !== n - 1) return;
+        var t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', px(i)); t.setAttribute('y', H - 6);
+        t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '9.5');
+        t.setAttribute('fill', 'var(--brief-text-faint)');
+        t.textContent = lbl;
+        svg.appendChild(t);
       });
     }
 
-    var obs = new IntersectionObserver(function(entries) {
-      entries.forEach(function(en) {
-        if (!en.isIntersecting) return;
-        area.style.strokeDashoffset = '0';
-        obs.disconnect();
+    // crosshair + focus dot (under series, above grid)
+    var xhair = document.createElementNS(ns, 'line');
+    xhair.setAttribute('class', 'brief-line-xhair');
+    xhair.setAttribute('y1', padT); xhair.setAttribute('y2', padT + aH);
+    xhair.setAttribute('stroke', 'var(--brief-accent)');
+    xhair.setAttribute('stroke-width', '1');
+    xhair.setAttribute('stroke-dasharray', '3 3');
+    xhair.setAttribute('opacity', '0.55');
+    svg.appendChild(xhair);
+    var focus = document.createElementNS(ns, 'circle');
+    focus.setAttribute('class', 'brief-line-focus');
+    focus.setAttribute('r', '5');
+    focus.setAttribute('fill', 'var(--brief-accent)');
+    focus.setAttribute('stroke', '#fff');
+    focus.setAttribute('stroke-width', '2');
+    svg.appendChild(focus);
+
+    datasets.forEach(function(ds) {
+      var pts = ds.values.map(function(v, i) { return px(i) + ',' + py(v); }).join(' ');
+      // soft area under line
+      if (ds.values.length > 1) {
+        var areaPts = pts + ' ' + px(n - 1) + ',' + (padT + aH) + ' ' + px(0) + ',' + (padT + aH);
+        var areaPoly = document.createElementNS(ns, 'polygon');
+        areaPoly.setAttribute('points', areaPts);
+        areaPoly.setAttribute('fill', ds.color || 'var(--brief-accent)');
+        areaPoly.setAttribute('opacity', '0.10');
+        svg.insertBefore(areaPoly, xhair);
+      }
+      var poly = document.createElementNS(ns, 'polyline');
+      poly.setAttribute('points', pts);
+      poly.setAttribute('fill', 'none');
+      poly.setAttribute('stroke', ds.color || 'var(--brief-accent)');
+      poly.setAttribute('stroke-width', ds.width || 2.5);
+      poly.setAttribute('stroke-linejoin', 'round');
+      poly.setAttribute('stroke-linecap', 'round');
+      poly.setAttribute('class', 'brief-line-path');
+      svg.insertBefore(poly, xhair);
+      try {
+        var len = poly.getTotalLength ? poly.getTotalLength() : 2000;
+        poly.style.strokeDasharray = String(len);
+        poly.style.strokeDashoffset = String(len);
+        poly.style.transition = 'stroke-dashoffset 1.1s ease';
+        var obs = new IntersectionObserver(function(entries) {
+          entries.forEach(function(en) {
+            if (!en.isIntersecting) return;
+            poly.style.strokeDashoffset = '0';
+            obs.disconnect();
+          });
+        }, { threshold: 0.25 });
+        obs.observe(svg);
+      } catch (eLen) {}
+
+      (ds.peaks || []).forEach(function(pi) {
+        var dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('cx', px(pi)); dot.setAttribute('cy', py(ds.values[pi]));
+        dot.setAttribute('r', '4.5'); dot.setAttribute('fill', '#E8AF34');
+        dot.setAttribute('class', 'brief-line-peak');
+        dot.setAttribute('data-peak', String(pi));
+        svg.appendChild(dot);
       });
-    }, { threshold: 0.3 });
-    obs.observe(svg);
+    });
+
+    function goTo(i, clientX, clientY) {
+      if (i < 0 || i >= n) return;
+      activeIdx = i;
+      var x = px(i), y = py(primary.values[i]);
+      xhair.setAttribute('x1', x); xhair.setAttribute('x2', x);
+      focus.setAttribute('cx', x); focus.setAttribute('cy', y);
+      setReadout(i);
+      tools.querySelectorAll('[data-peak]').forEach(function(b) {
+        b.classList.toggle('is-active', parseInt(b.getAttribute('data-peak'), 10) === i);
+      });
+      if (clientX != null) {
+        var v = primary.values[i];
+        var lab = (opts.labels && opts.labels[i]) ? opts.labels[i] : ('Week ' + (i + 1));
+        showTip('<strong>' + lab + '</strong><br>' + yFmt(v), clientX, clientY);
+      }
+    }
+
+    // wide hit surface for pointer scrubbing
+    var hit = document.createElementNS(ns, 'rect');
+    hit.setAttribute('x', padL); hit.setAttribute('y', padT);
+    hit.setAttribute('width', aW); hit.setAttribute('height', aH);
+    hit.setAttribute('fill', 'transparent');
+    hit.setAttribute('class', 'brief-line-hit');
+    hit.style.cursor = 'crosshair';
+    hit.style.touchAction = 'none';
+    svg.appendChild(hit);
+
+    function idxFromEvent(ev) {
+      var rect = svg.getBoundingClientRect();
+      var clientX = (ev.clientX != null) ? ev.clientX : (ev.touches && ev.touches[0] && ev.touches[0].clientX);
+      if (clientX == null) return activeIdx;
+      var x = clientX - rect.left;
+      var scale = rect.width / W;
+      var localX = x / (scale || 1);
+      var t = (localX - padL) / (aW || 1);
+      t = Math.max(0, Math.min(1, t));
+      return Math.round(t * (n - 1));
+    }
+    function onMove(ev) {
+      var i = idxFromEvent(ev);
+      var cx = ev.clientX != null ? ev.clientX : (ev.touches && ev.touches[0] && ev.touches[0].clientX);
+      var cy = ev.clientY != null ? ev.clientY : (ev.touches && ev.touches[0] && ev.touches[0].clientY);
+      goTo(i, cx, cy);
+    }
+    hit.addEventListener('pointerdown', function(ev) {
+      try { hit.setPointerCapture(ev.pointerId); } catch (eC) {}
+      onMove(ev);
+    });
+    hit.addEventListener('pointermove', function(ev) {
+      if (ev.buttons === 0 && ev.pointerType === 'mouse' && !ev.pressure) {
+        onMove(ev);
+        return;
+      }
+      if (ev.buttons || ev.pointerType !== 'mouse') onMove(ev);
+    });
+    hit.addEventListener('pointerenter', onMove);
+    hit.addEventListener('pointerleave', function() { hideTip(); });
+    hit.addEventListener('pointerup', function() { hideTip(); });
+
+    stage.appendChild(svg);
+    goTo(activeIdx);
+  }
+
+  tools.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-peak]');
+    if (!btn) return;
+    activeIdx = parseInt(btn.getAttribute('data-peak'), 10);
+    paint();
+    setReadout(activeIdx);
   });
 
-  container.appendChild(svg);
+  paint();
+  if (typeof ResizeObserver !== 'undefined') {
+    var roTimer = null;
+    var lastW = 0;
+    var ro = new ResizeObserver(function() {
+      var w = stage.clientWidth || 0;
+      if (Math.abs(w - lastW) < 8) return;
+      lastW = w;
+      if (roTimer) clearTimeout(roTimer);
+      roTimer = setTimeout(function() { paint(); }, 120);
+    });
+    ro.observe(stage);
+  } else {
+    setTimeout(paint, 80);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -2302,6 +2590,11 @@ function renderFilterBench(container, barSec, opts) {
   title.textContent = opts.title || barSec.title || 'Filter the chart';
   wrap.appendChild(title);
 
+  var sub = document.createElement('p');
+  sub.className = 'brief-filter-bench__sub';
+  sub.textContent = 'Tap chips to compare segments. Bars sort and highlight live.';
+  wrap.appendChild(sub);
+
   var chips = document.createElement('div');
   chips.className = 'brief-filter-bench__chips';
   chips.setAttribute('role', 'group');
@@ -2310,8 +2603,9 @@ function renderFilterBench(container, barSec, opts) {
   var allBtn = document.createElement('button');
   allBtn.type = 'button';
   allBtn.className = 'brief-filter-chip is-active';
-  allBtn.textContent = 'All (' + barSec.data.length + ')';
+  allBtn.textContent = 'All';
   allBtn.setAttribute('data-filter', '__all__');
+  allBtn.setAttribute('aria-pressed', 'true');
   chips.appendChild(allBtn);
 
   barSec.data.forEach(function(d, i) {
@@ -2320,13 +2614,14 @@ function renderFilterBench(container, barSec, opts) {
     b.className = 'brief-filter-chip';
     b.textContent = d.label;
     b.setAttribute('data-filter', String(i));
+    b.setAttribute('aria-pressed', 'false');
     chips.appendChild(b);
   });
   wrap.appendChild(chips);
 
   var count = document.createElement('div');
   count.className = 'brief-filter-bench__count';
-  count.textContent = 'Showing ' + barSec.data.length + ' of ' + barSec.data.length + ' groups';
+  count.textContent = 'Showing all ' + barSec.data.length + ' groups';
   wrap.appendChild(count);
 
   var chart = document.createElement('div');
@@ -2334,26 +2629,70 @@ function renderFilterBench(container, barSec, opts) {
   wrap.appendChild(chart);
   container.appendChild(wrap);
 
-  function paint(rows) {
+  var selected = null; // null = all, else Set of indices
+
+  function currentRows() {
+    if (!selected) return barSec.data.slice();
+    return barSec.data.filter(function(_, i) { return selected.has(i); });
+  }
+  function paint() {
+    var rows = currentRows();
+    if (!rows.length) {
+      selected = null;
+      rows = barSec.data.slice();
+      chips.querySelectorAll('.brief-filter-chip').forEach(function(c) {
+        var on = c.getAttribute('data-filter') === '__all__';
+        c.classList.toggle('is-active', on);
+        c.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    count.textContent = selected
+      ? ('Comparing ' + rows.length + ' of ' + barSec.data.length + ' · tap All to reset')
+      : ('Showing all ' + barSec.data.length + ' groups · tap chips to compare');
     chart.innerHTML = '';
-    count.textContent = 'Showing ' + rows.length + ' of ' + barSec.data.length + ' groups';
     setTimeout(function() {
-      renderBarChart(chart, rows, { fmt: barSec.fmt, labelW: 120 });
+      renderBarChart(chart, rows, {
+        fmt: barSec.fmt,
+        labelW: 120,
+        sort: selected && rows.length > 1 ? 'desc' : 'input',
+        ariaLabel: (barSec.title || 'Filtered') + ' bar chart'
+      });
     }, 0);
   }
-  paint(barSec.data);
+  paint();
 
   chips.addEventListener('click', function(e) {
     var btn = e.target.closest('.brief-filter-chip');
     if (!btn) return;
-    chips.querySelectorAll('.brief-filter-chip').forEach(function(c) { c.classList.remove('is-active'); });
-    btn.classList.add('is-active');
     var f = btn.getAttribute('data-filter');
-    if (f === '__all__') paint(barSec.data);
-    else {
-      var idx = parseInt(f, 10);
-      paint([barSec.data[idx]]);
+    if (f === '__all__') {
+      selected = null;
+      chips.querySelectorAll('.brief-filter-chip').forEach(function(c) {
+        var on = c.getAttribute('data-filter') === '__all__';
+        c.classList.toggle('is-active', on);
+        c.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      paint();
+      return;
     }
+    var idx = parseInt(f, 10);
+    if (!selected) selected = new Set();
+    // leaving All mode
+    chips.querySelector('[data-filter="__all__"]').classList.remove('is-active');
+    chips.querySelector('[data-filter="__all__"]').setAttribute('aria-pressed', 'false');
+    if (selected.has(idx)) selected.delete(idx);
+    else selected.add(idx);
+    btn.classList.toggle('is-active', selected.has(idx));
+    btn.setAttribute('aria-pressed', selected.has(idx) ? 'true' : 'false');
+    if (!selected.size) {
+      selected = null;
+      chips.querySelectorAll('.brief-filter-chip').forEach(function(c) {
+        var on = c.getAttribute('data-filter') === '__all__';
+        c.classList.toggle('is-active', on);
+        c.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    paint();
   });
 }
 
@@ -2365,29 +2704,29 @@ var DD_DASHBOARDS = {
   powerbi: {
     tool: 'Power BI',
     shots: [
-      { src: 'images/powerbi-dashboard.png', alt: 'Power BI dashboard for the data professionals survey' }
+      { src: 'images/powerbi-dashboard.png', alt: 'Power BI dashboard for the data professionals survey', caption: 'Full dashboard view' }
     ],
-    caption: 'Dashboard built in Power BI Desktop. Screenshots carry the visual proof. Story and measures are in this deep dive.',
+    caption: 'One Power BI Desktop view. Story, measures, and live charts are in this deep dive.',
     fileHref: '',
     fileLabel: ''
   },
   tableau: {
     tool: 'Tableau',
     shots: [
-      { src: 'images/airbnb-dashboard.png', alt: 'Tableau Airbnb Seattle dashboard overview' },
-      { src: 'images/tableau-sheet1.png', alt: 'Tableau worksheet detail one' },
-      { src: 'images/tableau-sheet2.png', alt: 'Tableau worksheet detail two' }
+      { src: 'images/airbnb-dashboard.png', alt: 'Tableau Airbnb Seattle dashboard overview', caption: 'Dashboard overview' },
+      { src: 'images/tableau-sheet1.png', alt: 'Tableau worksheet: listing and neighborhood detail', caption: 'Worksheet detail' },
+      { src: 'images/tableau-sheet2.png', alt: 'Tableau worksheet: revenue pattern detail', caption: 'Revenue pattern' }
     ],
-    caption: 'Dashboard built in Tableau. Screenshots and the analysis trail below are the proof. No live Tableau Public embed on this page.',
+    caption: 'Three Tableau views: overview plus two worksheets. Interactive charts below let you inspect the spikes.',
     fileHref: '',
     fileLabel: ''
   },
   excel: {
     tool: 'Excel',
     shots: [
-      { src: 'images/bike-sales.png', alt: 'Excel bike sales dashboard with pivots and slicers' }
+      { src: 'images/bike-sales.png', alt: 'Excel bike sales dashboard with pivots and slicers', caption: 'Full dashboard view' }
     ],
-    caption: 'Dashboard built in Excel with pivot tables and slicers. Screenshots carry the visual proof. Findings are in this deep dive.',
+    caption: 'One Excel dashboard view with pivots and slicers. Segment filters and scenarios are interactive below.',
     fileHref: '',
     fileLabel: ''
   }
@@ -2589,23 +2928,63 @@ function renderDashboardCard(container, key) {
   var cfg = DD_DASHBOARDS[key];
   if (!cfg || !container) return;
   var card = document.createElement('section');
-  card.className = 'brief-dash-card brief-dash-card--shots';
-  card.setAttribute('aria-label', cfg.tool + ' dashboard screenshots');
   var shots = cfg.shots || [];
+  var multi = shots.length > 1;
+  card.className = 'brief-dash-card brief-dash-card--shots' + (multi ? ' brief-dash-card--multi' : ' brief-dash-card--single');
+  card.setAttribute('aria-label', cfg.tool + (multi ? ' dashboard screenshots' : ' dashboard screenshot'));
+  var galleryClass = 'brief-shot-gallery' + (multi ? ' brief-shot-gallery--multi' : ' brief-shot-gallery--single');
   var gallery = shots.map(function(s, i) {
-    return '<figure class="brief-shot' + (i === 0 ? ' brief-shot--hero' : '') + '">' +
-      '<img src="' + s.src + '" alt="' + (s.alt || (cfg.tool + ' dashboard screenshot')) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '" />' +
+    var cap = s.caption ? ('<figcaption class="brief-shot__cap">' + s.caption + '</figcaption>') : '';
+    return '<figure class="brief-shot' + (i === 0 ? ' brief-shot--hero' : ' brief-shot--thumb') + '" data-shot-i="' + i + '">' +
+      '<button type="button" class="brief-shot__btn" aria-label="Expand screenshot ' + (i + 1) + '">' +
+        '<img src="' + s.src + '" alt="' + (s.alt || (cfg.tool + ' dashboard screenshot')) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '" decoding="async" />' +
+      '</button>' + cap +
       '</figure>';
   }).join('');
-  var fileLine = ''; /* no download links under BI screenshots */
+  var kicker = multi
+    ? (cfg.tool + ' · ' + shots.length + ' screenshots')
+    : (cfg.tool + ' · dashboard screenshot');
   card.innerHTML =
     '<div class="brief-dash-card__body">' +
-      '<div class="brief-dash-card__kicker">' + cfg.tool + ' · dashboard screenshots</div>' +
+      '<div class="brief-dash-card__kicker">' + kicker + '</div>' +
       '<p class="brief-dash-card__text">' + (cfg.caption || '') + '</p>' +
-      '<div class="brief-shot-gallery" role="group" aria-label="' + cfg.tool + ' screenshots">' + gallery + '</div>' +
-      fileLine +
+      '<div class="' + galleryClass + '" role="group" aria-label="' + cfg.tool + ' screenshots">' + gallery + '</div>' +
     '</div>';
   container.appendChild(card);
+
+  // Lightweight lightbox for desktop + mobile
+  card.addEventListener('click', function(e) {
+    var btn = e.target.closest('.brief-shot__btn');
+    if (!btn || !card.contains(btn)) return;
+    var fig = btn.closest('.brief-shot');
+    var img = btn.querySelector('img');
+    if (!img) return;
+    var overlay = document.createElement('div');
+    overlay.className = 'brief-shot-lightbox';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Expanded dashboard screenshot');
+    overlay.innerHTML =
+      '<button type="button" class="brief-shot-lightbox__close" aria-label="Close">Close</button>' +
+      '<img src="' + img.getAttribute('src') + '" alt="' + (img.getAttribute('alt') || '') + '" />' +
+      (fig && fig.querySelector('.brief-shot__cap')
+        ? ('<p class="brief-shot-lightbox__cap">' + fig.querySelector('.brief-shot__cap').textContent + '</p>')
+        : '');
+    document.body.appendChild(overlay);
+    document.body.classList.add('dd-lightbox-open');
+    function close() {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      document.body.classList.remove('dd-lightbox-open');
+      document.removeEventListener('keydown', onKey);
+    }
+    function onKey(ev) { if (ev.key === 'Escape') close(); }
+    overlay.addEventListener('click', function(ev) {
+      if (ev.target === overlay || ev.target.closest('.brief-shot-lightbox__close')) close();
+    });
+    document.addEventListener('keydown', onKey);
+    var c = overlay.querySelector('.brief-shot-lightbox__close');
+    if (c) c.focus();
+  });
 }
 
 
@@ -3529,7 +3908,14 @@ function renderDrawer(key) {
       var bc = document.createElement('div');
       bc.className = 'brief-chart-wrap';
       chWrap.appendChild(bc);
-      setTimeout(function() { renderBarChart(bc, sec.data, { fmt: sec.fmt, labelW: 130 }); }, 0);
+      // Multi-category bars: full filter bench. Short series: interactive chart only.
+      if (sec.data && sec.data.length >= 4) {
+        renderFilterBench(bc, sec, { title: 'Explore · ' + (sec.title || 'chart'), chipLabel: sec.title || 'Categories' });
+      } else {
+        setTimeout(function() {
+          renderBarChart(bc, sec.data, { fmt: sec.fmt, labelW: 130, ariaLabel: sec.title || 'Bar chart' });
+        }, 0);
+      }
 
     } else if (sec.type === 'line-chart') {
       chWrap.innerHTML = '<h3 class="brief-section-title">' + sec.title + '</h3>' +
@@ -3538,7 +3924,12 @@ function renderDrawer(key) {
       lc.className = 'brief-chart-wrap';
       chWrap.appendChild(lc);
       setTimeout(function() {
-        renderLineChart(lc, [{ values: sec.values, peaks: sec.peaks, color: 'var(--brief-accent)', width: 2 }], { labels: sec.labels, yFmt: function(v){ return '$' + Math.round(v/1000) + 'K'; }, height: 170 });
+        renderLineChart(lc, [{ values: sec.values, peaks: sec.peaks, color: 'var(--brief-accent)', width: 2.5 }], {
+          labels: sec.labels,
+          yFmt: function(v){ return '$' + Math.round(v/1000) + 'K'; },
+          height: 200,
+          ariaLabel: sec.title || 'Line chart'
+        });
       }, 0);
 
     } else if (sec.type === 'whatif') {
