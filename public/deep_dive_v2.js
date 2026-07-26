@@ -537,26 +537,13 @@ function initSpine(panel) {
   panel._setRailUI = setRailUI;
   panel._spineOnScroll = null;
 
-  function visibleAmount(el, rootRect) {
-    var r = el.getBoundingClientRect();
-    var top = Math.max(r.top, rootRect.top);
-    var bot = Math.min(r.bottom, rootRect.bottom);
-    return Math.max(0, bot - top);
-  }
-
-  function ensureScrollRoom(targets) {
-    // Small spacer so the last section top can reach the reading line —
-    // without a giant empty desert after the last nav item.
+  function ensureScrollRoom(targets, force) {
+    // Size once (or on resize). Never rewrite during scroll — mid-scroll
+    // height changes reclamp scrollTop and bounce the active nav item.
     if (!content || !targets || !targets.length) return;
     var viewH = content.clientHeight || 0;
     if (viewH < 120) return;
-    var last = targets[targets.length - 1];
-    var lastH = last.offsetHeight || last.getBoundingClientRect().height || 0;
-    var pinOff = Math.max(72, Math.min(Math.round(viewH * 0.25), 150));
-    // Enough room for last top to hit pin; also enough that second-to-last
-    // gets a real scroll window before last takes over.
-    var need = Math.round(viewH - pinOff - Math.min(lastH, viewH * 0.55));
-    need = Math.max(16, Math.min(need, Math.round(viewH * 0.36)));
+
     var spacer = null;
     var kids = content.children;
     for (var si = 0; si < kids.length; si++) {
@@ -571,9 +558,15 @@ function initSpine(panel) {
       spacer.setAttribute('aria-hidden', 'true');
       content.appendChild(spacer);
     }
-    if (Math.abs((parseFloat(spacer.style.height) || 0) - need) > 2) {
-      spacer.style.height = need + 'px';
-    }
+    if (!force && spacer.getAttribute('data-sized') === '1') return;
+
+    var last = targets[targets.length - 1];
+    var lastH = last.offsetHeight || 0;
+    var pinOff = Math.max(80, Math.min(Math.round(viewH * 0.2), 140));
+    var need = Math.round(viewH - pinOff - Math.min(lastH, viewH * 0.6));
+    need = Math.max(24, Math.min(need, Math.round(viewH * 0.32)));
+    spacer.style.height = need + 'px';
+    spacer.setAttribute('data-sized', '1');
   }
 
   function onScroll() {
@@ -583,7 +576,6 @@ function initSpine(panel) {
     var scrollH = Math.max(content.scrollHeight - viewH, 0);
     var pct = scrollH > 0 ? Math.min(Math.max(scrollTop / scrollH, 0), 1) : 0;
 
-    // Desktop left spine: horizontal progress under title
     if (spineEl) {
       var fill = spineEl.querySelector('.brief-spine-progress-fill') || spineEl.querySelector('.brief-spine-fill');
       if (fill) {
@@ -597,7 +589,7 @@ function initSpine(panel) {
       return;
     }
 
-    ensureScrollRoom(targets);
+    ensureScrollRoom(targets, false);
 
     var rootRect = content.getBoundingClientRect();
     var railH = 0;
@@ -611,70 +603,56 @@ function initSpine(panel) {
       } catch (eR) { railH = 0; }
     }
 
-    // Reading line below sticky chrome (~22% into viewport)
-    var pinOffset = Math.max(72, railH + 14, Math.min(Math.round(viewH * 0.22), 150));
+    // Fixed reading line under sticky chrome
+    var pinOffset = Math.max(96, railH + 18);
     var pinY = rootRect.top + pinOffset;
 
-    var active = 0;
-    var i, top, nextTop;
-    // Range ownership with hysteresis band so the highlight does not bounce
-    // between neighboring list items when the reading line sits on a boundary.
-    var hyst = 18; // px band around the pin
-    var prevActive = typeof panel._spineActiveIndex === 'number' ? panel._spineActiveIndex : 0;
-    for (i = 0; i < targets.length; i++) {
-      top = targets[i].getBoundingClientRect().top;
-      if (i < targets.length - 1) {
-        nextTop = targets[i + 1].getBoundingClientRect().top;
+    // Programmatic nav freeze (click / arrows) wins during smooth scroll
+    var freezeUntil = panel._spineFreezeUntil || 0;
+    var freezeIdx = panel._spineFreezeIndex;
+    if (freezeUntil && Date.now() < freezeUntil && typeof freezeIdx === 'number') {
+      var fActive = Math.max(0, Math.min(targets.length - 1, freezeIdx));
+      panel._spineActiveIndex = fActive;
+      paintActive(targets, fActive, pct);
+      return;
+    }
+    if (freezeUntil && Date.now() >= freezeUntil) {
+      panel._spineFreezeUntil = 0;
+      panel._spineFreezeIndex = null;
+    }
+
+    // Raw: last section whose top has crossed the reading line
+    var raw = 0;
+    for (var i = 0; i < targets.length; i++) {
+      if (targets[i].getBoundingClientRect().top <= pinY + 0.5) raw = i;
+      else break;
+    }
+
+    var prev = typeof panel._spineActiveIndex === 'number' ? panel._spineActiveIndex : 0;
+    if (prev < 0) prev = 0;
+    if (prev > targets.length - 1) prev = targets.length - 1;
+
+    var active;
+    if (raw >= prev) {
+      // Scrolling down (or same): always advance. Never bounce backward here.
+      active = raw;
+    } else {
+      // Scrolling up: only release the current item once its heading has
+      // clearly dropped below the reading line. Trackpad jitter cannot
+      // yank the highlight back to the previous number.
+      var stickTop = targets[prev].getBoundingClientRect().top;
+      if (stickTop > pinY + 36) {
+        active = raw;
       } else {
-        nextTop = rootRect.bottom + 1;
-      }
-      if (top <= pinY && nextTop > pinY) {
-        active = i;
-        break;
-      }
-      if (top <= pinY) active = i;
-    }
-    // If still on the previous section's edge, keep it until the neighbor
-    // clearly crosses the pin by the hysteresis amount.
-    if (prevActive !== active && prevActive >= 0 && prevActive < targets.length) {
-      var pTop = targets[prevActive].getBoundingClientRect().top;
-      var pNext = (prevActive < targets.length - 1)
-        ? targets[prevActive + 1].getBoundingClientRect().top
-        : rootRect.bottom + 1;
-      // Keep previous while reading line is still inside expanded previous range
-      if (pTop - hyst <= pinY && pNext + hyst > pinY) {
-        // Only allow switch if new section has clearly entered
-        if (active > prevActive) {
-          // scrolling down: require next section top past pin - hyst
-          var nTop = targets[active].getBoundingClientRect().top;
-          if (nTop > pinY - hyst) active = prevActive;
-        } else if (active < prevActive) {
-          // scrolling up: require previous top to leave pin + hyst
-          if (pTop < pinY + hyst && pNext > pinY) active = prevActive;
-        }
+        active = prev;
       }
     }
+
     panel._spineActiveIndex = active;
+    paintActive(targets, active, pct);
+  }
 
-    // Near max scroll: if last heading is still below the reading line, keep
-    // the previous section unless the last block is clearly more visible.
-    if (scrollH > 0 && scrollTop + viewH >= content.scrollHeight - 4) {
-      var lastIdx = targets.length - 1;
-      var prevIdx = lastIdx - 1;
-      if (prevIdx >= 0) {
-        var lastTop = targets[lastIdx].getBoundingClientRect().top;
-        if (lastTop > pinY) {
-          var visPrev = visibleAmount(targets[prevIdx], rootRect);
-          var visLast = visibleAmount(targets[lastIdx], rootRect);
-          if (visLast > visPrev * 1.15 && visLast >= 96) {
-            active = lastIdx;
-          } else {
-            active = prevIdx;
-          }
-        }
-      }
-    }
-
+  function paintActive(targets, active, pct) {
     var activeId = targets[active] ? targets[active].id : '';
     var activeItemIndex = active;
     items.forEach(function(it, idx) {
@@ -701,7 +679,8 @@ function initSpine(panel) {
 
   panel._spineOnScroll = onScroll;
 
-  // Listen on every plausible scroll root so we never miss events
+  // Listen only on the element that actually scrolls (plus body on narrow if used).
+  // Multiple nested listeners were firing with jitter and bouncing the active index.
   var roots = [];
   function watch(el) {
     if (!el || roots.indexOf(el) !== -1) return;
@@ -709,22 +688,38 @@ function initSpine(panel) {
     el.addEventListener('scroll', onScroll, { passive: true });
   }
   watch(content);
-  watch(bodyEl);
-  watch(scrollBody);
-  watch(panel);
+  if (bodyEl && bodyEl !== content) {
+    // phones: #dd-body may be the scroll root
+    try {
+      if (bodyEl.scrollHeight > bodyEl.clientHeight + 4) watch(bodyEl);
+    } catch (eW) { /* ignore */ }
+  }
 
-  window.setTimeout(onScroll, 50);
   window.setTimeout(onScroll, 300);
-  window.setTimeout(onScroll, 800);
   if (typeof ResizeObserver !== 'undefined') {
     try {
-      var ro = new ResizeObserver(function() { onScroll(); });
+      var ro = new ResizeObserver(function() {
+        var sp = content.querySelector('.brief-scroll-spacer');
+        if (sp) sp.removeAttribute('data-sized');
+        ensureScrollRoom(resolveTargets(), true);
+        onScroll();
+      });
       ro.observe(content);
       if (scrollBody && scrollBody !== content) ro.observe(scrollBody);
     } catch (e) { /* ignore */ }
   }
+  // Initial spacer + seed (force size once layout is ready)
+  ensureScrollRoom(resolveTargets(), true);
   onScroll();
+  window.setTimeout(function() {
+    var sp = content.querySelector('.brief-scroll-spacer');
+    if (sp) sp.removeAttribute('data-sized');
+    ensureScrollRoom(resolveTargets(), true);
+    onScroll();
+  }, 120);
 }
+
+
 
 /* ─────────────────────────────────────────────────────────────────
    LIVE MINI SQL RUNNER - DuckDB-WASM style, actually runs SQL
@@ -1872,6 +1867,12 @@ function renderDrawer(key) {
   }
   function goToSpineIndex(idx) {
     if (idx < 0 || idx >= spineItems.length) return;
+    if (panel) {
+      panel._spineFreezeIndex = idx;
+      panel._spineFreezeUntil = Date.now() + 700;
+      panel._spineActiveIndex = idx;
+      panel._spineScrollDir = 0;
+    }
     var id = spineItems[idx].id;
     var t = document.getElementById(id);
     closeMobSheet();
@@ -2224,8 +2225,20 @@ function renderDrawer(key) {
   /* Spine nav: click label/dot to jump */
   spine.querySelectorAll('.brief-spine-item').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      var t = scrollBody.querySelector('#' + btn.getAttribute('data-target'));
+      var tid = btn.getAttribute('data-target');
+      var t = (scrollBody && scrollBody.querySelector('#' + tid)) || document.getElementById(tid);
+      var idx = parseInt(btn.getAttribute('data-index'), 10);
+      if (isNaN(idx)) {
+        var all = panel.querySelectorAll('.brief-spine-item');
+        idx = Array.prototype.indexOf.call(all, btn);
+      }
+      panel._spineFreezeIndex = idx;
+      panel._spineFreezeUntil = Date.now() + 700;
+      panel._spineActiveIndex = idx;
+      panel._spineScrollDir = 0;
       if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Optimistic paint
+      if (typeof panel._spineOnScroll === 'function') panel._spineOnScroll();
     });
   });
 
