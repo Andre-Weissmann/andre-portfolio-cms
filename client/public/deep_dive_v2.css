@@ -4783,3 +4783,214 @@ a.brief-tool-btn.brief-github-btn {
     white-space: nowrap;
   }
 }
+
+
+/* ═══ FIX: trail extra steps must honor expand ═══ */
+.brief-trail__step.is-extra-hidden,
+.brief-trail__step.is-extra[hidden] {
+  display: none !important;
+}
+.brief-trail.is-trail-expanded .brief-trail__step.is-extra,
+.brief-trail.is-trail-expanded .brief-trail__step.is-extra-hidden {
+  display: grid !important;
+}
+.brief-trail.is-trail-expanded .brief-trail__step.is-extra[hidden] {
+  display: grid !important;
+}
+.brief-trail__more {
+  margin-top: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ═══ FIX: footer lives in panel flex, never a floating center pill ═══ */
+.brief-dd-footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  z-index: 30;
+  background: var(--dd-bg, var(--brief-surface));
+  border-top: 1px solid var(--dd-border, var(--brief-border));
+  box-shadow: 0 -6px 20px rgba(0,0,0,0.12);
+}
+.brief-exit-bar {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px !important;
+  background: color-mix(in oklab, var(--dd-bg, #0b1220) 94%, var(--dd-surface, #111827)) !important;
+  border: none !important;
+  border-top: none !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+.brief-exit-back,
+.brief-exit-close {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 42px;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  padding: 0 16px !important;
+}
+.brief-exit-close:hover,
+#dd-close.brief-close-btn:hover,
+#dd-close.brief-tool-btn:hover {
+  /* Keep red accent but do not look like a dead control */
+  background: color-mix(in oklab, #c23b3b 18%, var(--dd-surface2, #1e293b)) !important;
+  border-color: color-mix(in oklab, #c23b3b 55%, var(--dd-border2, #334155)) !important;
+  color: #ff8e8e !important;
+}
+#dd-close.brief-close-btn,
+#dd-close.brief-tool-btn {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 5;
+}
+
+/* ═══ Episode dock: in footer, large type, only when episode off-screen ═══ */
+.brief-episode-dock {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 2;
+  padding: 12px 14px 10px !important;
+  background: color-mix(in srgb, var(--brief-accent, #20808D) 14%, var(--brief-surface, #0f172a)) !important;
+  border-top: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--brief-accent, #20808D) 30%, var(--brief-border, #334155));
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.brief-episode-dock[hidden] { display: none !important; }
+.brief-episode-dock__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.55rem;
+}
+.brief-episode-dock__label {
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brief-accent, #2dd4bf) !important;
+}
+.brief-episode-dock__now {
+  font-size: 1rem !important;
+  font-weight: 750 !important;
+  color: var(--brief-text, #f8fafc) !important;
+  text-align: right;
+  line-height: 1.3;
+}
+.brief-episode-dock__chips {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.45rem;
+  -webkit-overflow-scrolling: touch;
+}
+.brief-episode-dock__chip {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--brief-border, #334155);
+  background: var(--brief-surface2, #1e293b);
+  color: var(--brief-text, #f8fafc);
+  font: inherit;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  padding: 0.55rem 0.85rem !important;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 44px !important;
+  max-width: 14rem;
+}
+.brief-episode-dock__chip.is-active {
+  border-color: var(--brief-accent, #20808D);
+  background: color-mix(in srgb, var(--brief-accent, #20808D) 24%, var(--brief-surface, #0f172a));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brief-accent, #20808D) 45%, transparent);
+}
+.brief-episode-dock__n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brief-accent, #20808D) 30%, transparent);
+  font-size: 0.8rem !important;
+  font-weight: 800;
+}
+.brief-episode-dock__t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 10rem;
+  font-size: 0.92rem !important;
+}
+.brief-episode-dock__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+.brief-episode-dock__btn {
+  appearance: none;
+  border: 1px solid var(--brief-border, #334155);
+  background: var(--brief-surface2, #1e293b);
+  color: var(--brief-text, #f8fafc);
+  font: inherit;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  padding: 0.55rem 1rem !important;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 46px !important;
+}
+.brief-episode-dock__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.brief-episode-dock__btn--primary {
+  background: color-mix(in srgb, var(--brief-accent, #20808D) 28%, var(--brief-surface, #0f172a));
+  border-color: var(--brief-accent, #20808D);
+}
+
+/* Scroll body needs room only for in-flow footer (no absolute overlay pad) */
+#dd-panel.has-episode-dock .brief-scroll-body {
+  padding-bottom: 0.5rem !important;
+}
+#dd-body {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+.brief-layout {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (max-width: 640px) {
+  .brief-episode-dock__now { font-size: 0.92rem !important; max-width: 60%; }
+  .brief-episode-dock__chip { font-size: 0.86rem !important; min-height: 42px !important; }
+  .brief-episode-dock__t { max-width: 7rem; }
+  .brief-episode-dock__btn { min-height: 44px !important; font-size: 0.9rem !important; }
+  .brief-exit-back, .brief-exit-close { min-height: 44px; }
+}
