@@ -5328,3 +5328,62 @@ a.brief-tool-btn.brief-github-btn {
 .brief-playable-beat {
   transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease !important;
 }
+
+
+/* Live interactive BI board inside deep dive */
+.brief-dash-card--live {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem 0.95rem 1rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--brief-accent) 35%, var(--brief-border));
+  background: color-mix(in srgb, var(--brief-surface2) 88%, var(--brief-accent));
+  max-width: 100%;
+}
+.brief-dash-card--live .brief-dash-card__body { padding: 0; }
+.brief-dash-card--live .brief-dash-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: var(--brief-accent);
+  color: #fff;
+  font-weight: 750;
+  font-size: 0.86rem;
+  text-decoration: none;
+  border: none;
+}
+.brief-dash-card--live .brief-dash-card__link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--brief-text-faint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.brief-dash-live {
+  background: #f3f2f1;
+  color: #252423;
+  border-radius: 10px;
+  border: 1px solid #d2d0ce;
+  padding: 8px;
+  min-height: 360px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.brief-dash-slot.is-flash .brief-dash-live {
+  outline: 2px solid var(--brief-accent);
+  outline-offset: 2px;
+}
+.brief-dash-fallback {
+  margin: 1rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+.brief-dash-fallback a { color: #118DFF; font-weight: 700; }
+
+@media (max-width: 640px) {
+  .brief-dash-live { min-height: 300px; padding: 6px; }
+}

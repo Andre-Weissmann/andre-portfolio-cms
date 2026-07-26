@@ -2091,7 +2091,7 @@ var PLAYABLE = {
     sub: 'Filter the story the way a stakeholder would. Role beats degree.',
     beats: [
       { title: 'Land the result', blurb: '630 professionals. Role and country move pay more than degree.', target: 'ch-overview' },
-      { title: 'Open dashboard', blurb: 'One click to the full Power BI board.', target: 'ch-dashboard' },
+      { title: 'Open dashboard', blurb: 'Live cross-filter Power BI board below KPIs.', target: 'ch-dashboard' },
       { title: 'See the trail', blurb: 'Free-text salary and messy titles had to become measures first.', target: 'ch-trail' },
       { title: 'Language mix', blurb: 'Who prefers Python vs other tools.', target: 'ch-lang' },
       { title: 'Salary by education', blurb: 'Hold role steady. Watch the degree story weaken.', target: 'ch-salary' },
@@ -2120,7 +2120,7 @@ var PLAYABLE = {
     sub: 'Seasonality and joins, not a static screenshot wall.',
     beats: [
       { title: 'Land the result', blurb: '323k records. One peak week that gut-feel pricing missed.', target: 'ch-overview' },
-      { title: 'Open dashboard', blurb: 'One click to the full Tableau board.', target: 'ch-dashboard' },
+      { title: 'Open dashboard', blurb: 'Live cross-filter Tableau board below KPIs.', target: 'ch-dashboard' },
       { title: 'Follow the trail', blurb: 'Missing zips and join choices before the charts.', target: 'ch-trail' },
       { title: 'Weekly revenue', blurb: 'Trace the year. Find the holiday spike.', target: 'ch-line' },
       { title: 'Price by bedrooms', blurb: 'Where the premium actually sits.', target: 'ch-price' },
@@ -2149,7 +2149,7 @@ var PLAYABLE = {
     sub: 'Region, commute, and scenario levers on real bike-buyer patterns.',
     beats: [
       { title: 'Land the result', blurb: 'Which regions and profiles actually convert.', target: 'ch-overview' },
-      { title: 'Open dashboard', blurb: 'One click to the full Excel board.', target: 'ch-dashboard' },
+      { title: 'Open dashboard', blurb: 'Live slicer Excel board below KPIs.', target: 'ch-dashboard' },
       { title: 'Trail the logic', blurb: 'How the sales question was framed before the pivot.', target: 'ch-trail' },
       { title: 'Commute conversion', blurb: 'Distance and purchase behavior in one view.', target: 'ch-commute' },
       { title: 'Regional split', blurb: 'Where income and volume concentrate.', target: 'ch-region' },
@@ -2264,28 +2264,37 @@ function renderFilterBench(container, barSec, opts) {
 
 
 
-/* BI dashboard destinations (same-origin interactive boards) */
+/* BI interactive board destinations (Chart.js replicas, not case-study pages) */
 var DD_DASHBOARDS = {
   powerbi: {
     tool: 'Power BI',
-    href: 'powerbi-dashboard.html',
+    href: 'powerbi-board.html',
+    writeup: 'powerbi-dashboard.html',
     img: 'images/powerbi-dashboard.png',
     alt: 'Power BI data professionals survey dashboard',
-    line: 'Full dashboard layout with slicers, KPI cards, and chart composition from the original Power BI build.'
+    rootId: 'powerbi-replica',
+    mount: 'mountPowerBIReplica',
+    line: 'Live cross-filter board: KPI cards, role salary, country, education. Click a country to filter the rest.'
   },
   tableau: {
     tool: 'Tableau',
-    href: 'tableau-dashboard.html',
+    href: 'tableau-board.html',
+    writeup: 'tableau-dashboard.html',
     img: 'images/airbnb-dashboard.png',
     alt: 'Tableau Airbnb Seattle dashboard',
-    line: 'Full Tableau-style dashboard: weekly revenue, price by zip, and bedroom mix from the Airbnb Seattle workbook.'
+    rootId: 'tableau-replica',
+    mount: 'mountTableauReplica',
+    line: 'Live board: zip price, weekly revenue, bedrooms. Tap a zip or bedroom count to cross-filter.'
   },
   excel: {
     tool: 'Excel',
-    href: 'excel-dashboard.html',
+    href: 'excel-board.html',
+    writeup: 'excel-dashboard.html',
     img: 'images/bike-sales.png',
     alt: 'Excel bike sales dashboard',
-    line: 'Pivot-and-slicer dashboard view: region, income, and buyer segments from the Excel bike sales workbook.'
+    rootId: 'excel-bike-dashboard',
+    mount: 'mountExcelBikeDashboard',
+    line: 'Live slicer board: region, age, commute, occupation. Slicers update every chart together.'
   }
 };
 
@@ -2296,6 +2305,25 @@ function openDDDashboard(key, e) {
   }
   var cfg = DD_DASHBOARDS[key];
   if (!cfg) return false;
+
+  // Prefer in-panel board: scroll to mounted interactive replica
+  var slot = document.getElementById('ch-dashboard');
+  if (slot) {
+    ensureDDDashboardMounted(key);
+    var root = document.getElementById('dd-body') || document.getElementById('dd-panel');
+    var scrollRoot = document.querySelector('#dd-panel .brief-scroll-body');
+    if (scrollRoot && scrollRoot.contains(slot)) {
+      var top = slot.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top + scrollRoot.scrollTop - 10;
+      scrollRoot.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+    } else {
+      slot.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+    slot.classList.add('is-flash');
+    window.setTimeout(function() { slot.classList.remove('is-flash'); }, 900);
+    return false;
+  }
+
+  // Fallback: open dedicated board page
   var abs;
   try { abs = new URL(cfg.href, window.location.href).href; }
   catch (err2) { abs = cfg.href; }
@@ -2309,6 +2337,26 @@ function openDDDashboard(key, e) {
   return false;
 }
 window.openDDDashboard = openDDDashboard;
+
+function ensureDDDashboardMounted(key) {
+  var cfg = DD_DASHBOARDS[key];
+  if (!cfg) return;
+  var host = document.getElementById('dd-board-host');
+  if (!host) return;
+  if (host.getAttribute('data-mounted') === key && host.querySelector('#' + cfg.rootId)) return;
+  host.innerHTML = '';
+  host.setAttribute('data-mounted', key);
+  var root = document.createElement('div');
+  root.id = cfg.rootId;
+  host.appendChild(root);
+  var fn = window[cfg.mount];
+  if (typeof fn === 'function') {
+    try { fn(root); } catch (err) { console.warn('board mount failed', err); }
+  } else {
+    host.innerHTML = '<p class="brief-dash-fallback">Interactive board scripts are still loading. <a href="' + cfg.href + '" target="_blank" rel="noopener noreferrer">Open full board</a></p>';
+  }
+}
+window.ensureDDDashboardMounted = ensureDDDashboardMounted;
 
 function renderPythonTricks(container) {
   var wrap = document.createElement('div');
@@ -2485,25 +2533,25 @@ function renderDashboardCard(container, key) {
   var cfg = DD_DASHBOARDS[key];
   if (!cfg || !container) return;
   var card = document.createElement('section');
-  card.className = 'brief-dash-card';
-  card.setAttribute('aria-label', cfg.tool + ' dashboard');
+  card.className = 'brief-dash-card brief-dash-card--live';
+  card.setAttribute('aria-label', cfg.tool + ' interactive board');
   card.innerHTML =
-    '<button type="button" class="brief-dash-card__media" data-dd-dash="' + key + '" aria-label="Open ' + cfg.tool + ' dashboard">' +
-      '<img src="' + cfg.img + '" alt="' + cfg.alt + '" loading="lazy" width="640" height="360"/>' +
-      '<span class="brief-dash-card__play">Open dashboard</span>' +
-    '</button>' +
     '<div class="brief-dash-card__body">' +
-      '<div class="brief-dash-card__kicker">One click · ' + cfg.tool + ' dashboard</div>' +
-      '<p class="brief-dash-card__text">' + cfg.line + ' Deep dive = analysis path. Dashboard = full visual board.</p>' +
+      '<div class="brief-dash-card__kicker">Interactive ' + cfg.tool + ' board</div>' +
+      '<p class="brief-dash-card__text">' + cfg.line + '</p>' +
       '<div class="brief-dash-card__actions">' +
-        '<button type="button" class="brief-dash-card__btn" data-dd-dash="' + key + '">Open ' + cfg.tool + ' dashboard</button>' +
-        '<span class="brief-dash-card__note">Opens the interactive board in a new tab. Works from this deep dive header too.</span>' +
+        '<a class="brief-dash-card__btn" href="' + cfg.href + '" target="_blank" rel="noopener noreferrer">Open full board</a>' +
+        '<a class="brief-dash-card__link" href="' + cfg.writeup + '" target="_blank" rel="noopener noreferrer">Case study write-up</a>' +
+        '<span class="brief-dash-card__note">Board below is live. Cross-filter it here, or open full board for a larger canvas.</span>' +
       '</div>' +
-    '</div>';
-  card.querySelectorAll('[data-dd-dash]').forEach(function(btn) {
-    btn.addEventListener('click', function(e) { openDDDashboard(key, e); });
-  });
+    '</div>' +
+    '<div class="brief-dash-live" id="dd-board-host" role="region" aria-label="' + cfg.tool + ' interactive dashboard"></div>';
   container.appendChild(card);
+  // Mount after paint so width is real
+  requestAnimationFrame(function() {
+    ensureDDDashboardMounted(key);
+  });
+  window.setTimeout(function() { ensureDDDashboardMounted(key); }, 250);
 }
 
 
@@ -2781,15 +2829,14 @@ function renderPlayableEpisode(container, key, p, goToId) {
   function playBeat(i) {
     if (i < 0 || i >= beats.length) return;
     var beat = beats[i];
-    // Dashboard beat: open board instead of only scrolling
+    // Dashboard beat: jump to live board in-panel
     if (beat && beat.target === 'ch-dashboard' && DD_DASHBOARDS[key]) {
       activeIdx = i;
       visited[i] = true;
-      setDockVisible(true); // pin once playing
+      setDockVisible(true);
       syncChrome();
-      scrollBeatTarget('ch-dashboard');
-      // Still one-click open
-      openDDDashboard(key);
+      ensureDDDashboardMounted(key);
+      requestAnimationFrame(function() { scrollBeatTarget('ch-dashboard'); });
       return;
     }
     if (i === activeIdx && visited[i]) {
@@ -2982,7 +3029,7 @@ function renderDrawer(key) {
       '<div class="brief-hdr-top-row">' +
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
         '<div class="brief-hdr-tools">' +
-          (DD_DASHBOARDS[key] ? '<button type="button" id="dd-open-dash" class="brief-tool-btn brief-dash-hdr-btn" data-dd-dash="' + key + '" aria-label="Open ' + DD_DASHBOARDS[key].tool + ' dashboard" title="Open dashboard"><span class="brief-dash-hdr-icon" aria-hidden="true">▣</span><span class="brief-dash-hdr-label">Dashboard</span></button>' : '') +
+          (DD_DASHBOARDS[key] ? '<button type="button" id="dd-open-dash" class="brief-tool-btn brief-dash-hdr-btn" data-dd-dash="' + key + '" aria-label="Open ' + DD_DASHBOARDS[key].tool + ' dashboard" title="Jump to interactive board"><span class="brief-dash-hdr-icon" aria-hidden="true">▣</span><span class="brief-dash-hdr-label">Board</span></button>' : '') +
           (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="Code on GitHub" title="Code on GitHub (leaves page)">' + githubSvg + '<span class="brief-github-label">Code on GitHub</span></a>' : '') +
           '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Switch to light mode" title="Dark mode" data-mode="dark"><span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">&#127769;</span></button>' +
           '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" aria-label="Close deep dive" title="Close (Esc)">' +
@@ -3585,7 +3632,7 @@ function renderDrawer(key) {
   var exitBar = document.createElement('div');
   exitBar.className = 'brief-exit-bar';
   var dashFoot = DD_DASHBOARDS[key]
-    ? ('<button type="button" class="brief-exit-dash" data-dd-dash="' + key + '">Open ' + DD_DASHBOARDS[key].tool + ' dashboard</button>')
+    ? ('<button type="button" class="brief-exit-dash" data-dd-dash="' + key + '">Jump to ' + DD_DASHBOARDS[key].tool + ' board</button>')
     : '';
   exitBar.innerHTML =
     '<button type="button" class="brief-exit-back" data-dd-close="1">' +
