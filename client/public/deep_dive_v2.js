@@ -677,6 +677,90 @@ function renderThinkingTrail(container, steps) {
 /* ─────────────────────────────────────────────────────────────────
    SCROLL SPINE
 ───────────────────────────────────────────────────────────────── */
+
+/* ── Shared scroll root (phones scroll #dd-body; desktop scrolls .brief-scroll-body) ── */
+function getDDScrollRoot(panel) {
+  panel = panel || document.getElementById('dd-panel');
+  if (!panel) return null;
+  var scrollBody = panel.querySelector('.brief-scroll-body');
+  var bodyEl = document.getElementById('dd-body');
+  var isPhone = false;
+  var isNarrow = false;
+  try {
+    isPhone = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
+    isNarrow = !!(window.matchMedia && window.matchMedia('(max-width: 899px)').matches);
+  } catch (eM) {}
+  // Phone CSS forces #dd-body as the only scrollport
+  if (isPhone && bodyEl) return bodyEl;
+  if (isNarrow && bodyEl && scrollBody) {
+    var oy = 'auto';
+    try { oy = window.getComputedStyle(scrollBody).overflowY || 'auto'; } catch (eO) {}
+    var innerScrolls = oy !== 'visible' && scrollBody.scrollHeight > scrollBody.clientHeight + 4;
+    if (!innerScrolls) return bodyEl;
+  }
+  if (scrollBody) {
+    try {
+      var sty = window.getComputedStyle(scrollBody);
+      if (sty.overflowY !== 'visible') return scrollBody;
+    } catch (eS) { return scrollBody; }
+  }
+  if (bodyEl && bodyEl.scrollHeight > bodyEl.clientHeight + 4) return bodyEl;
+  return scrollBody || bodyEl;
+}
+
+function getDDScrollOffset(panel, root) {
+  panel = panel || document.getElementById('dd-panel');
+  root = root || getDDScrollRoot(panel);
+  var offset = 16;
+  if (!panel || !root) return offset;
+  // Sticky chapter rail sits at top of the phone scrollport
+  var rail = panel.querySelector('.brief-mob-rail');
+  if (rail) {
+    try {
+      var rh = rail.getBoundingClientRect().height || 0;
+      if (rh > 0) offset = Math.max(offset, Math.round(rh) + 12);
+    } catch (eR) {}
+  }
+  return offset;
+}
+
+function scrollDDToId(id, behavior) {
+  if (!id) return false;
+  var panel = document.getElementById('dd-panel');
+  var el = document.getElementById(id);
+  if (!el) return false;
+  var root = getDDScrollRoot(panel);
+  var offset = getDDScrollOffset(panel, root);
+  behavior = behavior || 'auto';
+  if (root && (root === el || root.contains(el))) {
+    var top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - offset;
+    try {
+      root.scrollTo({ top: Math.max(0, top), behavior: behavior });
+    } catch (e1) {
+      root.scrollTop = Math.max(0, top);
+    }
+    // Second pass after dock/layout settles (mobile footer height)
+    window.requestAnimationFrame(function() {
+      var root2 = getDDScrollRoot(panel);
+      if (!root2 || !document.getElementById(id)) return;
+      var el2 = document.getElementById(id);
+      var off2 = getDDScrollOffset(panel, root2);
+      var top2 = el2.getBoundingClientRect().top - root2.getBoundingClientRect().top + root2.scrollTop - off2;
+      if (Math.abs(top2 - root2.scrollTop) > 8) {
+        try { root2.scrollTo({ top: Math.max(0, top2), behavior: 'auto' }); }
+        catch (e2) { root2.scrollTop = Math.max(0, top2); }
+      }
+    });
+    return true;
+  }
+  try {
+    el.scrollIntoView({ behavior: behavior, block: 'start' });
+  } catch (e3) {
+    try { el.scrollIntoView(true); } catch (e4) {}
+  }
+  return true;
+}
+
 function initMobileChrome(panel) {
   if (!panel) return;
   var bodyEl = document.getElementById('dd-body');
@@ -2649,6 +2733,7 @@ function renderPlayableEpisode(container, key, p, goToId) {
       '<div class="brief-playable-kicker">Episode</div>' +
       '<div class="brief-playable-title">' + (cfg.tagline || 'Play this analysis') + '</div>' +
       '<p class="brief-playable-sub">' + (cfg.sub || 'Tap a beat, then use Next to keep going in order.') + '</p>' +
+      '<button type="button" class="brief-playable-start" data-play-start="1">Start beat 1</button>' +
     '</div>';
 
   var track = document.createElement('div');
@@ -2699,6 +2784,23 @@ function renderPlayableEpisode(container, key, p, goToId) {
     if (dockVisible) {
       buildDockOnce(dock);
       updateDock();
+      // Publish dock height so mobile padding clears the fixed chrome
+      window.requestAnimationFrame(function() {
+        try {
+          var h = dock.getBoundingClientRect().height || 0;
+          var exit = getFooter() && getFooter().querySelector('.brief-exit-bar');
+          var eh = exit ? (exit.getBoundingClientRect().height || 0) : 0;
+          // On phones exit is inside footer under dock; pad for full footer stack
+          var pad = Math.ceil(h + 12);
+          if (panel) panel.style.setProperty('--dd-episode-dock-h', pad + 'px');
+          var bodyEl = document.getElementById('dd-body');
+          if (bodyEl) bodyEl.style.setProperty('--dd-episode-dock-h', pad + 'px');
+        } catch (eH) {}
+      });
+    } else if (panel) {
+      panel.style.removeProperty('--dd-episode-dock-h');
+      var bodyEl2 = document.getElementById('dd-body');
+      if (bodyEl2) bodyEl2.style.removeProperty('--dd-episode-dock-h');
     }
   }
 
@@ -2784,16 +2886,8 @@ function renderPlayableEpisode(container, key, p, goToId) {
   }
 
   function scrollBeatTarget(id) {
-    // Instant scroll: smooth 1↔2 fights and causes the milli-glitch
-    var el = document.getElementById(id);
-    if (!el) return;
-    var root = panel ? panel.querySelector('.brief-scroll-body') : null;
-    if (root && root.contains(el)) {
-      var top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - 12;
-      root.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
-    } else {
-      el.scrollIntoView({ behavior: 'auto', block: 'start' });
-    }
+    // Instant scroll on the real scroll root (phones: #dd-body)
+    scrollDDToId(id, 'auto');
   }
 
   function playBeat(i) {
@@ -2818,9 +2912,17 @@ function renderPlayableEpisode(container, key, p, goToId) {
     // Pin dock for whole session once a beat starts (no show/hide jump on 1↔2)
     setDockVisible(true);
     syncChrome();
-    // Scroll after chrome paints so footer height is stable
+    // Scroll after chrome paints so dock height is stable (critical on phones)
     requestAnimationFrame(function() {
       scrollBeatTarget(beat.target);
+      // Keep active dock chip in view on narrow screens
+      try {
+        var dock = ensureDock();
+        if (dock && dockVisible) {
+          var chip = dock.querySelector('.brief-episode-dock__chip.is-active');
+          if (chip && chip.scrollIntoView) chip.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'auto' });
+        }
+      } catch (eChip) {}
     });
   }
 
@@ -2851,6 +2953,11 @@ function renderPlayableEpisode(container, key, p, goToId) {
       else if (activeIdx < beats.length - 1) playBeat(activeIdx + 1);
     }
   });
+
+  var startBtn = ep.querySelector('[data-play-start]');
+  if (startBtn) {
+    startBtn.addEventListener('click', function() { playBeat(0); });
+  }
 
   ep.appendChild(track);
   ep.appendChild(nav);
@@ -3155,11 +3262,11 @@ function renderDrawer(key) {
       if (nextBtn) nextBtn.disabled = idx >= total - 1;
     }
     if (t) {
-      t.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Re-sync after smooth scroll settles
+      // Instant jump on real scroll root — smooth + wrong ancestor was flaky on phones
+      scrollDDToId(spineItems[idx].id, 'auto');
       window.setTimeout(function() {
         if (panel && typeof panel._spineOnScroll === 'function') panel._spineOnScroll();
-      }, 420);
+      }, 80);
     }
   }
   mobRail._spineItems = spineItems;
@@ -3198,20 +3305,14 @@ function renderDrawer(key) {
       if (spineItems[si].id === id) { idx = si; break; }
     }
     var el = document.getElementById(id);
-    // Prefer direct instant scroll inside the panel (avoids spine smooth-scroll fights)
+    // Prefer direct instant scroll on the real scroll root (phones: #dd-body)
     if (el) {
       if (panel) {
         panel._spineFreezeIndex = idx >= 0 ? idx : panel._spineActiveIndex;
         panel._spineFreezeUntil = Date.now() + 500;
         if (idx >= 0) panel._spineActiveIndex = idx;
       }
-      var root = scrollBody;
-      if (root && root.contains(el)) {
-        var top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - 12;
-        root.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
-      } else {
-        el.scrollIntoView({ behavior: 'auto', block: 'start' });
-      }
+      scrollDDToId(id, 'auto');
       if (idx >= 0 && panel && typeof panel._setRailUI === 'function') {
         var total = spineItems.length;
         var pct = total <= 1 ? 1 : (idx + 0.5) / total;
