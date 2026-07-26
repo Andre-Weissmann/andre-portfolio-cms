@@ -342,6 +342,10 @@ STRICT RULES:
   // for iCloud since it doesn't require a third-party mail-sending API key.
   const GH_OWNER = process.env.GH_INBOX_OWNER || "Andre-Weissmann";
   const GH_REPO = process.env.GH_INBOX_REPO || "andre-portfolio-inbox";
+  // GitHub does not email an author about actions they took themselves. Since our
+  // token acts as the owner, we @mention the owner in every issue body to force a
+  // notification email (mentions bypass the self-suppression rule).
+  const GH_NOTIFY_MENTION = process.env.GH_INBOX_MENTION || GH_OWNER;
   const GH_TOKEN = process.env.GH_INBOX_TOKEN || process.env.CUSTOM_CRED_API_GITHUB_COM_TOKEN || "";
   const GH_API_BASE = (process.env.CUSTOM_CRED_API_GITHUB_COM_URL || "https://api.github.com").replace(/\/$/, "");
 
@@ -437,6 +441,8 @@ STRICT RULES:
     bodyLines.push(`**Quick reply:** [Reply to ${safeName}](mailto:${safeEmail}?subject=Re:%20your%20portfolio%20message)`);
     bodyLines.push("");
     bodyLines.push(`_Delivered by the portfolio contact form. Full record also viewable in the private inbox._`);
+    bodyLines.push("");
+    bodyLines.push(`cc @${GH_NOTIFY_MENTION}`);
 
     try {
       const url = `${GH_API_BASE}/repos/${GH_OWNER}/${GH_REPO}/issues`;
