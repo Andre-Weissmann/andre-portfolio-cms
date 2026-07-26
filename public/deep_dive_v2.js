@@ -1703,7 +1703,7 @@ powerbi: {
   badge: 'Power BI',
   badgeColor: '#1B474D',
   title: 'Data Professionals Survey',
-  outcome: 'Turned a multi-sheet professional survey into one interactive dashboard stakeholders can filter themselves.',
+  outcome: 'Turned a multi-sheet professional survey into a Power BI dashboard stakeholders can read at a glance.',
   bridge: 'Same pattern hospitals use for census, throughput, and revenue-cycle scorecards.',
   subtitle: 'Power BI Dashboard',
   insight: 'Education level does not predict salary as cleanly as most people assume. PhD holders average $206K, but there are only 5 of them. Bachelor\'s degree data scientists average $93K across 329 participants. The real salary driver in this dataset is role, not credential.',
@@ -1819,7 +1819,7 @@ powerbi: {
     { role: 'What would make this analysis sharper?', icon: '🔍', summary: 'Three columns are missing from the survey that would change every insight: a motivational factors field (why people chose data), a SQL difficulty scale (how hard entry-level really is), and a favorite visualization tool (beyond just the programming language). Identified and documented before the dashboard was finished.' },
     { role: 'How was it built?', icon: '⚙️', summary: '630 survey responses across 40+ countries. Power BI dashboard with DAX calculations, cross-filtering slicers, KPI cards, and 8 tracked metrics including salary by job title, Python vs. R adoption, and satisfaction scores by bracket. Screenshots embedded above.' }
   ],
-  context: 'Power BI Dashboard on Data Professionals Survey. 630 real survey respondents across 40+ countries. Key metrics: average salary by job title, favorite programming language (Python #1), work-life balance satisfaction (5.74/10), career satisfaction by salary bracket (4.27/10), difficulty breaking into data field (42.7% found it difficult). Key finding: education level alone does not determine salary. US female data scientists: $95,000 avg. India data scientists: 7,644,693 rupees (~$93K USD). Survey missing 3 columns: motivational factors (open-ended), learning SQL difficulty (scaled), favorite data visualization tool. Original .pbix available for download (Power BI Desktop). In-page board is a web recreation. Full analysis documented.'
+  context: 'Power BI Dashboard on Data Professionals Survey. 630 real survey respondents across 40+ countries. Key metrics: average salary by job title, favorite programming language (Python #1), work-life balance satisfaction (5.74/10), career satisfaction by salary bracket (4.27/10), difficulty breaking into data field (42.7% found it difficult). Key finding: education level alone does not determine salary. US female data scientists: $95,000 avg. India data scientists: 7,644,693 rupees (~$93K USD). Survey missing 3 columns: motivational factors (open-ended), learning SQL difficulty (scaled), favorite data visualization tool. Dashboard screenshots from Power BI Desktop. Optional .pbix available. Full analysis documented.'
 },
 
 /* ─── TABLEAU - AIRBNB ANALYSIS ─── */
@@ -1905,7 +1905,7 @@ tableau: {
     { role: 'What quality problems were found?', icon: '🔍', summary: '7 zip codes were missing and recovered via neighborhood cross-referencing. Three problems were flagged and documented: 4,417 blank nightly prices line up with unavailable nights; January 2017 records appear in a 2016 dataset; reviewer comments are incomplete. These weren\'t in the brief - they were found and raised.' },
     { role: 'How were three datasets joined into one?', icon: '⚙️', summary: 'Listings, reviews, and calendar worksheets joined via INNER JOIN. Revenue by week required building a time-series from the calendar table. Zip code correction used neighborhood cross-referencing rather than deletion. 323,346 rows analyzed across joined sheets in Tableau.' }
   ],
-  context: 'Tableau Dashboard on Airbnb Seattle 2016 data. 323,346 records. Three worksheets joined via INNER JOIN: listings, reviews, calendar. 7 missing zip codes corrected manually via neighborhood cross-referencing. Key findings: highest revenue week December 25 = $2,110,350. Highest-price zip code: 98134. One-bedroom dominates supply at 1,811 listings. Four peak revenue weeks: March 27 ($1,906,735), May 29 ($2,013,698), June 19 ($2,073,319), December 25 ($2,110,350). Three data quality issues: 4417 null price entries correlate with available=f; January 2017 records appear in 2016 dataset; reviewer comments incomplete. Original .twbx not available. Screenshots and web recreation carry the findings. Full methodology documented.'
+  context: 'Tableau Dashboard on Airbnb Seattle 2016 data. 323,346 records. Three worksheets joined via INNER JOIN: listings, reviews, calendar. 7 missing zip codes corrected manually via neighborhood cross-referencing. Key findings: highest revenue week December 25 = $2,110,350. Highest-price zip code: 98134. One-bedroom dominates supply at 1,811 listings. Four peak revenue weeks: March 27 ($1,906,735), May 29 ($2,013,698), June 19 ($2,073,319), December 25 ($2,110,350). Three data quality issues: 4417 null price entries correlate with available=f; January 2017 records appear in 2016 dataset; reviewer comments incomplete. Original .twbx not available. Screenshots and analysis trail carry the findings. Full methodology documented.'
 },
 
 /* ─── EXCEL - BIKE SALES ANALYSIS ─── */
@@ -2029,7 +2029,7 @@ excel: {
     { role: 'What is missing from this data?', icon: '🔍', summary: 'Three gaps were found and documented: no year column makes year-over-year trend analysis impossible; no weekly commute frequency data limits customer retention modeling; no e-bike preference question is a missed demand signal for inventory planning. All three were raised directly, not buried in an appendix.' },
     { role: 'How was the segmentation built?', icon: '⚙️', summary: 'Raw data cleaned first: deduplication and standardization across income, age bracket, marital status, gender, home ownership, region, occupation, commute distance, and purchase decision. Excel pivot tables, slicers, and calculated columns built the segmentation view. No external tools required.' }
   ],
-  context: 'Excel Bike Sales Dashboard. Dataset: bike buyer segmentation data with columns for income, age bracket, marital status, gender, home ownership, region, occupation, commute distance, and purchase decision (Yes/No). Key findings: Pacific Region highest-income buyer profile = married female homeowner in management role, avg income $90K, commutes 5-10+ miles. Pacific Region female homeowner avg income $70K. North America and Pacific show above-average salaries among buyers with bachelor or graduate degrees in management or professional roles. Middle-aged Pacific females bike 10+ miles. Three data gaps: no year column (prevents YoY trends), no weekly commute frequency, no e-bike preference question. Dashboard uses pivot tables, slicers, and calculated columns. Original .xlsx available for download. In-page board is a web recreation. Full findings documented.'
+  context: 'Excel Bike Sales Dashboard. Dataset: bike buyer segmentation data with columns for income, age bracket, marital status, gender, home ownership, region, occupation, commute distance, and purchase decision (Yes/No). Key findings: Pacific Region highest-income buyer profile = married female homeowner in management role, avg income $90K, commutes 5-10+ miles. Pacific Region female homeowner avg income $70K. North America and Pacific show above-average salaries among buyers with bachelor or graduate degrees in management or professional roles. Middle-aged Pacific females bike 10+ miles. Three data gaps: no year column (prevents YoY trends), no weekly commute frequency, no e-bike preference question. Dashboard uses pivot tables, slicers, and calculated columns. Dashboard screenshots from Excel. Optional .xlsx available. Full findings documented.'
 }
 
 }; // end PROJECTS
@@ -2097,11 +2097,11 @@ var PLAYABLE = {
     }
   },
   powerbi: {
-    tagline: 'Play this analysis',
-    sub: 'Filter the story the way a stakeholder would. Role beats degree.',
+    tagline: 'Read this analysis',
+    sub: 'Screenshots plus the trail. Role beats degree.',
     beats: [
       { title: 'Land the result', blurb: '630 professionals. Role and country move pay more than degree.', target: 'ch-overview' },
-      { title: 'Open dashboard', blurb: 'Playable web board below KPIs. Download the original .pbix too.', target: 'ch-dashboard' },
+      { title: 'See the dashboard', blurb: 'Power BI screenshots below the KPIs.', target: 'ch-dashboard' },
       { title: 'See the trail', blurb: 'Free-text salary and messy titles had to become measures first.', target: 'ch-trail' },
       { title: 'Language mix', blurb: 'Who prefers Python vs other tools.', target: 'ch-lang' },
       { title: 'Salary by education', blurb: 'Hold role steady. Watch the degree story weaken.', target: 'ch-salary' },
@@ -2115,7 +2115,7 @@ var PLAYABLE = {
     limits: [
       'Survey sample, not a census of the global data workforce.',
       'Country filter used four preselected markets. Other write-ins were excluded.',
-      'Original .pbix is downloadable below. Live board here is a web recreation for instant play, not a Power BI Service embed.',
+      'Dashboard proof is screenshots from Power BI Desktop. Optional original .pbix is linked under the shots for reviewers who want the workbook.',
       'Currency comparisons need purchasing-power context before cross-country pay claims harden.'
     ],
     peels: {
@@ -2126,11 +2126,11 @@ var PLAYABLE = {
     }
   },
   tableau: {
-    tagline: 'Play this analysis',
-    sub: 'Seasonality and joins, not a static screenshot wall.',
+    tagline: 'Read this analysis',
+    sub: 'Seasonality and joins, with dashboard screenshots and a clear trail.',
     beats: [
       { title: 'Land the result', blurb: '323k records. One peak week that gut-feel pricing missed.', target: 'ch-overview' },
-      { title: 'Open dashboard', blurb: 'Playable web board of the findings below KPIs.', target: 'ch-dashboard' },
+      { title: 'See the dashboard', blurb: 'Tableau screenshots below the KPIs.', target: 'ch-dashboard' },
       { title: 'Follow the trail', blurb: 'Missing zips and join choices before the charts.', target: 'ch-trail' },
       { title: 'Weekly revenue', blurb: 'Trace the year. Find the holiday spike.', target: 'ch-line' },
       { title: 'Price by bedrooms', blurb: 'Where the premium actually sits.', target: 'ch-price' },
@@ -2143,7 +2143,7 @@ var PLAYABLE = {
     ],
     limits: [
       'Seattle Airbnb 2016 historical snapshot. Not current market rates.',
-      'No original .twbx on file. Screenshots plus this web recreation show the findings. Not a live Tableau Public embed.',
+      'No original .twbx on file. Dashboard proof is screenshots plus the analysis trail in this deep dive.',
       'Revenue figures follow the project joins and calendar aggregation documented in the trail.',
       'No claim about current host strategy or platform policy.'
     ],
@@ -2155,11 +2155,11 @@ var PLAYABLE = {
     }
   },
   excel: {
-    tagline: 'Play this analysis',
-    sub: 'Region, commute, and scenario levers on real bike-buyer patterns.',
+    tagline: 'Read this analysis',
+    sub: 'Region, commute, and buyer patterns with Excel dashboard screenshots.',
     beats: [
       { title: 'Land the result', blurb: 'Which regions and profiles actually convert.', target: 'ch-overview' },
-      { title: 'Open dashboard', blurb: 'Playable web board below KPIs. Download the original .xlsx too.', target: 'ch-dashboard' },
+      { title: 'See the dashboard', blurb: 'Excel screenshots below the KPIs.', target: 'ch-dashboard' },
       { title: 'Trail the logic', blurb: 'How the sales question was framed before the pivot.', target: 'ch-trail' },
       { title: 'Commute conversion', blurb: 'Distance and purchase behavior in one view.', target: 'ch-commute' },
       { title: 'Regional split', blurb: 'Where income and volume concentrate.', target: 'ch-region' },
@@ -2171,7 +2171,7 @@ var PLAYABLE = {
       { title: 'Static pivot as the final deliverable', looked: 'Familiar Excel finish line.', killed: 'Scenario controls let stakeholders test the assumption instead of accepting one freeze.' }
     ],
     limits: [
-      'Original .xlsx is downloadable. Live board here is a web recreation of the pivot and slicer dashboard, not Excel Online.',
+      'Dashboard proof is screenshots from Excel. Optional original .xlsx is linked under the shots for reviewers who want the workbook.',
       'Bike sales training/analysis dataset. Not a live retailer feed.',
       'Scenario tools illustrate sensitivity. They are not a production demand forecast.',
       'Regional labels follow the source workbook definitions.',
@@ -2276,48 +2276,36 @@ function renderFilterBench(container, barSec, opts) {
 
 
 /* BI interactive board destinations (Chart.js replicas, not case-study pages) */
+/* BI proof: screenshots + deep dive story. No multi-CTA board chrome. */
 var DD_DASHBOARDS = {
   powerbi: {
     tool: 'Power BI',
-    href: 'powerbi-board.html',
-    writeup: 'powerbi-dashboard.html',
-    img: 'images/powerbi-dashboard.png',
-    alt: 'Web recreation of Power BI data professionals survey dashboard',
-    rootId: 'powerbi-replica',
-    mount: 'mountPowerBIReplica',
-    line: 'Play the findings in the browser: KPI cards, role salary, country, education. Click a country to filter the rest.',
-    honesty: 'Web recreation for instant play. Not a live Power BI Service embed.',
-    downloadHref: 'files/DataProfessionals_Survey.pbix',
-    downloadLabel: 'Download original .pbix',
-    downloadHint: 'Open in free Power BI Desktop'
+    shots: [
+      { src: 'images/powerbi-dashboard.png', alt: 'Power BI dashboard for the data professionals survey' }
+    ],
+    caption: 'Dashboard built in Power BI Desktop. Screenshots carry the visual proof. Story and measures are in this deep dive.',
+    fileHref: 'files/DataProfessionals_Survey.pbix',
+    fileLabel: 'Original .pbix (Power BI Desktop)'
   },
   tableau: {
     tool: 'Tableau',
-    href: 'tableau-board.html',
-    writeup: 'tableau-dashboard.html',
-    img: 'images/airbnb-dashboard.png',
-    alt: 'Web recreation of Tableau Airbnb Seattle dashboard',
-    rootId: 'tableau-replica',
-    mount: 'mountTableauReplica',
-    line: 'Play the findings in the browser: zip price, weekly revenue, bedrooms. Tap a zip or bedroom count to cross-filter.',
-    honesty: 'Web recreation of the findings. Original .twbx is not available to download.',
-    downloadHref: '',
-    downloadLabel: '',
-    downloadHint: ''
+    shots: [
+      { src: 'images/airbnb-dashboard.png', alt: 'Tableau Airbnb Seattle dashboard overview' },
+      { src: 'images/tableau-sheet1.png', alt: 'Tableau worksheet detail one' },
+      { src: 'images/tableau-sheet2.png', alt: 'Tableau worksheet detail two' }
+    ],
+    caption: 'Dashboard built in Tableau. Screenshots and the analysis trail below are the proof. No live Tableau Public embed on this page.',
+    fileHref: '',
+    fileLabel: ''
   },
   excel: {
     tool: 'Excel',
-    href: 'excel-board.html',
-    writeup: 'excel-dashboard.html',
-    img: 'images/bike-sales.png',
-    alt: 'Web recreation of Excel bike sales dashboard',
-    rootId: 'excel-bike-dashboard',
-    mount: 'mountExcelBikeDashboard',
-    line: 'Play the findings in the browser: region, age, commute, occupation. Slicers update every chart together.',
-    honesty: 'Web recreation for instant play. Not Excel Online.',
-    downloadHref: 'files/Bike_Sales_Dashboard.xlsx',
-    downloadLabel: 'Download original .xlsx',
-    downloadHint: 'Open in Excel'
+    shots: [
+      { src: 'images/bike-sales.png', alt: 'Excel bike sales dashboard with pivots and slicers' }
+    ],
+    caption: 'Dashboard built in Excel with pivot tables and slicers. Screenshots carry the visual proof. Findings are in this deep dive.',
+    fileHref: 'files/Bike_Sales_Dashboard.xlsx',
+    fileLabel: 'Original .xlsx (Excel)'
   }
 };
 
@@ -2326,58 +2314,19 @@ function openDDDashboard(key, e) {
     try { e.preventDefault(); } catch (err0) {}
     try { e.stopPropagation(); } catch (err1) {}
   }
-  var cfg = DD_DASHBOARDS[key];
-  if (!cfg) return false;
-
-  // Prefer in-panel board: scroll to mounted interactive replica
   var slot = document.getElementById('ch-dashboard');
   if (slot) {
-    ensureDDDashboardMounted(key);
-    var root = document.getElementById('dd-body') || document.getElementById('dd-panel');
-    var scrollRoot = document.querySelector('#dd-panel .brief-scroll-body');
-    if (scrollRoot && scrollRoot.contains(slot)) {
-      var top = slot.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top + scrollRoot.scrollTop - 10;
-      scrollRoot.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
-    } else {
-      slot.scrollIntoView({ behavior: 'auto', block: 'start' });
-    }
-    slot.classList.add('is-flash');
-    window.setTimeout(function() { slot.classList.remove('is-flash'); }, 900);
-    return false;
-  }
-
-  // Fallback: open dedicated board page
-  var abs;
-  try { abs = new URL(cfg.href, window.location.href).href; }
-  catch (err2) { abs = cfg.href; }
-  var w = null;
-  try { w = window.open(abs, '_blank', 'noopener,noreferrer'); } catch (err3) {}
-  if (!w) {
-    try { window.location.assign(abs); } catch (err4) {
-      try { window.top.location.href = abs; } catch (err5) {}
-    }
+    try {
+      slot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err2) {}
   }
   return false;
 }
 window.openDDDashboard = openDDDashboard;
 
 function ensureDDDashboardMounted(key) {
-  var cfg = DD_DASHBOARDS[key];
-  if (!cfg) return;
-  var host = document.getElementById('dd-board-host');
-  if (!host) return;
-  if (host.getAttribute('data-mounted') === key && host.querySelector('#' + cfg.rootId)) return;
-  host.innerHTML = '';
-  host.setAttribute('data-mounted', key);
-  var root = document.createElement('div');
-  root.id = cfg.rootId;
-  host.appendChild(root);
-  var fn = window[cfg.mount];
-  if (typeof fn === 'function') {
-    try { fn(root); } catch (err) { console.warn('board mount failed', err); }
-  } else {
-    host.innerHTML = '<p class="brief-dash-fallback">Interactive board scripts are still loading. <a href="' + cfg.href + '" target="_blank" rel="noopener noreferrer">Open full board</a></p>';
-  }
+  /* Screenshots-only path: no Chart.js board mount in deep dive. */
+  return;
 }
 window.ensureDDDashboardMounted = ensureDDDashboardMounted;
 
@@ -2556,35 +2505,25 @@ function renderDashboardCard(container, key) {
   var cfg = DD_DASHBOARDS[key];
   if (!cfg || !container) return;
   var card = document.createElement('section');
-  card.className = 'brief-dash-card brief-dash-card--live';
-  card.setAttribute('aria-label', cfg.tool + ' interactive board');
-  var dl = cfg.downloadHref
-    ? ('<a class="brief-dash-card__btn brief-dash-card__btn--file" href="' + cfg.downloadHref + '" download target="_blank" rel="noopener noreferrer">' +
-        (cfg.downloadLabel || 'Download original file') + '</a>' +
-        (cfg.downloadHint ? '<span class="brief-dash-card__hint">' + cfg.downloadHint + '</span>' : ''))
-    : '';
-  var honesty = cfg.honesty
-    ? ('<p class="brief-dash-card__honesty">' + cfg.honesty + '</p>')
+  card.className = 'brief-dash-card brief-dash-card--shots';
+  card.setAttribute('aria-label', cfg.tool + ' dashboard screenshots');
+  var shots = cfg.shots || [];
+  var gallery = shots.map(function(s, i) {
+    return '<figure class="brief-shot' + (i === 0 ? ' brief-shot--hero' : '') + '">' +
+      '<img src="' + s.src + '" alt="' + (s.alt || (cfg.tool + ' dashboard screenshot')) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '" />' +
+      '</figure>';
+  }).join('');
+  var fileLine = cfg.fileHref
+    ? ('<p class="brief-shot-file">Original file: <a href="' + cfg.fileHref + '" download>' + (cfg.fileLabel || 'Download workbook') + '</a></p>')
     : '';
   card.innerHTML =
     '<div class="brief-dash-card__body">' +
-      '<div class="brief-dash-card__kicker">Playable web recreation · ' + cfg.tool + '</div>' +
-      '<p class="brief-dash-card__text">' + cfg.line + '</p>' +
-      honesty +
-      '<div class="brief-dash-card__actions">' +
-        dl +
-        '<a class="brief-dash-card__btn" href="' + cfg.href + '" target="_blank" rel="noopener noreferrer">Open full board</a>' +
-        '<a class="brief-dash-card__link" href="' + cfg.writeup + '" target="_blank" rel="noopener noreferrer">Case study write-up</a>' +
-        '<span class="brief-dash-card__note">Cross-filter below, or open the full board for a larger canvas. Deep dive story stays the main proof.</span>' +
-      '</div>' +
-    '</div>' +
-    '<div class="brief-dash-live" id="dd-board-host" role="region" aria-label="' + cfg.tool + ' interactive web recreation"></div>';
+      '<div class="brief-dash-card__kicker">' + cfg.tool + ' · dashboard screenshots</div>' +
+      '<p class="brief-dash-card__text">' + (cfg.caption || '') + '</p>' +
+      '<div class="brief-shot-gallery" role="group" aria-label="' + cfg.tool + ' screenshots">' + gallery + '</div>' +
+      fileLine +
+    '</div>';
   container.appendChild(card);
-  // Mount after paint so width is real
-  requestAnimationFrame(function() {
-    ensureDDDashboardMounted(key);
-  });
-  window.setTimeout(function() { ensureDDDashboardMounted(key); }, 250);
 }
 
 
@@ -3062,8 +3001,6 @@ function renderDrawer(key) {
       '<div class="brief-hdr-top-row">' +
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
         '<div class="brief-hdr-tools">' +
-          (DD_DASHBOARDS[key] && DD_DASHBOARDS[key].downloadHref ? '<a class="brief-tool-btn brief-dash-hdr-btn brief-file-hdr-btn" href="' + DD_DASHBOARDS[key].downloadHref + '" download aria-label="' + (DD_DASHBOARDS[key].downloadLabel || 'Download original file') + '" title="' + (DD_DASHBOARDS[key].downloadHint || 'Download original file') + '"><span class="brief-dash-hdr-icon" aria-hidden="true">⬇</span><span class="brief-dash-hdr-label">File</span></a>' : '') +
-          (DD_DASHBOARDS[key] ? '<button type="button" id="dd-open-dash" class="brief-tool-btn brief-dash-hdr-btn" data-dd-dash="' + key + '" aria-label="Open ' + DD_DASHBOARDS[key].tool + ' board" title="Jump to interactive web board"><span class="brief-dash-hdr-icon" aria-hidden="true">▣</span><span class="brief-dash-hdr-label">Board</span></button>' : '') +
           (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="Code on GitHub" title="Code on GitHub (leaves page)">' + githubSvg + '<span class="brief-github-label">Code on GitHub</span></a>' : '') +
           '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Switch to light mode" title="Dark mode" data-mode="dark"><span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">&#127769;</span></button>' +
           '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" aria-label="Close deep dive" title="Close (Esc)">' +
@@ -3309,7 +3246,7 @@ function renderDrawer(key) {
   overview.appendChild(kpiStrip);
   attachKpiPeels(kpiStrip, key);
 
-  /* BI: dashboard one-click, above the fold (not buried) */
+  /* BI: screenshot proof above the fold (single path, no board chrome) */
   if (DD_DASHBOARDS[key]) {
     var dashSlot = document.createElement('div');
     dashSlot.className = 'brief-dash-slot';
@@ -3600,7 +3537,7 @@ function renderDrawer(key) {
       powerbi: [
         { label: 'Main finding', a: '630 data professionals across 40+ countries were surveyed. The clearest finding: education level alone does not determine salary. PhD holders average $206K but there are only 5 of them in the dataset. Bachelor\'s degree data scientists average $93K across 329 participants. Role is a stronger predictor than credential. Python is the \u00231 programming language. 42.7% of respondents found breaking into data difficult.' },
         { label: 'What the data shows', a: 'Average salary by title: Data Scientist leads. Python dominates language preference across all roles. Work-life balance satisfaction: 5.74 out of 10. Career satisfaction by salary bracket: 4.27 out of 10. US female data scientists average $95,000. India data scientists average 7,644,693 rupees (~$93K USD). Salary satisfaction drops sharply below $60K.' },
-        { label: 'Tools used', a: 'Power BI Desktop. Visualizations: donut chart (language preference), horizontal bar (salary by title), treemap (country distribution), gauge charts (satisfaction scores). DAX for calculated fields. Data cleaning done in Power Query. Original .pbix is available to download and open in free Power BI Desktop. The in-page board is a web recreation for instant play.' },
+        { label: 'Tools used', a: 'Power BI Desktop. Visualizations: donut chart (language preference), horizontal bar (salary by title), treemap (country distribution), gauge charts (satisfaction scores). DAX for calculated fields. Data cleaning done in Power Query. Dashboard screenshots from Power BI Desktop. Optional original .pbix linked under the shots.' },
         { label: 'What is missing', a: 'The survey is missing three columns that would sharpen the analysis: motivational factors for entering data (open-ended), difficulty of learning SQL on a scaled score, and favorite data visualization tool. These gaps limit analysis of what actually drives career satisfaction and tool preference beyond programming language.' }
       ],
       tableau: [
@@ -3612,7 +3549,7 @@ function renderDrawer(key) {
       excel: [
         { label: 'Main finding', a: 'The Pacific Region shows the highest-income buyer profile: married female homeowner in a management role, average income $90,000, commuting 5-10+ miles. Pacific Region female homeowners average $70,000. North America and Pacific show above-average salaries among buyers with bachelor or graduate degrees in management or professional roles. Middle-aged Pacific females are the most active long-distance bike commuters.' },
         { label: 'Who is buying bikes', a: 'Buyers skew toward higher-income, middle-aged, homeowning professionals with longer commutes. The Pacific Region is the strongest market. Married buyers with management or professional occupations and commutes of 5+ miles have the highest purchase rates. Gender splits vary by region - Pacific female homeowners are notably high income among buyers.' },
-        { label: 'Tools used', a: 'Microsoft Excel. Pivot tables for segmentation by region, income, gender, marital status, and occupation. Slicers for interactive filtering. Calculated columns for derived segments. Charts: bar charts for income distribution, line charts for commute distance vs. purchase rate. Original .xlsx is available to download. The in-page board is a web recreation of the pivot and slicer dashboard.' },
+        { label: 'Tools used', a: 'Microsoft Excel. Pivot tables for segmentation by region, income, gender, marital status, and occupation. Slicers for interactive filtering. Calculated columns for derived segments. Charts: bar charts for income distribution, line charts for commute distance vs. purchase rate. Dashboard screenshots from Excel. Optional original .xlsx linked under the shots.' },
         { label: 'What is missing', a: '3 data gaps limit deeper analysis: no year column (prevents year-over-year trend analysis), no weekly commute frequency (only distance is captured, not how often), and no e-bike preference question (a growing market segment entirely absent from the data). These gaps are documented in the dashboard.' }
       ]
     };
@@ -3666,7 +3603,7 @@ function renderDrawer(key) {
   var exitBar = document.createElement('div');
   exitBar.className = 'brief-exit-bar';
   var dashFoot = DD_DASHBOARDS[key]
-    ? ('<button type="button" class="brief-exit-dash" data-dd-dash="' + key + '">Jump to ' + DD_DASHBOARDS[key].tool + ' web board</button>')
+    ? ('<button type="button" class="brief-exit-dash" data-dd-dash="' + key + '">Back to ' + DD_DASHBOARDS[key].tool + ' screenshots</button>')
     : '';
   exitBar.innerHTML =
     '<button type="button" class="brief-exit-back" data-dd-close="1">' +

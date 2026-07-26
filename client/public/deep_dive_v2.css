@@ -5411,3 +5411,74 @@ a.brief-tool-btn.brief-github-btn {
   color: var(--brief-text-dim, #6b7280);
   margin: -4px 0 6px;
 }
+
+
+/* BI screenshot proof (no interactive board chrome) */
+.brief-dash-card--shots {
+  border: 1px solid color-mix(in srgb, var(--border, #e5e7eb) 90%, transparent);
+  border-radius: 14px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface, #fff) 96%, var(--accent, #118DFF) 4%);
+  margin: 14px 0 8px;
+}
+.brief-dash-card--shots .brief-dash-card__body {
+  padding: 14px 16px 16px;
+}
+.brief-dash-card--shots .brief-dash-card__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brief-text-dim, #6b7280);
+  margin-bottom: 6px;
+}
+.brief-dash-card--shots .brief-dash-card__text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--brief-text, inherit);
+  margin: 0 0 12px;
+  max-width: 62ch;
+}
+.brief-shot-gallery {
+  display: grid;
+  gap: 10px;
+}
+.brief-shot {
+  margin: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border, #d1d5db) 80%, transparent);
+  background: #0b1220;
+}
+.brief-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.brief-shot--hero img {
+  max-height: min(52vh, 520px);
+  object-fit: contain;
+  object-position: top center;
+  background: #0b1220;
+}
+@media (min-width: 720px) {
+  .brief-shot-gallery:has(.brief-shot:nth-child(2)) {
+    grid-template-columns: 1.4fr 1fr;
+  }
+  .brief-shot-gallery:has(.brief-shot:nth-child(2)) .brief-shot--hero {
+    grid-column: 1 / -1;
+  }
+}
+.brief-shot-file {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--brief-text-dim, #6b7280);
+}
+.brief-shot-file a {
+  color: var(--accent, #118DFF);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+}
+.brief-shot-file a:hover { border-bottom-color: currentColor; }
