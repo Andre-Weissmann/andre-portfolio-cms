@@ -2091,6 +2091,7 @@ var PLAYABLE = {
     sub: 'Filter the story the way a stakeholder would. Role beats degree.',
     beats: [
       { title: 'Land the result', blurb: '630 professionals. Role and country move pay more than degree.', target: 'ch-overview' },
+      { title: 'Open dashboard', blurb: 'One click to the full Power BI board.', target: 'ch-dashboard' },
       { title: 'See the trail', blurb: 'Free-text salary and messy titles had to become measures first.', target: 'ch-trail' },
       { title: 'Language mix', blurb: 'Who prefers Python vs other tools.', target: 'ch-lang' },
       { title: 'Salary by education', blurb: 'Hold role steady. Watch the degree story weaken.', target: 'ch-salary' },
@@ -2119,6 +2120,7 @@ var PLAYABLE = {
     sub: 'Seasonality and joins, not a static screenshot wall.',
     beats: [
       { title: 'Land the result', blurb: '323k records. One peak week that gut-feel pricing missed.', target: 'ch-overview' },
+      { title: 'Open dashboard', blurb: 'One click to the full Tableau board.', target: 'ch-dashboard' },
       { title: 'Follow the trail', blurb: 'Missing zips and join choices before the charts.', target: 'ch-trail' },
       { title: 'Weekly revenue', blurb: 'Trace the year. Find the holiday spike.', target: 'ch-line' },
       { title: 'Price by bedrooms', blurb: 'Where the premium actually sits.', target: 'ch-price' },
@@ -2147,6 +2149,7 @@ var PLAYABLE = {
     sub: 'Region, commute, and scenario levers on real bike-buyer patterns.',
     beats: [
       { title: 'Land the result', blurb: 'Which regions and profiles actually convert.', target: 'ch-overview' },
+      { title: 'Open dashboard', blurb: 'One click to the full Excel board.', target: 'ch-dashboard' },
       { title: 'Trail the logic', blurb: 'How the sales question was framed before the pivot.', target: 'ch-trail' },
       { title: 'Commute conversion', blurb: 'Distance and purchase behavior in one view.', target: 'ch-commute' },
       { title: 'Regional split', blurb: 'Where income and volume concentrate.', target: 'ch-region' },
@@ -2259,6 +2262,53 @@ function renderFilterBench(container, barSec, opts) {
   });
 }
 
+
+
+/* BI dashboard destinations (same-origin interactive boards) */
+var DD_DASHBOARDS = {
+  powerbi: {
+    tool: 'Power BI',
+    href: 'powerbi-dashboard.html',
+    img: 'images/powerbi-dashboard.png',
+    alt: 'Power BI data professionals survey dashboard',
+    line: 'Full dashboard layout with slicers, KPI cards, and chart composition from the original Power BI build.'
+  },
+  tableau: {
+    tool: 'Tableau',
+    href: 'tableau-dashboard.html',
+    img: 'images/airbnb-dashboard.png',
+    alt: 'Tableau Airbnb Seattle dashboard',
+    line: 'Full Tableau-style dashboard: weekly revenue, price by zip, and bedroom mix from the Airbnb Seattle workbook.'
+  },
+  excel: {
+    tool: 'Excel',
+    href: 'excel-dashboard.html',
+    img: 'images/bike-sales.png',
+    alt: 'Excel bike sales dashboard',
+    line: 'Pivot-and-slicer dashboard view: region, income, and buyer segments from the Excel bike sales workbook.'
+  }
+};
+
+function openDDDashboard(key, e) {
+  if (e) {
+    try { e.preventDefault(); } catch (err0) {}
+    try { e.stopPropagation(); } catch (err1) {}
+  }
+  var cfg = DD_DASHBOARDS[key];
+  if (!cfg) return false;
+  var abs;
+  try { abs = new URL(cfg.href, window.location.href).href; }
+  catch (err2) { abs = cfg.href; }
+  var w = null;
+  try { w = window.open(abs, '_blank', 'noopener,noreferrer'); } catch (err3) {}
+  if (!w) {
+    try { window.location.assign(abs); } catch (err4) {
+      try { window.top.location.href = abs; } catch (err5) {}
+    }
+  }
+  return false;
+}
+window.openDDDashboard = openDDDashboard;
 
 function renderPythonTricks(container) {
   var wrap = document.createElement('div');
@@ -2432,45 +2482,27 @@ function renderPythonTricks(container) {
 }
 
 function renderDashboardCard(container, key) {
-  var map = {
-    powerbi: {
-      tool: 'Power BI',
-      href: 'powerbi-dashboard.html',
-      img: 'images/powerbi-dashboard.png',
-      alt: 'Power BI data professionals survey dashboard',
-      line: 'Full dashboard layout with slicers, KPI cards, and chart composition from the original Power BI build.'
-    },
-    tableau: {
-      tool: 'Tableau',
-      href: 'tableau-dashboard.html',
-      img: 'images/airbnb-dashboard.png',
-      alt: 'Tableau Airbnb Seattle dashboard',
-      line: 'Full Tableau-style dashboard: weekly revenue, price by zip, and bedroom mix from the Airbnb Seattle workbook.'
-    },
-    excel: {
-      tool: 'Excel',
-      href: 'excel-dashboard.html',
-      img: 'images/bike-sales.png',
-      alt: 'Excel bike sales dashboard',
-      line: 'Pivot-and-slicer dashboard view: region, income, and buyer segments from the Excel bike sales workbook.'
-    }
-  };
-  var cfg = map[key];
-  if (!cfg) return;
-  var card = document.createElement('div');
+  var cfg = DD_DASHBOARDS[key];
+  if (!cfg || !container) return;
+  var card = document.createElement('section');
   card.className = 'brief-dash-card';
+  card.setAttribute('aria-label', cfg.tool + ' dashboard');
   card.innerHTML =
-    '<div class="brief-dash-card__media">' +
+    '<button type="button" class="brief-dash-card__media" data-dd-dash="' + key + '" aria-label="Open ' + cfg.tool + ' dashboard">' +
       '<img src="' + cfg.img + '" alt="' + cfg.alt + '" loading="lazy" width="640" height="360"/>' +
-    '</div>' +
+      '<span class="brief-dash-card__play">Open dashboard</span>' +
+    '</button>' +
     '<div class="brief-dash-card__body">' +
-      '<div class="brief-dash-card__kicker">' + cfg.tool + ' dashboard</div>' +
-      '<p class="brief-dash-card__text">' + cfg.line + ' The deep dive above is the analysis path you can run yourself. Open the dashboard for the full visual board.</p>' +
+      '<div class="brief-dash-card__kicker">One click · ' + cfg.tool + ' dashboard</div>' +
+      '<p class="brief-dash-card__text">' + cfg.line + ' Deep dive = analysis path. Dashboard = full visual board.</p>' +
       '<div class="brief-dash-card__actions">' +
-        '<a class="brief-dash-card__btn" href="' + cfg.href + '" target="_blank" rel="noopener noreferrer">Open ' + cfg.tool + ' dashboard</a>' +
-        '<span class="brief-dash-card__note">Interactive recreation in-browser. Original desktop files stay with the analyst toolkit.</span>' +
+        '<button type="button" class="brief-dash-card__btn" data-dd-dash="' + key + '">Open ' + cfg.tool + ' dashboard</button>' +
+        '<span class="brief-dash-card__note">Opens the interactive board in a new tab. Works from this deep dive header too.</span>' +
       '</div>' +
     '</div>';
+  card.querySelectorAll('[data-dd-dash]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) { openDDDashboard(key, e); });
+  });
   container.appendChild(card);
 }
 
@@ -2574,10 +2606,6 @@ function renderColdOpen(container, key, p, goToId) {
       renderWhatIf(gap2, eWi.wi);
       stage.appendChild(gap2);
     }
-  }
-
-  if (key === 'powerbi' || key === 'tableau' || key === 'excel') {
-    renderDashboardCard(stage, key);
   }
 
   shell.appendChild(stage);
@@ -2737,27 +2765,46 @@ function renderPlayableEpisode(container, key, p, goToId) {
     if (dockVisible) updateDock();
   }
 
+  function scrollBeatTarget(id) {
+    // Instant scroll: smooth 1↔2 fights and causes the milli-glitch
+    var el = document.getElementById(id);
+    if (!el) return;
+    var root = panel ? panel.querySelector('.brief-scroll-body') : null;
+    if (root && root.contains(el)) {
+      var top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - 12;
+      root.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+    } else {
+      el.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }
+
   function playBeat(i) {
     if (i < 0 || i >= beats.length) return;
+    var beat = beats[i];
+    // Dashboard beat: open board instead of only scrolling
+    if (beat && beat.target === 'ch-dashboard' && DD_DASHBOARDS[key]) {
+      activeIdx = i;
+      visited[i] = true;
+      setDockVisible(true); // pin once playing
+      syncChrome();
+      scrollBeatTarget('ch-dashboard');
+      // Still one-click open
+      openDDDashboard(key);
+      return;
+    }
     if (i === activeIdx && visited[i]) {
-      // Re-tap same beat: scroll only, no full chrome rebuild thrash
-      var same = beats[i];
-      if (typeof goToId === 'function') goToId(same.target);
-      else {
-        var sameEl = document.getElementById(same.target);
-        if (sameEl) sameEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      scrollBeatTarget(beat.target);
       return;
     }
     activeIdx = i;
     visited[i] = true;
+    // Pin dock for whole session once a beat starts (no show/hide jump on 1↔2)
+    setDockVisible(true);
     syncChrome();
-    var beat = beats[i];
-    if (typeof goToId === 'function') goToId(beat.target);
-    else {
-      var el = document.getElementById(beat.target);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // Scroll after chrome paints so footer height is stable
+    requestAnimationFrame(function() {
+      scrollBeatTarget(beat.target);
+    });
   }
 
   beats.forEach(function(beat, i) {
@@ -2792,23 +2839,10 @@ function renderPlayableEpisode(container, key, p, goToId) {
   ep.appendChild(nav);
   container.appendChild(ep);
 
-  // Show sticky dock only when the episode block leaves the viewport (does not cover beats)
-  if (typeof IntersectionObserver !== 'undefined') {
-    var io = new IntersectionObserver(function(entries) {
-      entries.forEach(function(en) {
-        // Dock when episode list is off-screen and a beat has been started
-        var shouldShow = !en.isIntersecting && activeIdx >= 0;
-        setDockVisible(shouldShow);
-      });
-    }, {
-      root: panel ? panel.querySelector('.brief-scroll-body') : null,
-      threshold: [0, 0.12, 0.25],
-      rootMargin: '0px 0px -8% 0px'
-    });
-    io.observe(ep);
-    if (panel) panel._episodeIO = io;
-  }
+  // Dock is pinned on first beat via playBeat → setDockVisible(true).
+  // No IntersectionObserver hide/show (that caused the 1↔2 milli-glitch).
 }
+
 
 function renderPlayableDepth(container, key) {
   var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
@@ -2948,6 +2982,7 @@ function renderDrawer(key) {
       '<div class="brief-hdr-top-row">' +
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
         '<div class="brief-hdr-tools">' +
+          (DD_DASHBOARDS[key] ? '<button type="button" id="dd-open-dash" class="brief-tool-btn brief-dash-hdr-btn" data-dd-dash="' + key + '" aria-label="Open ' + DD_DASHBOARDS[key].tool + ' dashboard" title="Open dashboard"><span class="brief-dash-hdr-icon" aria-hidden="true">▣</span><span class="brief-dash-hdr-label">Dashboard</span></button>' : '') +
           (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="Code on GitHub" title="Code on GitHub (leaves page)">' + githubSvg + '<span class="brief-github-label">Code on GitHub</span></a>' : '') +
           '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Switch to light mode" title="Dark mode" data-mode="dark"><span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">&#127769;</span></button>' +
           '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" aria-label="Close deep dive" title="Close (Esc)">' +
@@ -2966,6 +3001,12 @@ function renderDrawer(key) {
       e.preventDefault();
       e.stopPropagation();
       if (typeof window.closeDD === 'function') window.closeDD(e);
+    });
+  }
+  var hdrDash = document.getElementById('dd-open-dash');
+  if (hdrDash) {
+    hdrDash.addEventListener('click', function(e) {
+      openDDDashboard(key, e);
     });
   }
 
@@ -3140,11 +3181,29 @@ function renderDrawer(key) {
     for (var si = 0; si < spineItems.length; si++) {
       if (spineItems[si].id === id) { idx = si; break; }
     }
-    if (idx >= 0) goToSpineIndex(idx);
-    else {
-      var el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    var el = document.getElementById(id);
+    // Prefer direct instant scroll inside the panel (avoids spine smooth-scroll fights)
+    if (el) {
+      if (panel) {
+        panel._spineFreezeIndex = idx >= 0 ? idx : panel._spineActiveIndex;
+        panel._spineFreezeUntil = Date.now() + 500;
+        if (idx >= 0) panel._spineActiveIndex = idx;
+      }
+      var root = scrollBody;
+      if (root && root.contains(el)) {
+        var top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - 12;
+        root.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+      } else {
+        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }
+      if (idx >= 0 && panel && typeof panel._setRailUI === 'function') {
+        var total = spineItems.length;
+        var pct = total <= 1 ? 1 : (idx + 0.5) / total;
+        panel._setRailUI(idx, pct, total);
+      }
+      return;
     }
+    if (idx >= 0) goToSpineIndex(idx);
   }
 
   if (p.outcome) {
@@ -3168,6 +3227,15 @@ function renderDrawer(key) {
   });
   overview.appendChild(kpiStrip);
   attachKpiPeels(kpiStrip, key);
+
+  /* BI: dashboard one-click, above the fold (not buried) */
+  if (DD_DASHBOARDS[key]) {
+    var dashSlot = document.createElement('div');
+    dashSlot.className = 'brief-dash-slot';
+    dashSlot.id = 'ch-dashboard';
+    renderDashboardCard(dashSlot, key);
+    overview.appendChild(dashSlot);
+  }
 
   /* Cold open interactive: star control above the fold */
   renderColdOpen(overview, key, p, goToPlayableTarget);
@@ -3516,10 +3584,14 @@ function renderDrawer(key) {
   footer.className = 'brief-dd-footer';
   var exitBar = document.createElement('div');
   exitBar.className = 'brief-exit-bar';
+  var dashFoot = DD_DASHBOARDS[key]
+    ? ('<button type="button" class="brief-exit-dash" data-dd-dash="' + key + '">Open ' + DD_DASHBOARDS[key].tool + ' dashboard</button>')
+    : '';
   exitBar.innerHTML =
     '<button type="button" class="brief-exit-back" data-dd-close="1">' +
       '<span aria-hidden="true">&#8592;</span> Back to portfolio' +
     '</button>' +
+    dashFoot +
     '<span class="brief-exit-hint"><kbd>Esc</kbd> closes</span>' +
     '<button type="button" class="brief-exit-close" data-dd-close="1" aria-label="Close deep dive">Close</button>';
   footer.appendChild(exitBar);
@@ -3530,6 +3602,9 @@ function renderDrawer(key) {
       e.stopPropagation();
       if (typeof window.closeDD === 'function') window.closeDD(e);
     });
+  });
+  footer.querySelectorAll('[data-dd-dash]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) { openDDDashboard(key, e); });
   });
 
   /* Spine nav: click label/dot to jump */

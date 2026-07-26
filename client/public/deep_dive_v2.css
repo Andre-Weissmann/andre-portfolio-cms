@@ -5221,3 +5221,110 @@ a.brief-tool-btn.brief-github-btn {
 .brief-episode-dock__btn {
   transition: opacity 0.12s ease, background 0.12s ease;
 }
+
+
+/* Header Dashboard CTA */
+.brief-dash-hdr-btn {
+  background: color-mix(in oklab, var(--dd-accent, #20808D) 22%, var(--dd-surface2, #1e293b)) !important;
+  border-color: var(--dd-accent, #20808D) !important;
+  color: var(--dd-text, #f8fafc) !important;
+  font-weight: 750 !important;
+}
+.brief-dash-hdr-btn:hover {
+  filter: brightness(1.06);
+}
+.brief-dash-hdr-label { font-size: 12.5px; font-weight: 750; }
+.brief-dash-hdr-icon { font-size: 13px; line-height: 1; }
+
+/* Footer dashboard button */
+.brief-exit-dash {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--dd-accent, #20808D);
+  background: color-mix(in oklab, var(--dd-accent, #20808D) 88%, #000);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.brief-exit-dash:hover { filter: brightness(1.06); }
+
+/* Dashboard card media as button */
+.brief-dash-slot {
+  margin: 0.85rem 0 1rem;
+  max-width: 48rem;
+}
+.brief-dash-card__media {
+  appearance: none;
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--dd-border2, #334155);
+  background: #000;
+  aspect-ratio: 16 / 10;
+  cursor: pointer;
+  position: relative;
+  text-align: left;
+}
+.brief-dash-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+.brief-dash-card__media:hover img {
+  transform: scale(1.02);
+  filter: brightness(1.05);
+}
+.brief-dash-card__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--dd-accent, #20808D) 92%, #000);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
+.brief-dash-card__btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+@media (max-width: 640px) {
+  .brief-dash-hdr-label { display: none !important; }
+  .brief-exit-dash {
+    order: 3;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+  .brief-exit-bar {
+    flex-wrap: wrap;
+  }
+}
+
+/* Kill dock thrash transitions that flash on class toggle */
+.brief-episode-dock {
+  contain: layout style;
+}
+.brief-playable-beat {
+  transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease !important;
+}
