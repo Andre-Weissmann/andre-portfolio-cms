@@ -641,6 +641,24 @@ STRICT RULES:
 </body></html>`);
   });
 
+  // Diagnostic: dump which Resend-relevant env vars the sandbox actually sees.
+  // Token-guarded like the inbox. Never returns values, only presence + length.
+  app.get("/api/inbox/:token/env", (req, res) => {
+    if (req.params.token !== INBOX_TOKEN) {
+      return res.status(404).json({ error: "not found" });
+    }
+    const summarize = (v: string | undefined) => v && v.length > 0 ? { present: true, length: v.length } : { present: false };
+    res.setHeader("cache-control", "no-store");
+    res.json({
+      RESEND_API_KEY: summarize(process.env.RESEND_API_KEY),
+      CUSTOM_CRED_API_RESEND_COM_URL: summarize(process.env.CUSTOM_CRED_API_RESEND_COM_URL),
+      CUSTOM_CRED_API_RESEND_COM_TOKEN: summarize(process.env.CUSTOM_CRED_API_RESEND_COM_TOKEN),
+      CONTACT_RECIPIENT: summarize(process.env.CONTACT_RECIPIENT),
+      // Any env var that starts with CUSTOM_CRED_ so we can see what naming convention is actually in use
+      all_custom_cred_keys: Object.keys(process.env).filter((k) => k.startsWith("CUSTOM_CRED_") || k.includes("RESEND") || k.includes("CUSTOM_CRED")),
+    });
+  });
+
   // Same data as JSON, at the same secret path with ?format=json
   app.get("/api/inbox/:token/json", (req, res) => {
     if (req.params.token !== INBOX_TOKEN) {
