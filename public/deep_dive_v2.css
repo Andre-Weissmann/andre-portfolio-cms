@@ -6024,3 +6024,134 @@ body.dd-lightbox-open { overflow: hidden; }
     right: max(10px, env(safe-area-inset-right));
   }
 }
+
+/* ================================================================ */
+/* DEEP DIVE SHOTS · NO-GATE ENLARGED (PR post-63)                    */
+/* Fixes:                                                             */
+/*  1. Lifts 768px caps so the shot fills the chapter width           */
+/*  2. Breaks out of two-column card grid (single full-width column)  */
+/*  3. Removes min-height letterbox bars                              */
+/*  4. Removes zoom-in cursor and click-to-enlarge affordance         */
+/* ================================================================ */
+
+/* Slot cap lifted for shot cards */
+.brief-dash-slot:has(.brief-dash-card--shots) {
+  max-width: none;
+}
+
+/* Card: single column, full width, no forced two-column grid */
+.brief-dash-card--shots {
+  max-width: none !important;
+  display: block !important;
+  grid-template-columns: none !important;
+  width: 100%;
+}
+
+.brief-dash-card--shots .brief-dash-card__body {
+  max-width: none;
+  padding: 14px 18px 18px;
+}
+
+/* Gallery: full available width */
+.brief-shot-gallery {
+  width: 100%;
+}
+.brief-shot-gallery--single {
+  max-width: none !important;
+}
+
+/* Shot figures fill container, aspect ratio drives height */
+.brief-shot {
+  width: 100%;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--border, #d1d5db) 65%, transparent);
+}
+.brief-shot img {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+  object-fit: contain;
+}
+
+/* Nuke the tap-to-enlarge affordance */
+.brief-shot__btn,
+.brief-shot :where(button.brief-shot__btn) {
+  cursor: default !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+/* Kill all letterbox min-heights from PR #63 */
+.brief-dash-card--powerbi .brief-shot--hero img,
+.brief-dash-card--excel .brief-shot--hero img,
+.brief-dash-card--multi .brief-shot--hero img,
+.brief-shot-gallery--multi .brief-shot--thumb img {
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+/* Desktop max-widths that keep images sharp without hitting native pixel loss */
+@media (min-width: 900px) {
+  .brief-dash-card--shots {
+    padding: 14px 16px 16px;
+  }
+  /* Power BI hero: source is 1920×1077, allow full quality */
+  .brief-dash-card--powerbi .brief-shot--hero {
+    max-width: 1280px;
+    margin-inline: auto;
+  }
+  /* Excel hero: source is 1275×556, cap at native */
+  .brief-dash-card--excel .brief-shot--hero {
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+  /* Tableau multi: hero full width row, two thumbs in row below */
+  .brief-dash-card--multi .brief-shot-gallery--multi {
+    display: grid;
+    grid-template-areas:
+      "hero hero"
+      "t1 t2";
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-width: 1240px;
+    margin-inline: auto;
+  }
+  .brief-dash-card--multi .brief-shot--hero {
+    grid-area: hero;
+    max-width: 100%;
+  }
+  .brief-dash-card--multi .brief-shot--thumb:nth-of-type(2) {
+    grid-area: t1;
+  }
+  .brief-dash-card--multi .brief-shot--thumb:nth-of-type(3) {
+    grid-area: t2;
+  }
+}
+
+/* Mobile: single column stack, images fill viewport */
+@media (max-width: 899px) {
+  .brief-dash-card--shots {
+    padding: 10px 4px 12px;
+  }
+  .brief-dash-card--shots .brief-dash-card__body {
+    padding: 10px 10px 14px;
+  }
+  .brief-shot-gallery--multi {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: none !important;
+    gap: 10px;
+  }
+  .brief-dash-card--multi .brief-shot--hero,
+  .brief-dash-card--multi .brief-shot--thumb {
+    grid-area: auto !important;
+    max-width: 100%;
+  }
+}
+
+/* Caption polish */
+.brief-shot__cap {
+  padding: 8px 12px 10px;
+  font-size: 12.5px;
+  color: var(--brief-text-dim, #6b7280);
+}
