@@ -947,6 +947,13 @@ input, select, textarea { font-family: inherit; }
   max-width: 100%;
 }
 
+/* Nashville live SQL sandbox: the table cells use white-space: nowrap, so the
+   table's intrinsic min-content width can still expand a grid item. Force the
+   demo cell to hide its overflow so the table scrolls inside .sql-table-wrap. */
+.project-block-demo {
+  overflow: hidden;
+}
+
 .project-block--flip {
   direction: rtl;
 }
@@ -1132,6 +1139,8 @@ input, select, textarea { font-family: inherit; }
   flex-direction: column;
   gap: var(--sp-3);
   flex: 1;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .sql-examples {
@@ -1197,6 +1206,8 @@ input, select, textarea { font-family: inherit; }
 
 .sql-results {
   flex: 1;
+  min-width: 0;
+  max-width: 100%;
   min-height: 80px;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
@@ -1961,8 +1972,30 @@ select.bmi-input {
   .skills-section .container { padding: 0 var(--sp-4); }
 
   /* ── Projects ── */
-  .project-block-demo { padding: var(--sp-4); }
+  .project-block-demo {
+    padding: var(--sp-4);
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
   .demo-header { flex-direction: column; gap: var(--sp-2); }
+
+  /* Nashville live SQL sandbox: clamp all descendants and let the table scroll
+     inside its own box instead of expanding the card grid track. */
+  .sql-sandbox,
+  .sql-sandbox * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .sql-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+  .sql-code-block {
+    max-width: 100%;
+    overflow-x: auto;
+  }
 
   /* ── Charts ── */
   .charts-2col { grid-template-columns: 1fr; }
