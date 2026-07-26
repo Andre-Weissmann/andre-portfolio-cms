@@ -6155,3 +6155,62 @@ body.dd-lightbox-open { overflow: hidden; }
   font-size: 12.5px;
   color: var(--brief-text-dim, #6b7280);
 }
+
+/* ================================================================ */
+/* DEEP DIVE SHOTS · LEGIBILITY PASS (PR post-64)                     */
+/* Bumps the eyebrow + intro so they read at a glance                 */
+/* Adds scroll-margin so the sticky mobile jump bar doesn't clip      */
+/* Adds Tableau single-shot sizing (matches PBI dashboard treatment)  */
+/* ================================================================ */
+
+/* Stronger eyebrow */
+.brief-dash-card--shots .brief-dash-card__kicker {
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: var(--brief-text, #16140f) !important;
+  margin-bottom: 10px !important;
+  opacity: 0.85;
+}
+
+/* Stronger intro line */
+.brief-dash-card--shots .brief-dash-card__text {
+  font-size: 15.5px !important;
+  line-height: 1.5;
+  color: var(--brief-text, #16140f) !important;
+  margin: 0 0 14px !important;
+  font-weight: 500;
+}
+
+/* Prevent sticky mobile jump bar from clipping the top of the shot card */
+@media (max-width: 899px) {
+  .brief-dash-slot,
+  #ch-dashboard {
+    scroll-margin-top: 96px;
+  }
+  .brief-dash-card--shots {
+    scroll-margin-top: 96px;
+  }
+}
+@media (min-width: 900px) {
+  .brief-dash-slot,
+  #ch-dashboard {
+    scroll-margin-top: 32px;
+  }
+}
+
+/* Tableau single-shot sizing (now that thumbs are removed) */
+@media (min-width: 900px) {
+  .brief-dash-card--tableau .brief-shot--hero {
+    max-width: 1280px;
+    margin-inline: auto;
+  }
+}
+
+/* Caption polish (already applied above; reinforce here for cascade) */
+.brief-shot__cap {
+  font-size: 13px !important;
+  font-weight: 500;
+  color: var(--brief-text, #16140f) !important;
+  opacity: 0.75;
+}
