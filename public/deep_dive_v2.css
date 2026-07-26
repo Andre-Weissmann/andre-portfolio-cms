@@ -245,12 +245,12 @@
 .brief-github-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 4px;
   padding: 9px 18px;
   border: 1px solid var(--dd-border2);
   border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--dd-text);
   background: var(--dd-surface);
   text-decoration: none;
@@ -2791,7 +2791,9 @@ a.brief-tool-btn.brief-github-btn {
   padding: 0 12px;
   border-radius: 999px;
   box-shadow: none;
-  font-size: 12.5px;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 4px;
 }
 #dd-theme-toggle.brief-tool-btn {
   padding: 0 12px;
@@ -2866,10 +2868,22 @@ a.brief-tool-btn.brief-github-btn {
     font-size: 15px !important;
     box-shadow: none !important;
   }
-  .brief-github-label,
   .brief-theme-label,
   .brief-close-text {
     display: none !important;
+  }
+  /* Keep GitHub label visible on mobile to match the hero's icon + "GitHub" style. */
+  .brief-github-label {
+    display: inline !important;
+  }
+  /* GitHub button keeps its pill shape with icon + text label on mobile. */
+  a.brief-tool-btn.brief-github-btn {
+    width: auto !important;
+    padding: 0 10px !important;
+    gap: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border-radius: 999px !important;
   }
   .brief-close-x {
     font-size: 15px !important;
