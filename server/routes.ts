@@ -436,12 +436,18 @@ STRICT RULES:
 
     res.json({ ok: true });
 
+    // Resolve Resend auth. Three supported modes, in order of preference:
+    //   1) RESEND_API_KEY as a native env var (canonical)
+    //   2) Perplexity custom-credentials proxy (CUSTOM_CRED_API_RESEND_COM_URL + _TOKEN),
+    //      used when publishing via publish_website with `credentials={'custom-cred:api.resend.com': ''}`
+    //   3) Missing -> log and skip send (in-memory backup still captured above)
     const resendKey = process.env.RESEND_API_KEY || "";
-    if (!resendKey) {
-      console.error("[Resend] RESEND_API_KEY not set — skipping email notification.");
+    const proxyUrl = process.env.CUSTOM_CRED_API_RESEND_COM_URL || "";
+    const proxyToken = process.env.CUSTOM_CRED_API_RESEND_COM_TOKEN || "";
+    if (!resendKey && !(proxyUrl && proxyToken)) {
+      console.error("[Resend] No Resend credentials found (neither RESEND_API_KEY nor custom-cred proxy env). Skipping email notification.");
       return;
     }
-    const resend = new Resend(resendKey);
 
     const urgent = priorityLabel === PRIORITY_LABELS.followup;
     const subjectPrefix = urgent ? "URGENT: " : "";
@@ -493,19 +499,46 @@ STRICT RULES:
     ].join("");
 
     const RECIPIENT = process.env.CONTACT_RECIPIENT || "swimstar34@icloud.com";
-    resend.emails.send({
+    const emailPayload = {
       from: "Portfolio Contact <onboarding@resend.dev>",
       to: RECIPIENT,
       reply_to: safeEmail,
       subject,
       text,
       html,
-    }).then(({ error: resendError }) => {
-      if (resendError) console.error("[Resend] Error:", resendError);
-      else console.log(`[Resend] Email sent to ${RECIPIENT}`);
-    }).catch((err: unknown) => {
-      console.error("[Resend] Exception:", err);
-    });
+    };
+
+    if (resendKey) {
+      // Path 1 - native SDK against api.resend.com
+      const resend = new Resend(resendKey);
+      resend.emails.send(emailPayload).then(({ error: resendError }) => {
+        if (resendError) console.error("[Resend] SDK error:", resendError);
+        else console.log(`[Resend] Email sent to ${RECIPIENT} (via native key)`);
+      }).catch((err: unknown) => {
+        console.error("[Resend] SDK exception:", err);
+      });
+    } else {
+      // Path 2 - Perplexity custom-cred proxy. The proxy forwards to api.resend.com/emails,
+      // authorizing with x-api-key so the Resend backend sees a valid Authorization header.
+      const endpoint = proxyUrl.replace(/\/$/, "") + "/emails";
+      fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": proxyToken,
+        },
+        body: JSON.stringify(emailPayload),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const errText = await r.text().catch(() => "");
+          console.error(`[Resend] Proxy HTTP ${r.status}:`, errText.slice(0, 500));
+        } else {
+          console.log(`[Resend] Email sent to ${RECIPIENT} (via proxy)`);
+        }
+      }).catch((err: unknown) => {
+        console.error("[Resend] Proxy exception:", err);
+      });
+    }
   });
 
   app.get("/api/admin/contacts", (req, res) => {
