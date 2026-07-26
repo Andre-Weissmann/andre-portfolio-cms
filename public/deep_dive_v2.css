@@ -3902,3 +3902,293 @@ a.brief-tool-btn.brief-github-btn {
 .brief-spine-progress {
   overflow: hidden !important;
 }
+
+
+/* DD READ COMFORT V1 — larger type + progressive disclosure
+   Research baseline: body ≥16px, long-form 17–18px, line-height ≥1.5,
+   measure ~45–75ch. Skim layer first; detail on demand. */
+.brief-scroll-body {
+  font-size: 17px !important;
+  line-height: 1.65 !important;
+  color: var(--dd-text) !important;
+}
+.brief-scroll-body p,
+.brief-insight-block,
+.brief-decision-text,
+.brief-section-sub,
+.brief-trail__text,
+.brief-trail__result,
+.brief-ask-answer,
+.brief-ask-response,
+.bitc-text,
+.bep-text,
+.brief-outcome-text,
+.brief-outcome-bridge,
+.brief-headline-text {
+  font-size: 17px !important;
+  line-height: 1.7 !important;
+  max-width: 62ch;
+}
+.brief-section-title {
+  font-size: 12px !important;
+  letter-spacing: 0.12em !important;
+  margin-bottom: 10px !important;
+}
+.brief-hdr-title {
+  font-size: clamp(1.35rem, 1.6vw, 1.75rem) !important;
+  line-height: 1.2 !important;
+}
+.brief-hdr-sub {
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+  max-width: 60ch;
+}
+.brief-kpi-val { font-size: 24px !important; }
+.brief-kpi-label { font-size: 12px !important; line-height: 1.35 !important; }
+.brief-headline-text {
+  font-size: 18px !important;
+  line-height: 1.55 !important;
+  font-weight: 650 !important;
+}
+
+/* Skim notes */
+.brief-skim-note {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface));
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 22%, var(--dd-border));
+  max-width: 62ch;
+}
+.brief-skim-note__label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dd-accent) !important;
+}
+.brief-skim-note__text {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+  color: var(--dd-text-dim) !important;
+  font-weight: 600;
+}
+
+/* Disclose buttons */
+.brief-disclose-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 4px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--dd-accent) 35%, var(--dd-border));
+  background: color-mix(in oklab, var(--dd-accent) 10%, var(--dd-surface));
+  color: var(--dd-text) !important;
+  font-size: 14px !important;
+  font-weight: 750 !important;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.brief-disclose-btn:hover {
+  background: color-mix(in oklab, var(--dd-accent) 16%, var(--dd-surface));
+  border-color: var(--dd-accent);
+}
+.brief-disclose-btn--inline {
+  margin: 8px 0 12px;
+}
+
+/* Thinking trail — collapsed by default */
+.brief-trail--progressive {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 64ch;
+}
+.brief-trail__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.brief-trail__step {
+  display: grid !important;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--dd-border) !important;
+  background: color-mix(in oklab, var(--dd-surface) 88%, transparent) !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.brief-trail__step:hover {
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, var(--dd-border)) !important;
+}
+.brief-trail__step.is-open {
+  border-color: color-mix(in oklab, var(--dd-accent) 45%, var(--dd-border)) !important;
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface)) !important;
+}
+.brief-trail__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.brief-trail__toggle {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dd-accent) !important;
+  opacity: 0.9;
+}
+.brief-trail__type {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+}
+.brief-trail__text {
+  font-size: 16px !important;
+  line-height: 1.55 !important;
+  color: var(--dd-text) !important;
+  max-width: none !important;
+}
+.brief-trail__step.is-collapsed .brief-trail__text--full { display: none !important; }
+.brief-trail__step.is-collapsed .brief-trail__result { display: none !important; }
+.brief-trail__step.is-open .brief-trail__text--preview { display: none !important; }
+.brief-trail__step.is-open .brief-trail__text--full { display: block !important; }
+.brief-trail__step.is-open .brief-trail__result {
+  display: block !important;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--dd-accent) 12%, var(--dd-surface2, var(--dd-surface)));
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1.5 !important;
+  color: var(--dd-text) !important;
+}
+.brief-trail__step.is-open .brief-trail__toggle::after { content: none; }
+.brief-trail__step.is-open .brief-trail__toggle { content: 'Hide'; }
+.brief-trail__icon {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 14px !important;
+}
+
+/* Insight progressive */
+.brief-insight-block--lead {
+  font-size: 18px !important;
+  line-height: 1.55 !important;
+  font-weight: 650 !important;
+  max-width: 60ch;
+}
+.brief-insight-block--rest {
+  font-size: 16.5px !important;
+  line-height: 1.7 !important;
+  margin-top: 10px;
+  color: var(--dd-text-dim) !important;
+  max-width: 62ch;
+}
+
+/* Impact cards — headline first */
+.brief-impact-text-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  max-width: 64ch;
+}
+.brief-impact-text-card {
+  display: grid !important;
+  grid-template-columns: 40px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--dd-border) !important;
+  background: color-mix(in oklab, var(--dd-surface) 90%, transparent) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.brief-impact-text-card:hover {
+  border-color: color-mix(in oklab, var(--dd-accent) 40%, var(--dd-border)) !important;
+}
+.brief-impact-text-card.is-open {
+  border-color: color-mix(in oklab, var(--dd-accent) 45%, var(--dd-border)) !important;
+  background: color-mix(in oklab, var(--dd-accent) 8%, var(--dd-surface)) !important;
+}
+.bitc-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bitc-heading {
+  font-size: 16.5px !important;
+  font-weight: 750 !important;
+  line-height: 1.35 !important;
+  color: var(--dd-text) !important;
+}
+.bitc-toggle {
+  flex-shrink: 0;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-accent) !important;
+  padding-top: 2px;
+}
+.brief-impact-text-card.is-collapsed .bitc-text { display: none !important; }
+.brief-impact-text-card.is-open .bitc-text {
+  display: block !important;
+  margin-top: 8px;
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+  color: var(--dd-text-dim) !important;
+}
+.bitc-icon { font-size: 22px !important; line-height: 1.2 !important; }
+
+/* Decision / SQL keep readable but not tiny */
+.brief-decision-text { font-size: 16px !important; }
+.brief-sql__editor, .brief-sql__table, .sql-dash__sql { font-size: 14px !important; }
+.brief-sql__tab, .sql-dash__lens { font-size: 13px !important; }
+
+/* Mobile: keep ≥16px body — never shrink the story below comfort */
+@media (max-width: 700px) {
+  .brief-scroll-body { font-size: 16.5px !important; }
+  .brief-insight-block,
+  .brief-decision-text,
+  .brief-section-sub,
+  .brief-trail__text,
+  .bitc-text,
+  .brief-ask-answer {
+    font-size: 16.5px !important;
+    line-height: 1.65 !important;
+  }
+  .brief-insight-block--lead,
+  .brief-headline-text {
+    font-size: 17px !important;
+  }
+  .brief-hdr-sub { font-size: 14.5px !important; }
+  .bitc-heading { font-size: 16px !important; }
+}
+
+/* Calm chapter spacing — less wall-of-text feel */
+.brief-chapter {
+  padding: 26px 0 22px !important;
+}
+.brief-chapter + .brief-chapter {
+  border-top: 1px solid var(--dd-border);
+}
