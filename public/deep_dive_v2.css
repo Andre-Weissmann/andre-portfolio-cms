@@ -4994,3 +4994,230 @@ a.brief-tool-btn.brief-github-btn {
   .brief-episode-dock__btn { min-height: 44px !important; font-size: 0.9rem !important; }
   .brief-exit-back, .brief-exit-close { min-height: 44px; }
 }
+
+
+/* Python tricks bench */
+.brief-py-tricks {
+  margin-top: 1.1rem;
+  padding: 1rem 1rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in oklab, var(--dd-accent, #20808D) 28%, var(--dd-border, #334155));
+  background: color-mix(in oklab, var(--dd-accent, #20808D) 7%, var(--dd-surface, #0f172a));
+  max-width: 48rem;
+}
+.brief-py-tricks__kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dd-accent, #2dd4bf);
+  margin-bottom: 0.25rem;
+}
+.brief-py-tricks__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--dd-text, #f8fafc);
+  line-height: 1.25;
+}
+.brief-py-tricks__sub {
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--dd-text-dim, #94a3b8);
+  max-width: 46ch;
+}
+.brief-py-tricks__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+.brief-py-tricks__chip {
+  appearance: none;
+  border: 1px solid var(--dd-border2, #334155);
+  background: var(--dd-surface2, #1e293b);
+  color: var(--dd-text, #f8fafc);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 36px;
+}
+.brief-py-tricks__chip.is-active {
+  border-color: var(--dd-accent, #20808D);
+  background: color-mix(in oklab, var(--dd-accent, #20808D) 22%, var(--dd-surface, #0f172a));
+}
+.brief-py-tricks__live {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--dd-bg, #020617) 55%, transparent);
+  border: 1px solid var(--dd-border, #334155);
+}
+.brief-py-tricks__live-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-text-faint, #64748b);
+  margin-bottom: 0.5rem;
+}
+.brief-py-tricks__sliders {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem 0.85rem;
+}
+.brief-py-tricks__sliders label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 0.5rem;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--dd-text, #e2e8f0);
+}
+.brief-py-tricks__sliders input[type=range] {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+.brief-py-tricks__blurb {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--dd-text, #e2e8f0);
+  margin-bottom: 0.55rem;
+  font-weight: 600;
+}
+.brief-py-tricks__code {
+  margin: 0 0 0.65rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  background: #0b1220;
+  color: #e2e8f0;
+  border: 1px solid #1e293b;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.brief-light .brief-py-tricks__code {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+.brief-py-tricks__out {
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--dd-accent, #20808D) 14%, var(--dd-surface2, #1e293b));
+  border: 1px solid color-mix(in oklab, var(--dd-accent, #20808D) 35%, var(--dd-border, #334155));
+}
+.brief-py-tricks__out-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dd-accent, #2dd4bf);
+  margin-bottom: 0.25rem;
+}
+.brief-py-tricks__out-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--dd-text, #f8fafc);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Dashboard proof card for BI deep dives */
+.brief-dash-card {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border-radius: 16px;
+  border: 1px solid var(--dd-border, #334155);
+  background: var(--dd-surface, #0f172a);
+  max-width: 48rem;
+}
+.brief-dash-card__media {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--dd-border2, #334155);
+  background: #000;
+  aspect-ratio: 16 / 10;
+}
+.brief-dash-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.brief-dash-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  justify-content: center;
+  min-width: 0;
+}
+.brief-dash-card__kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dd-accent, #2dd4bf);
+}
+.brief-dash-card__text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--dd-text-dim, #94a3b8);
+}
+.brief-dash-card__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+.brief-dash-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--dd-accent, #20808D) 88%, #000);
+  color: #fff !important;
+  font-weight: 750;
+  font-size: 0.9rem;
+  text-decoration: none !important;
+  border: 1px solid transparent;
+}
+.brief-dash-card__btn:hover {
+  filter: brightness(1.06);
+}
+.brief-dash-card__note {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--dd-text-faint, #64748b);
+}
+@media (max-width: 720px) {
+  .brief-dash-card {
+    grid-template-columns: 1fr;
+  }
+  .brief-py-tricks__sliders {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dock chip transitions without layout thrash */
+.brief-episode-dock__chip {
+  transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.brief-episode-dock__btn {
+  transition: opacity 0.12s ease, background 0.12s ease;
+}

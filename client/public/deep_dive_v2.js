@@ -387,7 +387,11 @@ function renderMorphTable(container, before, after, columns, note, opts) {
 
     function applyScrub(v) {
       v = Math.max(0, Math.min(100, parseInt(v, 10) || 0));
-      var nDone = Math.round((v / 100) * totalFixes);
+      // Full clean only at 100%. Math.round made ~97% look finished early.
+      var nDone;
+      if (v >= 100) nDone = totalFixes;
+      else if (v <= 0) nDone = 0;
+      else nDone = Math.min(totalFixes - 1, Math.floor((v / 100) * totalFixes));
       var applied = {};
       var dropped = {};
       var nCell = 0, nDrop = 0;
@@ -450,9 +454,14 @@ function renderMorphTable(container, before, after, columns, note, opts) {
       scrub.setAttribute('aria-valuenow', String(v));
       if (pctEl) pctEl.textContent = v + '% cleaned · ' + nDone + '/' + totalFixes + ' fixes';
       if (statsEl) {
+        var left = totalFixes - nDone;
+        var tail = '';
+        if (nDone === 0) tail = ' Drag right to apply fixes one by one.';
+        else if (left === 1) tail = ' One fix left. Slide to 100% to finish.';
+        else if (fullyClean) tail = ' Fully cleaned.';
         statsEl.textContent = nCell + ' cell fix' + (nCell === 1 ? '' : 'es') +
           (nDrop ? (', ' + nDrop + ' duplicate row' + (nDrop === 1 ? '' : 's') + ' removed') : '') +
-          (nDone === 0 ? 'Drag right to apply fixes one by one.' : '');
+          tail;
       }
     }
     scrub.addEventListener('input', function() { applyScrub(scrub.value); });
@@ -1594,6 +1603,7 @@ python: {
     { title: 'The Health Problem', id: 'ch-health' },
     { title: 'Thinking Trail', id: 'ch-trail' },
     { title: 'Live Scenario Builder', id: 'ch-slider' },
+    { title: 'Python Tricks', id: 'ch-py-tricks' },
     { title: 'Category Distribution', id: 'ch-bar' },
     { title: 'Analytical Confidence (self-assessed)', id: 'ch-conviction' },
     { title: 'Clinical Value', id: 'ch-impact' },
@@ -2053,7 +2063,8 @@ var PLAYABLE = {
     beats: [
       { title: 'Land the result', blurb: 'Live BMI tool with transparent CDC math.', target: 'ch-overview' },
       { title: 'Challenge the default', blurb: 'BMI screens. It does not diagnose. Trail shows why WHR was added.', target: 'ch-trail' },
-      { title: 'Build a scenario', blurb: 'Drag height, weight, waist, hip. Categories update live.', target: 'ch-slider' },
+      { title: 'Build a scenario', blurb: 'Drag height and weight. Categories update live.', target: 'ch-slider' },
+      { title: 'Python tricks', blurb: 'dict lookup, f-strings, list comps, retry loops, sex-specific WHR.', target: 'ch-py-tricks' },
       { title: 'See the spread', blurb: 'Sample distribution across four BMI categories.', target: 'ch-bar' },
       { title: 'Read the value', blurb: 'What a care team can and cannot use this for.', target: 'ch-impact' }
     ],
@@ -2248,6 +2259,222 @@ function renderFilterBench(container, barSec, opts) {
   });
 }
 
+
+function renderPythonTricks(container) {
+  var wrap = document.createElement('div');
+  wrap.className = 'brief-py-tricks';
+  wrap.id = 'ch-py-tricks';
+  wrap.innerHTML =
+    '<div class="brief-py-tricks__head">' +
+      '<div class="brief-py-tricks__kicker">Python under the hood</div>' +
+      '<h3 class="brief-py-tricks__title">Cool tricks this BMI program actually uses</h3>' +
+      '<p class="brief-py-tricks__sub">Tap a chip. See the Python pattern, then run it live with sample inputs. Same ideas as the GitHub script, shown so hiring managers can feel the language, not just the sliders.</p>' +
+    '</div>';
+
+  var chips = document.createElement('div');
+  chips.className = 'brief-py-tricks__chips';
+  chips.setAttribute('role', 'tablist');
+
+  var stage = document.createElement('div');
+  stage.className = 'brief-py-tricks__stage';
+
+  var tricks = [
+    {
+      id: 'dict',
+      label: 'dict lookup',
+      blurb: 'Categories as data, not a pile of if/elif copies.',
+      code: 'BMI_BINS = [\n  (18.5, "Underweight"),\n  (25.0, "Normal weight"),\n  (30.0, "Overweight"),\n  (35.0, "Obese Class I"),\n]\n\ndef classify(bmi):\n  for ceiling, label in BMI_BINS:\n    if bmi < ceiling:\n      return label\n  return "Obese Class II+"',
+      run: function(vals) {
+        var bmi = vals.bmi;
+        var cat = 'Obese Class II+';
+        var bins = [[18.5, 'Underweight'], [25, 'Normal weight'], [30, 'Overweight'], [35, 'Obese Class I']];
+        for (var i = 0; i < bins.length; i++) {
+          if (bmi < bins[i][0]) { cat = bins[i][1]; break; }
+        }
+        return 'classify(' + bmi.toFixed(1) + ')  →  "' + cat + '"';
+      }
+    },
+    {
+      id: 'fstring',
+      label: 'f-string result',
+      blurb: 'Plain-English output, not a raw float dump.',
+      code: 'name = "Alex"\nbmi = 24.9\ncat = "Normal weight"\n\nmsg = (\n  f"Hello {name}, your BMI of {bmi:.1f} "\n  f"indicates {cat}."\n)\nprint(msg)',
+      run: function(vals) {
+        return 'Hello Alex, your BMI of ' + vals.bmi.toFixed(1) +
+          ' indicates ' + vals.cat + '.';
+      }
+    },
+    {
+      id: 'round',
+      label: 'round + guards',
+      blurb: 'WHR to 2 decimals. Reject zero or negative hips before dividing.',
+      code: 'def whr(waist, hip):\n  if hip <= 0:\n    raise ValueError("hip must be > 0")\n  return round(waist / hip, 2)\n\nratio = whr(34, 38)  # 0.89',
+      run: function(vals) {
+        var hip = vals.hip;
+        if (hip <= 0) return 'ValueError: hip must be > 0';
+        var r = Math.round((vals.waist / hip) * 100) / 100;
+        return 'whr(' + vals.waist + ', ' + hip + ')  →  ' + r.toFixed(2);
+      }
+    },
+    {
+      id: 'loop',
+      label: 'retry loop',
+      blurb: 'Bounded while-loop: up to 6 attempts, then graceful exit.',
+      code: 'attempts = 0\nMAX = 6\nwhile attempts < MAX:\n  ans = input("Add WHR? yes/no: ").strip().lower()\n  if ans in {"yes", "no"}:\n    break\n  attempts += 1\n  if attempts == 5:\n    print("One try left.")\nelse:\n  print("Exiting without WHR.")',
+      run: function(vals) {
+        return 'Pattern: while attempts < 6 → validate → break. On attempt 5, warn. After 6, exit without WHR.';
+      }
+    },
+    {
+      id: 'comprehension',
+      label: 'list comp',
+      blurb: 'Turn a table of people into category counts in one expression.',
+      code: 'people = [22.1, 27.4, 31.0, 18.2, 24.0]\n\noverweight = [\n  b for b in people if 25 <= b < 30\n]\n# → [27.4]',
+      run: function(vals) {
+        var people = [22.1, 27.4, 31.0, 18.2, 24.0];
+        var ow = people.filter(function(b) { return b >= 25 && b < 30; });
+        return 'overweight = ' + JSON.stringify(ow) + '  (1 of ' + people.length + ' sample rows)';
+      }
+    },
+    {
+      id: 'branch',
+      label: 'sex-specific WHR',
+      blurb: 'WHO thresholds differ by sex. One cutoff would misclassify.',
+      code: 'def whr_risk(ratio, sex):\n  limit = 0.90 if sex == "male" else 0.85\n  if ratio >= 1.0:\n    return "much higher risk"\n  if ratio >= limit:\n    return "elevated abdominal risk"\n  return "lower abdominal risk band"',
+      run: function(vals) {
+        var r = Math.round((vals.waist / vals.hip) * 100) / 100;
+        function risk(sex) {
+          var lim = sex === 'male' ? 0.90 : 0.85;
+          if (r >= 1.0) return 'much higher risk';
+          if (r >= lim) return 'elevated abdominal risk';
+          return 'lower abdominal risk band';
+        }
+        return 'ratio ' + r.toFixed(2) +
+          ' → male: ' + risk('male') +
+          ' · female: ' + risk('female');
+      }
+    }
+  ];
+
+  var live = document.createElement('div');
+  live.className = 'brief-py-tricks__live';
+  live.innerHTML =
+    '<div class="brief-py-tricks__live-label">Live inputs (drive the demos)</div>' +
+    '<div class="brief-py-tricks__sliders">' +
+      '<label>Height (in) <input type="range" data-k="h" min="60" max="84" value="70"><span data-v="h">70</span></label>' +
+      '<label>Weight (lb) <input type="range" data-k="w" min="100" max="350" value="175"><span data-v="w">175</span></label>' +
+      '<label>Waist (in) <input type="range" data-k="waist" min="22" max="60" value="34"><span data-v="waist">34</span></label>' +
+      '<label>Hip (in) <input type="range" data-k="hip" min="24" max="70" value="38"><span data-v="hip">38</span></label>' +
+    '</div>';
+
+  function valsFromUI() {
+    var h = parseFloat(live.querySelector('[data-k="h"]').value, 10);
+    var w = parseFloat(live.querySelector('[data-k="w"]').value, 10);
+    var waist = parseFloat(live.querySelector('[data-k="waist"]').value, 10);
+    var hip = parseFloat(live.querySelector('[data-k="hip"]').value, 10);
+    var bmi = (w / (h * h)) * 703;
+    var cat = 'Obese Class II+';
+    if (bmi < 18.5) cat = 'Underweight';
+    else if (bmi < 25) cat = 'Normal weight';
+    else if (bmi < 30) cat = 'Overweight';
+    else if (bmi < 35) cat = 'Obese Class I';
+    return { h: h, w: w, waist: waist, hip: hip, bmi: bmi, cat: cat };
+  }
+
+  function paintVals() {
+    var v = valsFromUI();
+    live.querySelector('[data-v="h"]').textContent = String(v.h);
+    live.querySelector('[data-v="w"]').textContent = String(v.w);
+    live.querySelector('[data-v="waist"]').textContent = String(v.waist);
+    live.querySelector('[data-v="hip"]').textContent = String(v.hip);
+    return v;
+  }
+
+  var active = 0;
+  function showTrick(idx) {
+    active = idx;
+    chips.querySelectorAll('button').forEach(function(b, i) {
+      b.classList.toggle('is-active', i === idx);
+      b.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+    });
+    var t = tricks[idx];
+    var v = paintVals();
+    stage.innerHTML =
+      '<div class="brief-py-tricks__blurb">' + t.blurb + '</div>' +
+      '<pre class="brief-py-tricks__code" tabindex="0"><code>' + t.code.replace(/</g, '&lt;') + '</code></pre>' +
+      '<div class="brief-py-tricks__out"><span class="brief-py-tricks__out-label">Live result</span><div class="brief-py-tricks__out-val" data-out></div></div>';
+    stage.querySelector('[data-out]').textContent = t.run(v);
+  }
+
+  tricks.forEach(function(t, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'brief-py-tricks__chip';
+    b.setAttribute('role', 'tab');
+    b.textContent = t.label;
+    b.addEventListener('click', function() { showTrick(i); });
+    chips.appendChild(b);
+  });
+
+  live.querySelectorAll('input[type=range]').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var v = paintVals();
+      var out = stage.querySelector('[data-out]');
+      if (out) out.textContent = tricks[active].run(v);
+    });
+  });
+
+  wrap.appendChild(chips);
+  wrap.appendChild(live);
+  wrap.appendChild(stage);
+  container.appendChild(wrap);
+  showTrick(0);
+}
+
+function renderDashboardCard(container, key) {
+  var map = {
+    powerbi: {
+      tool: 'Power BI',
+      href: 'powerbi-dashboard.html',
+      img: 'images/powerbi-dashboard.png',
+      alt: 'Power BI data professionals survey dashboard',
+      line: 'Full dashboard layout with slicers, KPI cards, and chart composition from the original Power BI build.'
+    },
+    tableau: {
+      tool: 'Tableau',
+      href: 'tableau-dashboard.html',
+      img: 'images/airbnb-dashboard.png',
+      alt: 'Tableau Airbnb Seattle dashboard',
+      line: 'Full Tableau-style dashboard: weekly revenue, price by zip, and bedroom mix from the Airbnb Seattle workbook.'
+    },
+    excel: {
+      tool: 'Excel',
+      href: 'excel-dashboard.html',
+      img: 'images/bike-sales.png',
+      alt: 'Excel bike sales dashboard',
+      line: 'Pivot-and-slicer dashboard view: region, income, and buyer segments from the Excel bike sales workbook.'
+    }
+  };
+  var cfg = map[key];
+  if (!cfg) return;
+  var card = document.createElement('div');
+  card.className = 'brief-dash-card';
+  card.innerHTML =
+    '<div class="brief-dash-card__media">' +
+      '<img src="' + cfg.img + '" alt="' + cfg.alt + '" loading="lazy" width="640" height="360"/>' +
+    '</div>' +
+    '<div class="brief-dash-card__body">' +
+      '<div class="brief-dash-card__kicker">' + cfg.tool + ' dashboard</div>' +
+      '<p class="brief-dash-card__text">' + cfg.line + ' The deep dive above is the analysis path you can run yourself. Open the dashboard for the full visual board.</p>' +
+      '<div class="brief-dash-card__actions">' +
+        '<a class="brief-dash-card__btn" href="' + cfg.href + '" target="_blank" rel="noopener noreferrer">Open ' + cfg.tool + ' dashboard</a>' +
+        '<span class="brief-dash-card__note">Interactive recreation in-browser. Original desktop files stay with the analyst toolkit.</span>' +
+      '</div>' +
+    '</div>';
+  container.appendChild(card);
+}
+
+
 function renderColdOpen(container, key, p, goToId) {
   var captions = {
     nashville: 'Drag raw rows into cleaned sales.',
@@ -2281,6 +2508,7 @@ function renderColdOpen(container, key, p, goToId) {
   } else if (key === 'python') {
     var wi = findProjectSection(p, 'whatif');
     if (wi && wi.wi) renderWhatIf(stage, wi.wi);
+    renderPythonTricks(stage);
   } else if (key === 'powerbi') {
     var bars = findAllProjectSections(p, 'bar-chart');
     if (bars[0]) renderFilterBench(stage, bars[0], { title: 'Language filter (live)', chipLabel: 'Languages' });
@@ -2348,6 +2576,10 @@ function renderColdOpen(container, key, p, goToId) {
     }
   }
 
+  if (key === 'powerbi' || key === 'tableau' || key === 'excel') {
+    renderDashboardCard(stage, key);
+  }
+
   shell.appendChild(stage);
   container.appendChild(shell);
 }
@@ -2406,25 +2638,29 @@ function renderPlayableEpisode(container, key, p, goToId) {
   }
 
   function setDockVisible(on) {
-    dockVisible = !!on;
+    on = !!on;
+    if (on === dockVisible) {
+      if (on) updateDock();
+      return;
+    }
+    dockVisible = on;
     var dock = ensureDock();
     if (!dock) return;
     dock.hidden = !dockVisible;
     if (panel) panel.classList.toggle('has-episode-dock', dockVisible);
     var footer = getFooter();
     if (footer) footer.classList.toggle('has-episode-dock', dockVisible);
-    if (dockVisible) paintDock();
+    if (dockVisible) {
+      buildDockOnce(dock);
+      updateDock();
+    }
   }
 
-  function paintDock() {
-    var dock = ensureDock();
-    if (!dock || !dockVisible) return;
-    var beat = activeIdx >= 0 ? beats[activeIdx] : null;
+  function buildDockOnce(dock) {
+    if (dock._built) return;
+    dock._built = true;
     var chips = beats.map(function(b, i) {
-      var cls = 'brief-episode-dock__chip';
-      if (i === activeIdx) cls += ' is-active';
-      if (visited[i]) cls += ' is-visited';
-      return '<button type="button" class="' + cls + '" data-beat="' + i + '" aria-current="' + (i === activeIdx ? 'step' : 'false') + '">' +
+      return '<button type="button" class="brief-episode-dock__chip" data-beat="' + i + '" aria-current="false">' +
         '<span class="brief-episode-dock__n">' + (i + 1) + '</span>' +
         '<span class="brief-episode-dock__t">' + b.title + '</span>' +
       '</button>';
@@ -2432,25 +2668,54 @@ function renderPlayableEpisode(container, key, p, goToId) {
     dock.innerHTML =
       '<div class="brief-episode-dock__top">' +
         '<div class="brief-episode-dock__label">Playing analysis</div>' +
-        '<div class="brief-episode-dock__now">' + (beat ? ('Beat ' + (activeIdx + 1) + ' of ' + beats.length + ' · ' + beat.title) : 'Choose a beat') + '</div>' +
+        '<div class="brief-episode-dock__now" data-dock-now>Choose a beat</div>' +
       '</div>' +
       '<div class="brief-episode-dock__chips">' + chips + '</div>' +
       '<div class="brief-episode-dock__actions">' +
-        '<button type="button" class="brief-episode-dock__btn" data-dock="prev"' + (activeIdx <= 0 ? ' disabled' : '') + '>Previous</button>' +
-        '<button type="button" class="brief-episode-dock__btn brief-episode-dock__btn--primary" data-dock="next"' + (activeIdx >= beats.length - 1 ? ' disabled' : '') + '>Next beat</button>' +
+        '<button type="button" class="brief-episode-dock__btn" data-dock="prev">Previous</button>' +
+        '<button type="button" class="brief-episode-dock__btn brief-episode-dock__btn--primary" data-dock="next">Next beat</button>' +
       '</div>';
+    // One delegated listener: never rebind on every beat change
+    dock.addEventListener('click', function(e) {
+      var beatBtn = e.target.closest('[data-beat]');
+      if (beatBtn && dock.contains(beatBtn)) {
+        e.preventDefault();
+        playBeat(parseInt(beatBtn.getAttribute('data-beat'), 10));
+        return;
+      }
+      var act = e.target.closest('[data-dock]');
+      if (!act || !dock.contains(act) || act.disabled) return;
+      e.preventDefault();
+      var dir = act.getAttribute('data-dock');
+      if (dir === 'prev' && activeIdx > 0) playBeat(activeIdx - 1);
+      if (dir === 'next') {
+        if (activeIdx < 0) playBeat(0);
+        else if (activeIdx < beats.length - 1) playBeat(activeIdx + 1);
+      }
+    });
+  }
+
+  function updateDock() {
+    var dock = ensureDock();
+    if (!dock || !dockVisible) return;
+    buildDockOnce(dock);
+    var beat = activeIdx >= 0 ? beats[activeIdx] : null;
+    var now = dock.querySelector('[data-dock-now]');
+    if (now) {
+      now.textContent = beat
+        ? ('Beat ' + (activeIdx + 1) + ' of ' + beats.length + ' · ' + beat.title)
+        : 'Choose a beat';
+    }
     dock.querySelectorAll('[data-beat]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        playBeat(parseInt(btn.getAttribute('data-beat'), 10));
-      });
+      var i = parseInt(btn.getAttribute('data-beat'), 10);
+      btn.classList.toggle('is-active', i === activeIdx);
+      btn.classList.toggle('is-visited', !!visited[i]);
+      btn.setAttribute('aria-current', i === activeIdx ? 'step' : 'false');
     });
     var prev = dock.querySelector('[data-dock="prev"]');
     var next = dock.querySelector('[data-dock="next"]');
-    if (prev) prev.addEventListener('click', function() { if (activeIdx > 0) playBeat(activeIdx - 1); });
-    if (next) next.addEventListener('click', function() {
-      if (activeIdx < 0) playBeat(0);
-      else if (activeIdx < beats.length - 1) playBeat(activeIdx + 1);
-    });
+    if (prev) prev.disabled = activeIdx <= 0;
+    if (next) next.disabled = activeIdx >= 0 && activeIdx >= beats.length - 1;
   }
 
   function syncChrome() {
@@ -2469,11 +2734,21 @@ function renderPlayableEpisode(container, key, p, goToId) {
     if (prevB) prevB.disabled = activeIdx <= 0;
     if (nextB) nextB.disabled = activeIdx >= beats.length - 1 && activeIdx >= 0;
     if (activeIdx < 0 && nextB) nextB.disabled = false;
-    if (dockVisible) paintDock();
+    if (dockVisible) updateDock();
   }
 
   function playBeat(i) {
     if (i < 0 || i >= beats.length) return;
+    if (i === activeIdx && visited[i]) {
+      // Re-tap same beat: scroll only, no full chrome rebuild thrash
+      var same = beats[i];
+      if (typeof goToId === 'function') goToId(same.target);
+      else {
+        var sameEl = document.getElementById(same.target);
+        if (sameEl) sameEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
     activeIdx = i;
     visited[i] = true;
     syncChrome();
@@ -2521,11 +2796,15 @@ function renderPlayableEpisode(container, key, p, goToId) {
   if (typeof IntersectionObserver !== 'undefined') {
     var io = new IntersectionObserver(function(entries) {
       entries.forEach(function(en) {
-        // Dock when episode list is mostly off-screen and a beat has been started
+        // Dock when episode list is off-screen and a beat has been started
         var shouldShow = !en.isIntersecting && activeIdx >= 0;
         setDockVisible(shouldShow);
       });
-    }, { root: panel ? panel.querySelector('.brief-scroll-body') : null, threshold: 0.15 });
+    }, {
+      root: panel ? panel.querySelector('.brief-scroll-body') : null,
+      threshold: [0, 0.12, 0.25],
+      rootMargin: '0px 0px -8% 0px'
+    });
     io.observe(ep);
     if (panel) panel._episodeIO = io;
   }
