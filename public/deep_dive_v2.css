@@ -2819,9 +2819,7 @@ a.brief-tool-btn.brief-github-btn {
 }
 .brief-github-icon {
   flex-shrink: 0;
-  display: inline-block;
-  font-size: 14px;
-  line-height: 1;
+  display: block;
 }
 #dd-theme-icon {
   font-size: 14px;
@@ -2881,10 +2879,8 @@ a.brief-tool-btn.brief-github-btn {
     font-size: 16px !important;
   }
   .brief-github-icon {
-    font-size: 16px !important;
-    line-height: 1 !important;
-    width: auto !important;
-    height: auto !important;
+    width: 16px !important;
+    height: 16px !important;
   }
 
   .brief-hdr-title {
