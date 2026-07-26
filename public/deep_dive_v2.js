@@ -309,40 +309,151 @@ function renderMorphTable(container, before, after, columns, note, opts) {
     if (!btn) return;
     mode = btn.dataset.mode;
     wrap.querySelectorAll('.brief-morph-btn').forEach(function(b) { b.classList.toggle('active', b === btn); });
+    var scrubEl = wrap.querySelector('.brief-morph-scrub');
+    if (scrubEl) {
+      // Progressive scrub owns the table paint
+      scrubEl.value = mode === 'before' ? '0' : '100';
+      scrubEl.dispatchEvent(new Event('input', { bubbles: true }));
+      return;
+    }
     var badge = wrap.querySelector('.brief-morph-badge');
     badge.className = 'brief-morph-badge ' + (mode === 'before' ? 'raw' : 'clean');
     badge.textContent = mode === 'before' ? 'Before' : 'After';
     renderRows(mode === 'before' ? before : after, mode);
-    var scrub = wrap.querySelector('.brief-morph-scrub');
-    if (scrub) scrub.value = mode === 'before' ? '0' : '100';
   });
 
   if (opts.scrub) {
+    var scrubId = 'morph-scrub-' + Math.random().toString(36).slice(2, 9);
     var scrubWrap = document.createElement('div');
     scrubWrap.className = 'brief-morph-scrub-wrap';
     scrubWrap.innerHTML =
-      '<label class="brief-morph-scrub-label" for="morph-scrub-range">Drag: raw to cleaned</label>' +
-      '<input type="range" class="brief-morph-scrub" id="morph-scrub-range" min="0" max="100" value="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
+      '<label class="brief-morph-scrub-label" for="' + scrubId + '">Drag: raw to cleaned</label>' +
+      '<input type="range" class="brief-morph-scrub" id="' + scrubId + '" min="0" max="100" value="0" step="1" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
       '<div class="brief-morph-scrub-meta">' +
         '<span data-scrub-side="raw">Raw</span>' +
-        '<span class="brief-morph-scrub-pct" data-scrub-pct>0% cleaned</span>' +
+        '<span class="brief-morph-scrub-pct" data-scrub-pct>0% cleaned · 0 fixes</span>' +
         '<span data-scrub-side="clean">Clean</span>' +
-      '</div>';
+      '</div>' +
+      '<div class="brief-morph-scrub-stats" data-scrub-stats></div>';
     wrap.insertBefore(scrubWrap, tbl);
     var scrub = scrubWrap.querySelector('.brief-morph-scrub');
     var pctEl = scrubWrap.querySelector('[data-scrub-pct]');
+    var statsEl = scrubWrap.querySelector('[data-scrub-stats]');
+
+    // Ordered fix steps so the scrub is progressive, not a 50% cliff.
+    // 1) cell repairs on every before-row  2) drop same-day duplicate rows
+    var fixSteps = [];
+    var afterByParcel = {};
+    after.forEach(function(row) {
+      var pid = String(row[0] || '');
+      if (!afterByParcel[pid]) afterByParcel[pid] = row;
+    });
+    before.forEach(function(row, ri) {
+      var pid = String(row[0] || '');
+      var afterRow = afterByParcel[pid];
+      if (!afterRow) return;
+      for (var ci = 0; ci < columns.length; ci++) {
+        var from = row[ci];
+        var to = afterRow[ci];
+        var fromS = from === null || from === undefined ? '' : String(from);
+        var toS = to === null || to === undefined ? '' : String(to);
+        if (fromS !== toS) {
+          fixSteps.push({ kind: 'cell', ri: ri, ci: ci, from: from, to: to });
+        }
+      }
+    });
+    // Duplicate rows: before rows whose ParcelID already appeared earlier
+    var seenParcel = {};
+    before.forEach(function(row, ri) {
+      var pid = String(row[0] || '');
+      if (seenParcel[pid]) {
+        fixSteps.push({ kind: 'drop', ri: ri, pid: pid });
+      } else {
+        seenParcel[pid] = true;
+      }
+    });
+    var totalFixes = fixSteps.length || 1;
+
+    function cellHtml(cell, col, state) {
+      // state: dirty | fixed | plain
+      if (isMissing(cell)) {
+        return '<div class="brief-morph-cell' + (state === 'dirty' ? ' dirty' : '') + '"><span class="brief-null" title="Missing value in source data">MISSING</span></div>';
+      }
+      var cls = 'brief-morph-cell';
+      if (state === 'dirty') cls += ' dirty';
+      if (state === 'fixed') cls += ' fixed';
+      return '<div class="' + cls + '">' + cell + '</div>';
+    }
+
     function applyScrub(v) {
-      var cleaned = parseInt(v, 10) >= 50;
-      mode = cleaned ? 'after' : 'before';
-      wrap.querySelectorAll('.brief-morph-btn').forEach(function(b) {
-        b.classList.toggle('active', b.dataset.mode === mode);
+      v = Math.max(0, Math.min(100, parseInt(v, 10) || 0));
+      var nDone = Math.round((v / 100) * totalFixes);
+      var applied = {};
+      var dropped = {};
+      var nCell = 0, nDrop = 0;
+      for (var i = 0; i < nDone; i++) {
+        var step = fixSteps[i];
+        if (!step) break;
+        if (step.kind === 'cell') {
+          applied[step.ri + ':' + step.ci] = step.to;
+          nCell++;
+        } else if (step.kind === 'drop') {
+          dropped[step.ri] = true;
+          nDrop++;
+        }
+      }
+
+      // Rebuild rows progressively from before baseline
+      var rows = tbl.querySelectorAll('.brief-morph-row:not(.brief-morph-head)');
+      rows.forEach(function(r) { r.remove(); });
+      before.forEach(function(row, ri) {
+        if (dropped[ri]) return;
+        var div = document.createElement('div');
+        var anyFixed = false;
+        var html = '';
+        for (var ci = 0; ci < columns.length; ci++) {
+          var key = ri + ':' + ci;
+          var col = columns[ci] || '';
+          if (Object.prototype.hasOwnProperty.call(applied, key)) {
+            html += cellHtml(applied[key], col, 'fixed');
+            anyFixed = true;
+          } else {
+            var dirty = isDirtyCell(row[ci], col);
+            html += cellHtml(row[ci], col, dirty ? 'dirty' : 'plain');
+          }
+        }
+        div.className = 'brief-morph-row' + (anyFixed ? ' clean' : '');
+        div.innerHTML = html;
+        tbl.appendChild(div);
       });
+
+      var fullyClean = nDone >= totalFixes;
+      mode = fullyClean ? 'after' : 'before';
+      wrap.querySelectorAll('.brief-morph-btn').forEach(function(b) {
+        b.classList.toggle('active', fullyClean ? b.dataset.mode === 'after' : b.dataset.mode === 'before');
+      });
+      // Mid scrub: neither button exclusive if partial
+      if (!fullyClean && nDone > 0) {
+        wrap.querySelectorAll('.brief-morph-btn').forEach(function(b) { b.classList.remove('active'); });
+      }
       var badge = wrap.querySelector('.brief-morph-badge');
-      badge.className = 'brief-morph-badge ' + (cleaned ? 'clean' : 'raw');
-      badge.textContent = cleaned ? 'After' : 'Before';
-      renderRows(cleaned ? after : before, mode);
+      if (fullyClean) {
+        badge.className = 'brief-morph-badge clean';
+        badge.textContent = 'After';
+      } else if (nDone === 0) {
+        badge.className = 'brief-morph-badge raw';
+        badge.textContent = 'Before';
+      } else {
+        badge.className = 'brief-morph-badge scrub';
+        badge.textContent = nDone + '/' + totalFixes;
+      }
       scrub.setAttribute('aria-valuenow', String(v));
-      if (pctEl) pctEl.textContent = v + '% cleaned';
+      if (pctEl) pctEl.textContent = v + '% cleaned · ' + nDone + '/' + totalFixes + ' fixes';
+      if (statsEl) {
+        statsEl.textContent = nCell + ' cell fix' + (nCell === 1 ? '' : 'es') +
+          (nDrop ? (', ' + nDrop + ' duplicate row' + (nDrop === 1 ? '' : 's') + ' removed') : '') +
+          (nDone === 0 ? 'Drag right to apply fixes one by one.' : '');
+      }
     }
     scrub.addEventListener('input', function() { applyScrub(scrub.value); });
   }
@@ -2194,8 +2305,12 @@ function renderColdOpen(container, key, p, goToId) {
           height: 170
         });
       }, 0);
-      // Auto-highlight last peak note
-      jump.click();
+      // Seed peak note without stealing focus/scroll
+      var seedNote = document.createElement('div');
+      seedNote.className = 'brief-cold-open__peak-note';
+      var seedVal = line.values[peakIdx];
+      seedNote.textContent = 'Week ' + (peakIdx + 1) + ': $' + Number(seedVal).toLocaleString() + ' weekly revenue peak (holiday demand).';
+      stage.insertBefore(seedNote, lc);
     }
   } else if (key === 'excel') {
     var eBars = findAllProjectSections(p, 'bar-chart');
@@ -2224,24 +2339,131 @@ function renderColdOpen(container, key, p, goToId) {
 function renderPlayableEpisode(container, key, p, goToId) {
   var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
   if (!cfg) return;
+  var beats = cfg.beats || [];
+  if (!beats.length) return;
+
+  var panel = document.getElementById('dd-panel');
+  var activeIdx = -1;
+  var visited = {};
 
   var ep = document.createElement('div');
   ep.className = 'brief-playable';
+  ep.id = 'brief-playable-' + key;
   ep.innerHTML =
     '<div class="brief-playable-head">' +
       '<div class="brief-playable-kicker">Episode</div>' +
       '<div class="brief-playable-title">' + (cfg.tagline || 'Play this analysis') + '</div>' +
-      '<p class="brief-playable-sub">' + (cfg.sub || '') + '</p>' +
+      '<p class="brief-playable-sub">' + (cfg.sub || 'Tap a beat. Controls stay with you while you move through the story.') + '</p>' +
     '</div>';
 
   var track = document.createElement('div');
   track.className = 'brief-playable-track';
   track.setAttribute('role', 'list');
-  (cfg.beats || []).forEach(function(beat, i) {
+
+  var nav = document.createElement('div');
+  nav.className = 'brief-playable-nav';
+  nav.innerHTML =
+    '<button type="button" class="brief-playable-nav-btn" data-nav="prev" disabled>Previous beat</button>' +
+    '<span class="brief-playable-nav-status" data-nav-status>Pick beat 1 to start</span>' +
+    '<button type="button" class="brief-playable-nav-btn" data-nav="next">Next beat</button>';
+
+  function ensureDock() {
+    if (!panel) return null;
+    var dock = panel.querySelector('.brief-episode-dock');
+    if (!dock) {
+      dock = document.createElement('div');
+      dock.className = 'brief-episode-dock';
+      dock.setAttribute('role', 'navigation');
+      dock.setAttribute('aria-label', 'Episode beats');
+      panel.appendChild(dock);
+      panel.classList.add('has-episode-dock');
+    }
+    return dock;
+  }
+
+  function removeDock() {
+    if (!panel) return;
+    var dock = panel.querySelector('.brief-episode-dock');
+    if (dock) dock.parentNode.removeChild(dock);
+    panel.classList.remove('has-episode-dock');
+  }
+
+  function paintDock() {
+    var dock = ensureDock();
+    if (!dock) return;
+    var beat = activeIdx >= 0 ? beats[activeIdx] : null;
+    var chips = beats.map(function(b, i) {
+      var cls = 'brief-episode-dock__chip';
+      if (i === activeIdx) cls += ' is-active';
+      if (visited[i]) cls += ' is-visited';
+      return '<button type="button" class="' + cls + '" data-beat="' + i + '" aria-current="' + (i === activeIdx ? 'step' : 'false') + '">' +
+        '<span class="brief-episode-dock__n">' + (i + 1) + '</span>' +
+        '<span class="brief-episode-dock__t">' + b.title + '</span>' +
+      '</button>';
+    }).join('');
+    dock.innerHTML =
+      '<div class="brief-episode-dock__top">' +
+        '<div class="brief-episode-dock__label">Playing analysis</div>' +
+        '<div class="brief-episode-dock__now">' + (beat ? ('Beat ' + (activeIdx + 1) + ': ' + beat.title) : 'Episode') + '</div>' +
+      '</div>' +
+      '<div class="brief-episode-dock__chips">' + chips + '</div>' +
+      '<div class="brief-episode-dock__actions">' +
+        '<button type="button" class="brief-episode-dock__btn" data-dock="prev"' + (activeIdx <= 0 ? ' disabled' : '') + '>Previous</button>' +
+        '<button type="button" class="brief-episode-dock__btn brief-episode-dock__btn--primary" data-dock="next"' + (activeIdx >= beats.length - 1 ? ' disabled' : '') + '>Next beat</button>' +
+        '<button type="button" class="brief-episode-dock__btn" data-dock="top">Back to beats</button>' +
+      '</div>';
+    dock.querySelectorAll('[data-beat]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        playBeat(parseInt(btn.getAttribute('data-beat'), 10));
+      });
+    });
+    var prev = dock.querySelector('[data-dock="prev"]');
+    var next = dock.querySelector('[data-dock="next"]');
+    var top = dock.querySelector('[data-dock="top"]');
+    if (prev) prev.addEventListener('click', function() { if (activeIdx > 0) playBeat(activeIdx - 1); });
+    if (next) next.addEventListener('click', function() { if (activeIdx < beats.length - 1) playBeat(activeIdx + 1); });
+    if (top) top.addEventListener('click', function() {
+      ep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function syncChrome() {
+    track.querySelectorAll('.brief-playable-beat').forEach(function(b, i) {
+      b.classList.toggle('is-active', i === activeIdx);
+      b.classList.toggle('is-visited', !!visited[i]);
+    });
+    var status = nav.querySelector('[data-nav-status]');
+    var prevB = nav.querySelector('[data-nav="prev"]');
+    var nextB = nav.querySelector('[data-nav="next"]');
+    if (status) {
+      status.textContent = activeIdx < 0
+        ? 'Pick beat 1 to start'
+        : ('Beat ' + (activeIdx + 1) + ' of ' + beats.length + (visited[activeIdx] ? ' · viewed' : ''));
+    }
+    if (prevB) prevB.disabled = activeIdx <= 0;
+    if (nextB) nextB.disabled = activeIdx < 0 || activeIdx >= beats.length - 1;
+    paintDock();
+  }
+
+  function playBeat(i) {
+    if (i < 0 || i >= beats.length) return;
+    activeIdx = i;
+    visited[i] = true;
+    syncChrome();
+    var beat = beats[i];
+    if (typeof goToId === 'function') goToId(beat.target);
+    else {
+      var el = document.getElementById(beat.target);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  beats.forEach(function(beat, i) {
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'brief-playable-beat';
     btn.setAttribute('role', 'listitem');
+    btn.setAttribute('data-beat-index', String(i));
     btn.innerHTML =
       '<span class="brief-playable-num">' + (i + 1) + '</span>' +
       '<span class="brief-playable-beat-body">' +
@@ -2249,22 +2471,32 @@ function renderPlayableEpisode(container, key, p, goToId) {
         '<span class="brief-playable-beat-blurb">' + beat.blurb + '</span>' +
       '</span>' +
       '<span class="brief-playable-go" aria-hidden="true">Go</span>';
-    btn.addEventListener('click', function() {
-      track.querySelectorAll('.brief-playable-beat').forEach(function(b) { b.classList.remove('is-active'); });
-      btn.classList.add('is-active');
-      if (typeof goToId === 'function') goToId(beat.target);
-      else {
-        var el = document.getElementById(beat.target);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
+    btn.addEventListener('click', function() { playBeat(i); });
     track.appendChild(btn);
   });
-  ep.appendChild(track);
 
-  var first = track.querySelector('.brief-playable-beat');
-  if (first) first.classList.add('is-active');
+  nav.addEventListener('click', function(e) {
+    var b = e.target.closest('[data-nav]');
+    if (!b || b.disabled) return;
+    var dir = b.getAttribute('data-nav');
+    if (dir === 'prev' && activeIdx > 0) playBeat(activeIdx - 1);
+    if (dir === 'next') {
+      if (activeIdx < 0) playBeat(0);
+      else if (activeIdx < beats.length - 1) playBeat(activeIdx + 1);
+    }
+  });
+
+  ep.appendChild(track);
+  ep.appendChild(nav);
   container.appendChild(ep);
+
+  // Clean dock when drawer closes (panel loses open class)
+  if (panel && !panel._episodeDockObserver) {
+    panel._episodeDockObserver = new MutationObserver(function() {
+      if (!panel.classList.contains('open')) removeDock();
+    });
+    panel._episodeDockObserver.observe(panel, { attributes: true, attributeFilter: ['class'] });
+  }
 }
 
 function renderPlayableDepth(container, key) {

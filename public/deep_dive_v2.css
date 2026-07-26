@@ -4603,3 +4603,183 @@ a.brief-tool-btn.brief-github-btn {
   .brief-cold-open { padding: 0.85rem 0.8rem; }
   .brief-filter-chip { min-height: 40px; }
 }
+
+
+/* Progressive scrub badge */
+.brief-morph-badge.scrub {
+  background: color-mix(in srgb, var(--brief-accent) 22%, var(--brief-surface2));
+  color: var(--brief-text);
+}
+.brief-morph-scrub-stats {
+  font-size: 0.78rem;
+  color: var(--brief-text-faint);
+  line-height: 1.35;
+  min-height: 1.1em;
+}
+
+/* Playable nav under beat track */
+.brief-playable-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.brief-playable-nav-btn {
+  appearance: none;
+  border: 1px solid var(--brief-border);
+  background: var(--brief-surface2);
+  color: var(--brief-text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 40px;
+}
+.brief-playable-nav-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.brief-playable-nav-status {
+  flex: 1 1 auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--brief-text-faint);
+  text-align: center;
+}
+.brief-playable-beat.is-visited:not(.is-active) {
+  opacity: 0.85;
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--brief-accent) 55%, transparent);
+}
+.brief-playable-beat.is-visited .brief-playable-num::after {
+  content: '';
+}
+
+/* Sticky episode dock: stays while reading beat targets */
+#dd-panel.has-episode-dock .brief-scroll-body {
+  padding-bottom: 7.5rem;
+}
+.brief-episode-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: 0.55rem 0.75rem 0.65rem;
+  background: color-mix(in srgb, var(--brief-surface) 92%, var(--brief-accent));
+  border-top: 1px solid color-mix(in srgb, var(--brief-accent) 35%, var(--brief-border));
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.18);
+  backdrop-filter: blur(10px);
+}
+.brief-episode-dock__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.brief-episode-dock__label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--brief-accent);
+}
+.brief-episode-dock__now {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brief-text);
+  text-align: right;
+}
+.brief-episode-dock__chips {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  -webkit-overflow-scrolling: touch;
+}
+.brief-episode-dock__chip {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid var(--brief-border);
+  background: var(--brief-surface2);
+  color: var(--brief-text);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 34px;
+  max-width: 11rem;
+}
+.brief-episode-dock__chip.is-active {
+  border-color: var(--brief-accent);
+  background: color-mix(in srgb, var(--brief-accent) 20%, var(--brief-surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brief-accent) 40%, transparent);
+}
+.brief-episode-dock__chip.is-visited:not(.is-active) {
+  opacity: 0.9;
+}
+.brief-episode-dock__n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brief-accent) 25%, transparent);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+.brief-episode-dock__t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 8rem;
+}
+.brief-episode-dock__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+.brief-episode-dock__btn {
+  appearance: none;
+  border: 1px solid var(--brief-border);
+  background: var(--brief-surface2);
+  color: var(--brief-text);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 36px;
+}
+.brief-episode-dock__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.brief-episode-dock__btn--primary {
+  background: color-mix(in srgb, var(--brief-accent) 22%, var(--brief-surface));
+  border-color: var(--brief-accent);
+}
+@media (max-width: 640px) {
+  #dd-panel.has-episode-dock .brief-scroll-body {
+    padding-bottom: 8.5rem;
+  }
+  .brief-episode-dock__t { max-width: 5.5rem; }
+  .brief-episode-dock__now {
+    font-size: 0.72rem;
+    max-width: 55%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
