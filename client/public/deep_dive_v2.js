@@ -2733,29 +2733,29 @@ var DD_DASHBOARDS = {
   powerbi: {
     tool: 'Power BI',
     shots: [
-      { src: 'images/powerbi-dashboard.png?v=1785074000', alt: 'Power BI dashboard for the data professionals survey', caption: 'Full dashboard · tap to enlarge' }
+      { src: 'images/powerbi-dashboard.png?v=1785074000', alt: 'Power BI dashboard for the data professionals survey', caption: 'Full Power BI dashboard' }
     ],
-    caption: 'One full Power BI Desktop dashboard. Tap the image to view it large.',
+    caption: 'Full Power BI Desktop dashboard, five charts and two KPI cards.',
     fileHref: '',
     fileLabel: ''
   },
   tableau: {
     tool: 'Tableau',
     shots: [
-      { src: 'images/airbnb-dashboard.png', alt: 'Tableau Airbnb Seattle dashboard overview', caption: 'Dashboard overview' },
-      { src: 'images/tableau-sheet1.png', alt: 'Tableau worksheet: listing and neighborhood detail', caption: 'Worksheet detail' },
-      { src: 'images/tableau-sheet2.png', alt: 'Tableau worksheet: revenue pattern detail', caption: 'Revenue pattern' }
+      { src: 'images/airbnb-dashboard.png', alt: 'Tableau Airbnb Seattle dashboard overview', caption: 'Full Tableau dashboard' },
+      { src: 'images/tableau-sheet1.png', alt: 'Tableau worksheet: listing and neighborhood detail', caption: 'Listing and neighborhood detail' },
+      { src: 'images/tableau-sheet2.png', alt: 'Tableau worksheet: revenue pattern detail', caption: 'Revenue pattern detail' }
     ],
-    caption: 'Three Tableau views: overview plus two worksheets. Interactive charts below let you inspect the spikes.',
+    caption: 'Full Tableau dashboard plus two worksheet views. Interactive charts below let you inspect the spikes.',
     fileHref: '',
     fileLabel: ''
   },
   excel: {
     tool: 'Excel',
     shots: [
-      { src: 'images/bike-sales.png', alt: 'Excel bike sales dashboard with pivots and slicers', caption: 'Full dashboard view' }
+      { src: 'images/bike-sales.png', alt: 'Excel bike sales dashboard with pivots and slicers', caption: 'Full Excel dashboard with pivots and slicers' }
     ],
-    caption: 'One Excel dashboard view with pivots and slicers. Segment filters and scenarios are interactive below.',
+    caption: 'Full Excel dashboard with pivots and slicers. Segment filters and scenarios are interactive below.',
     fileHref: '',
     fileLabel: ''
   }
@@ -2967,9 +2967,8 @@ function renderDashboardCard(container, key) {
   var gallery = shots.map(function(s, i) {
     var cap = s.caption ? ('<figcaption class="brief-shot__cap">' + s.caption + '</figcaption>') : '';
     return '<figure class="brief-shot' + (i === 0 ? ' brief-shot--hero' : ' brief-shot--thumb') + '" data-shot-i="' + i + '">' +
-      '<button type="button" class="brief-shot__btn" aria-label="Expand screenshot ' + (i + 1) + '">' +
-        '<img src="' + s.src + '" alt="' + (s.alt || (cfg.tool + ' dashboard screenshot')) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '" decoding="async" />' +
-      '</button>' + cap +
+      '<img src="' + s.src + '" alt="' + (s.alt || (cfg.tool + ' dashboard screenshot')) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '" decoding="async" />' +
+      cap +
       '</figure>';
   }).join('');
   var kicker = multi
@@ -2983,39 +2982,7 @@ function renderDashboardCard(container, key) {
     '</div>';
   container.appendChild(card);
 
-  // Lightweight lightbox for desktop + mobile
-  card.addEventListener('click', function(e) {
-    var btn = e.target.closest('.brief-shot__btn');
-    if (!btn || !card.contains(btn)) return;
-    var fig = btn.closest('.brief-shot');
-    var img = btn.querySelector('img');
-    if (!img) return;
-    var overlay = document.createElement('div');
-    overlay.className = 'brief-shot-lightbox';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', 'Expanded dashboard screenshot');
-    overlay.innerHTML =
-      '<button type="button" class="brief-shot-lightbox__close" aria-label="Close">Close</button>' +
-      '<img src="' + img.getAttribute('src') + '" alt="' + (img.getAttribute('alt') || '') + '" />' +
-      (fig && fig.querySelector('.brief-shot__cap')
-        ? ('<p class="brief-shot-lightbox__cap">' + fig.querySelector('.brief-shot__cap').textContent + '</p>')
-        : '');
-    document.body.appendChild(overlay);
-    document.body.classList.add('dd-lightbox-open');
-    function close() {
-      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-      document.body.classList.remove('dd-lightbox-open');
-      document.removeEventListener('keydown', onKey);
-    }
-    function onKey(ev) { if (ev.key === 'Escape') close(); }
-    overlay.addEventListener('click', function(ev) {
-      if (ev.target === overlay || ev.target.closest('.brief-shot-lightbox__close')) close();
-    });
-    document.addEventListener('keydown', onKey);
-    var c = overlay.querySelector('.brief-shot-lightbox__close');
-    if (c) c.focus();
-  });
+  // Lightbox removed: Deep Dive already renders shots at full inline size, no gate.
 }
 
 
