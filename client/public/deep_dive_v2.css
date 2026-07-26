@@ -5387,3 +5387,27 @@ a.brief-tool-btn.brief-github-btn {
 @media (max-width: 640px) {
   .brief-dash-live { min-height: 300px; padding: 6px; }
 }
+
+
+/* BI original-file proof */
+.brief-dash-card__btn--file {
+  background: color-mix(in srgb, var(--accent, #118DFF) 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #118DFF) 45%, transparent);
+  color: var(--text, inherit) !important;
+}
+.brief-dash-card__btn--file:hover {
+  background: color-mix(in srgb, var(--accent, #118DFF) 24%, transparent) !important;
+}
+.brief-dash-card__honesty {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--brief-text-dim, #6b7280);
+  max-width: 52ch;
+}
+.brief-dash-card__hint {
+  display: block;
+  font-size: 11px;
+  color: var(--brief-text-dim, #6b7280);
+  margin: -4px 0 6px;
+}

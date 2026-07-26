@@ -46,6 +46,18 @@
   }
 
   .board-badge { color: #E97627; border-color: color-mix(in srgb, #E97627 40%, #ccc); background: color-mix(in srgb, #E97627 10%, #fff); }
+
+  .board-dl {
+    font-size: 12px;
+    font-weight: 600;
+    color: inherit;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+    white-space: nowrap;
+  }
+  .board-dl:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
 </style>
 </head>
 <body>
@@ -55,11 +67,11 @@
       <span class="board-title">Airbnb Seattle 2016 · Interactive board</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
-      <span class="board-badge">Tableau replica</span>
+      <span class="board-badge">Web recreation · no .twbx on file</span>
     </div>
   </header>
   <main class="board-main">
-    <p class="board-hint">Tap a zip or bedroom bar to cross-filter. Clear the filter banner to reset. Interactive replica of the Tableau dashboard.</p>
+    <p class="board-hint">Tap a zip or bedroom count to cross-filter. This is a browser recreation of the findings. Original Tableau workbook is not available to download. Deep dive screenshots and story carry the Tableau proof.</p>
     <div class="board-stage">
       <div id="tableau-replica"></div>
     </div>

@@ -79,6 +79,7 @@ const STATIC_ASSETS = [
   "powerbi.js",
   "tableau.js",
   "images",
+  "files",
   "Andre_Weissmann_Resume.docx",
   "Andre_Weissmann_Resume.pdf",
   "index.html",
