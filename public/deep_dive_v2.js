@@ -191,6 +191,16 @@ function renderLineChart(container, datasets, opts) {
         var dot = document.createElementNS(ns, 'circle');
         dot.setAttribute('cx', px(pi)); dot.setAttribute('cy', py(ds.values[pi]));
         dot.setAttribute('r', 4); dot.setAttribute('fill', '#E8AF34');
+        var peakLabel = document.createElementNS(ns, 'text');
+        peakLabel.setAttribute('x', px(pi));
+        peakLabel.setAttribute('y', Math.max(12, py(ds.values[pi]) - 10));
+        peakLabel.setAttribute('text-anchor', 'middle');
+        peakLabel.setAttribute('font-size', '9');
+        peakLabel.setAttribute('font-weight', '700');
+        peakLabel.setAttribute('fill', 'var(--brief-text)');
+        var weekLbl = (opts.labels && opts.labels[pi]) ? opts.labels[pi] : ('W' + (pi + 1));
+        peakLabel.textContent = weekLbl + ' $' + Math.round(ds.values[pi] / 1000) + 'K';
+        svg.appendChild(peakLabel);
         dot.addEventListener('mouseenter', function(e) {
           showTip('<strong>Week ' + (pi+1) + '</strong><br>$' + ds.values[pi].toLocaleString(), e.clientX, e.clientY);
         });
@@ -234,7 +244,8 @@ function countUp(el, target, duration, opts) {
 /* ─────────────────────────────────────────────────────────────────
    MORPHING TABLE - rows animate from dirty to clean state
 ───────────────────────────────────────────────────────────────── */
-function renderMorphTable(container, before, after, columns, note) {
+function renderMorphTable(container, before, after, columns, note, opts) {
+  opts = opts || {};
   var wrap = document.createElement('div');
   wrap.className = 'brief-morph-table';
   wrap.innerHTML = '<div class="brief-morph-header">' +
@@ -302,7 +313,39 @@ function renderMorphTable(container, before, after, columns, note) {
     badge.className = 'brief-morph-badge ' + (mode === 'before' ? 'raw' : 'clean');
     badge.textContent = mode === 'before' ? 'Before' : 'After';
     renderRows(mode === 'before' ? before : after, mode);
+    var scrub = wrap.querySelector('.brief-morph-scrub');
+    if (scrub) scrub.value = mode === 'before' ? '0' : '100';
   });
+
+  if (opts.scrub) {
+    var scrubWrap = document.createElement('div');
+    scrubWrap.className = 'brief-morph-scrub-wrap';
+    scrubWrap.innerHTML =
+      '<label class="brief-morph-scrub-label" for="morph-scrub-range">Drag: raw to cleaned</label>' +
+      '<input type="range" class="brief-morph-scrub" id="morph-scrub-range" min="0" max="100" value="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
+      '<div class="brief-morph-scrub-meta">' +
+        '<span data-scrub-side="raw">Raw</span>' +
+        '<span class="brief-morph-scrub-pct" data-scrub-pct>0% cleaned</span>' +
+        '<span data-scrub-side="clean">Clean</span>' +
+      '</div>';
+    wrap.insertBefore(scrubWrap, tbl);
+    var scrub = scrubWrap.querySelector('.brief-morph-scrub');
+    var pctEl = scrubWrap.querySelector('[data-scrub-pct]');
+    function applyScrub(v) {
+      var cleaned = parseInt(v, 10) >= 50;
+      mode = cleaned ? 'after' : 'before';
+      wrap.querySelectorAll('.brief-morph-btn').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      var badge = wrap.querySelector('.brief-morph-badge');
+      badge.className = 'brief-morph-badge ' + (cleaned ? 'clean' : 'raw');
+      badge.textContent = cleaned ? 'After' : 'Before';
+      renderRows(cleaned ? after : before, mode);
+      scrub.setAttribute('aria-valuenow', String(v));
+      if (pctEl) pctEl.textContent = v + '% cleaned';
+    }
+    scrub.addEventListener('input', function() { applyScrub(scrub.value); });
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -442,7 +485,7 @@ function renderThinkingTrail(container, steps) {
       '<div class="brief-trail__body">' +
         '<div class="brief-trail__top">' +
           '<span class="brief-trail__type">' + String(step.type || 'step').toUpperCase() + '</span>' +
-          '<span class="brief-trail__toggle" aria-hidden="true">Details</span>' +
+          '<span class="brief-trail__toggle" aria-hidden="true">Show step</span>' +
         '</div>' +
         '<div class="brief-trail__text brief-trail__text--preview">' + short + '</div>' +
         '<div class="brief-trail__text brief-trail__text--full">' + preview + '</div>' +
@@ -457,7 +500,7 @@ function renderThinkingTrail(container, steps) {
           el.classList.add('is-collapsed');
           el.setAttribute('aria-expanded', 'false');
           var t0 = el.querySelector('.brief-trail__toggle');
-          if (t0) t0.textContent = 'Details';
+          if (t0) t0.textContent = 'Show step';
         }
       });
       var tog = div.querySelector('.brief-trail__toggle');
@@ -465,12 +508,12 @@ function renderThinkingTrail(container, steps) {
         div.classList.remove('is-open');
         div.classList.add('is-collapsed');
         div.setAttribute('aria-expanded', 'false');
-        if (tog) tog.textContent = 'Details';
+        if (tog) tog.textContent = 'Show step';
       } else {
         div.classList.add('is-open');
         div.classList.remove('is-collapsed');
         div.setAttribute('aria-expanded', 'true');
-        if (tog) tog.textContent = 'Hide';
+        if (tog) tog.textContent = 'Hide step';
       }
     });
     list.appendChild(div);
@@ -481,13 +524,13 @@ function renderThinkingTrail(container, steps) {
     var more = document.createElement('button');
     more.type = 'button';
     more.className = 'brief-disclose-btn';
-    more.textContent = 'Show all ' + steps.length + ' moves';
+    more.textContent = 'Show all ' + steps.length + ' trail moves';
     more.addEventListener('click', function() {
       var expanded = wrap.classList.toggle('is-trail-expanded');
       list.querySelectorAll('.brief-trail__step.is-extra').forEach(function(el) {
         el.hidden = !expanded;
       });
-      more.textContent = expanded ? 'Show fewer moves' : ('Show all ' + steps.length + ' moves');
+      more.textContent = expanded ? ('Hide extra trail moves') : ('Show all ' + steps.length + ' trail moves');
     });
     wrap.appendChild(more);
   }
@@ -518,7 +561,7 @@ function initSpine(panel) {
   var scrollBody = panel.querySelector('.brief-scroll-body');
   var bodyEl = document.getElementById('dd-body');
   var rail = panel.querySelector('.brief-mob-rail');
-  // Fresh spy state each open — prevents stale last-lock across projects
+  // Fresh spy state each open - prevents stale last-lock across projects
   panel._spineActiveIndex = 0;
   panel._spineLockedLast = false;
   panel._spineMaxScrollTop = 0;
@@ -624,7 +667,7 @@ function initSpine(panel) {
 
   function ensureScrollRoom(targets, force) {
     // Enough end room that the LAST section heading can reach the reading line.
-    // Resize only when forced or not yet sized — never on every scroll tick.
+    // Resize only when forced or not yet sized - never on every scroll tick.
     if (!content || !targets || !targets.length) return;
     var viewH = content.clientHeight || 0;
     if (viewH < 120) return;
@@ -1208,7 +1251,7 @@ nashville: {
           desc: 'Share of sales rows with a usable property street address.',
           before: 99.95,
           after: 100,
-          delta: '29 blank addresses recovered via ParcelID self-join (ISNULL) — zero rows deleted.'
+          delta: '29 blank addresses recovered via ParcelID self-join (ISNULL) - zero rows deleted.'
         },
         {
           name: 'Uniqueness',
@@ -1259,13 +1302,13 @@ WHERE OwnerAddress LIKE '%,%,%';`
     {
       type: 'sql-dashboard',
       title: 'SQL Dashboard',
-      subtitle: 'Pick a SQL lens. KPIs and the chart are the answer to that question — the pattern analysts use before a metric hits a dashboard.',
+      subtitle: 'Pick a SQL lens. KPIs and the chart are the answer to that question - the pattern analysts use before a metric hits a dashboard.',
       hint: 'Each lens is a SQL question. The dashboard is the result, not a separate BI file.',
       meta: 'Project grain: 56,477 Metro sales · SQL on GitHub',
       lenses: [
         {
           label: 'Land use mix',
-          why: 'Shows which property types dominate volume and typical price — the first cut a housing analyst runs after cleaning.',
+          why: 'Shows which property types dominate volume and typical price - the first cut a housing analyst runs after cleaning.',
           sql: 'SELECT LandUse,\n       COUNT(*) AS sales,\n       ROUND(AVG(SalePrice), 0) AS avg_price\nFROM housing\nGROUP BY LandUse\nORDER BY sales DESC;',
           kpis: [
             { label: 'Land-use groups', value: 5 },
@@ -1341,7 +1384,7 @@ WHERE OwnerAddress LIKE '%,%,%';`
         },
         {
           label: 'Vacancy split',
-          why: 'After Yes/No standardization, vacancy share is one number you can trust — not four competing spellings.',
+          why: 'After Yes/No standardization, vacancy share is one number you can trust - not four competing spellings.',
           sql: 'SELECT SoldAsVacant,\n       COUNT(*) AS sales,\n       ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct\nFROM housing\nGROUP BY SoldAsVacant;',
           kpis: [
             { label: 'Sold vacant', value: 4635 },
@@ -1845,7 +1888,7 @@ excel: {
 }; // end PROJECTS
 
 /* ═══════════════════════════════════════════════════════════════
-   PLAYABLE EPISODES — skim-first path for every deep dive
+   PLAYABLE EPISODES - skim-first path for every deep dive
    Beats jump to real chapters. Limits + wrong turns stay honest.
 ═══════════════════════════════════════════════════════════════ */
 var PLAYABLE = {
@@ -1997,6 +2040,187 @@ var PLAYABLE = {
    DRAWER RENDERER
 ═══════════════════════════════════════════════════════════════════ */
 
+
+/* ─────────────────────────────────────────────────────────────────
+   PROOF BENCH: cold open + filter bench (portfolio deep dives)
+───────────────────────────────────────────────────────────────── */
+function findProjectSection(p, type) {
+  var secs = (p && p.sections) || [];
+  for (var i = 0; i < secs.length; i++) {
+    if (secs[i].type === type) return secs[i];
+  }
+  return null;
+}
+
+function findAllProjectSections(p, type) {
+  return ((p && p.sections) || []).filter(function(s) { return s.type === type; });
+}
+
+function renderFilterBench(container, barSec, opts) {
+  opts = opts || {};
+  if (!barSec || !barSec.data || !barSec.data.length) return;
+  var wrap = document.createElement('div');
+  wrap.className = 'brief-filter-bench';
+  var title = document.createElement('div');
+  title.className = 'brief-filter-bench__title';
+  title.textContent = opts.title || barSec.title || 'Filter the chart';
+  wrap.appendChild(title);
+
+  var chips = document.createElement('div');
+  chips.className = 'brief-filter-bench__chips';
+  chips.setAttribute('role', 'group');
+  chips.setAttribute('aria-label', opts.chipLabel || 'Filter options');
+
+  var allBtn = document.createElement('button');
+  allBtn.type = 'button';
+  allBtn.className = 'brief-filter-chip is-active';
+  allBtn.textContent = 'All (' + barSec.data.length + ')';
+  allBtn.setAttribute('data-filter', '__all__');
+  chips.appendChild(allBtn);
+
+  barSec.data.forEach(function(d, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'brief-filter-chip';
+    b.textContent = d.label;
+    b.setAttribute('data-filter', String(i));
+    chips.appendChild(b);
+  });
+  wrap.appendChild(chips);
+
+  var count = document.createElement('div');
+  count.className = 'brief-filter-bench__count';
+  count.textContent = 'Showing ' + barSec.data.length + ' of ' + barSec.data.length + ' groups';
+  wrap.appendChild(count);
+
+  var chart = document.createElement('div');
+  chart.className = 'brief-chart-wrap brief-filter-bench__chart';
+  wrap.appendChild(chart);
+  container.appendChild(wrap);
+
+  function paint(rows) {
+    chart.innerHTML = '';
+    count.textContent = 'Showing ' + rows.length + ' of ' + barSec.data.length + ' groups';
+    setTimeout(function() {
+      renderBarChart(chart, rows, { fmt: barSec.fmt, labelW: 120 });
+    }, 0);
+  }
+  paint(barSec.data);
+
+  chips.addEventListener('click', function(e) {
+    var btn = e.target.closest('.brief-filter-chip');
+    if (!btn) return;
+    chips.querySelectorAll('.brief-filter-chip').forEach(function(c) { c.classList.remove('is-active'); });
+    btn.classList.add('is-active');
+    var f = btn.getAttribute('data-filter');
+    if (f === '__all__') paint(barSec.data);
+    else {
+      var idx = parseInt(f, 10);
+      paint([barSec.data[idx]]);
+    }
+  });
+}
+
+function renderColdOpen(container, key, p, goToId) {
+  var captions = {
+    nashville: 'Drag raw rows into cleaned sales.',
+    python: 'Move height and weight. BMI updates live.',
+    powerbi: 'Filter a group. The chart re-draws live.',
+    tableau: 'December spikes stay labeled. No hover needed.',
+    excel: 'Filter a buyer segment. Bars re-draw live.'
+  };
+  var shell = document.createElement('section');
+  shell.className = 'brief-cold-open';
+  shell.setAttribute('aria-label', 'Live interactive');
+  shell.innerHTML =
+    '<div class="brief-cold-open__kicker">Try it now</div>' +
+    '<p class="brief-cold-open__caption">' + (captions[key] || 'Touch the live control below.') + '</p>';
+  var stage = document.createElement('div');
+  stage.className = 'brief-cold-open__stage';
+
+  if (key === 'nashville') {
+    var morph = findProjectSection(p, 'morph-table');
+    if (morph) {
+      renderMorphTable(stage, morph.before, morph.after, morph.columns, morph.note, { scrub: true });
+      var labBtn = document.createElement('button');
+      labBtn.type = 'button';
+      labBtn.className = 'brief-disclose-btn brief-cold-open__jump';
+      labBtn.textContent = 'Open Live Query Lab';
+      labBtn.addEventListener('click', function() {
+        if (typeof goToId === 'function') goToId('ch-sql');
+      });
+      stage.appendChild(labBtn);
+    }
+  } else if (key === 'python') {
+    var wi = findProjectSection(p, 'whatif');
+    if (wi && wi.wi) renderWhatIf(stage, wi.wi);
+  } else if (key === 'powerbi') {
+    var bars = findAllProjectSections(p, 'bar-chart');
+    if (bars[0]) renderFilterBench(stage, bars[0], { title: 'Language filter (live)', chipLabel: 'Languages' });
+    var wi2 = findProjectSection(p, 'whatif');
+    if (wi2 && wi2.wi) {
+      var gap = document.createElement('div');
+      gap.className = 'brief-cold-open__secondary';
+      renderWhatIf(gap, wi2.wi);
+      stage.appendChild(gap);
+    }
+  } else if (key === 'tableau') {
+    var line = findProjectSection(p, 'line-chart');
+    if (line) {
+      var jump = document.createElement('button');
+      jump.type = 'button';
+      jump.className = 'brief-disclose-btn brief-cold-open__jump';
+      jump.textContent = 'Jump to December 25 spike';
+      var lc = document.createElement('div');
+      lc.className = 'brief-chart-wrap';
+      stage.appendChild(jump);
+      stage.appendChild(lc);
+      var peakIdx = (line.peaks && line.peaks.length) ? line.peaks[line.peaks.length - 1] : 51;
+      jump.addEventListener('click', function() {
+        var note = stage.querySelector('.brief-cold-open__peak-note');
+        if (!note) {
+          note = document.createElement('div');
+          note.className = 'brief-cold-open__peak-note';
+          stage.insertBefore(note, lc);
+        }
+        var val = line.values[peakIdx];
+        note.textContent = 'Week ' + (peakIdx + 1) + ': $' + Number(val).toLocaleString() + ' weekly revenue peak (holiday demand).';
+        note.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+      setTimeout(function() {
+        renderLineChart(lc, [{ values: line.values, peaks: line.peaks, color: 'var(--brief-accent)', width: 2 }], {
+          labels: line.labels,
+          yFmt: function(v) { return '$' + Math.round(v / 1000) + 'K'; },
+          height: 170
+        });
+      }, 0);
+      // Auto-highlight last peak note
+      jump.click();
+    }
+  } else if (key === 'excel') {
+    var eBars = findAllProjectSections(p, 'bar-chart');
+    // Prefer region-ish chart if labeled
+    var region = eBars.find(function(s) {
+      return /region|commute|income|buyer/i.test(String(s.title || '') + ' ' + String(s.subtitle || ''));
+    }) || eBars[0];
+    if (region) renderFilterBench(stage, region, { title: (region.title || 'Segment') + ' filter', chipLabel: 'Segments' });
+    var eWi = findProjectSection(p, 'whatif');
+    if (eWi && eWi.wi) {
+      var disc = document.createElement('div');
+      disc.className = 'brief-cold-open__disclaimer';
+      disc.textContent = 'Scenario below is illustrative lead mix, not a dataset finding.';
+      stage.appendChild(disc);
+      var gap2 = document.createElement('div');
+      gap2.className = 'brief-cold-open__secondary';
+      renderWhatIf(gap2, eWi.wi);
+      stage.appendChild(gap2);
+    }
+  }
+
+  shell.appendChild(stage);
+  container.appendChild(shell);
+}
+
 function renderPlayableEpisode(container, key, p, goToId) {
   var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
   if (!cfg) return;
@@ -2050,8 +2274,9 @@ function renderPlayableDepth(container, key) {
   if (cfg.wrongTurns && cfg.wrongTurns.length) {
     var wt = document.createElement('div');
     wt.className = 'brief-wrong-turns';
+    var nTurns = cfg.wrongTurns.length;
     wt.innerHTML = '<h3 class="brief-section-title">Wrong turns that looked right</h3>' +
-      '<p class="brief-section-sub">Senior signal: what was tried and what killed it.</p>';
+      '<p class="brief-section-sub">Open ' + nTurns + ' approaches that failed. Real failures only.</p>';
     var grid = document.createElement('div');
     grid.className = 'brief-wrong-grid';
     cfg.wrongTurns.forEach(function(w) {
@@ -2061,7 +2286,7 @@ function renderPlayableDepth(container, key) {
       card.setAttribute('aria-expanded', 'false');
       card.innerHTML =
         '<div class="brief-wrong-title">' + w.title + '</div>' +
-        '<div class="brief-wrong-meta">Tap for what looked good vs what killed it</div>' +
+        '<div class="brief-wrong-meta">Show this wrong turn</div>' +
         '<div class="brief-wrong-detail">' +
           '<div class="brief-wrong-label">Looked right</div>' +
           '<div class="brief-wrong-text">' + w.looked + '</div>' +
@@ -2075,16 +2300,21 @@ function renderPlayableDepth(container, key) {
             c.classList.remove('is-open');
             c.classList.add('is-collapsed');
             c.setAttribute('aria-expanded', 'false');
+            var m0 = c.querySelector('.brief-wrong-meta');
+            if (m0) m0.textContent = 'Show this wrong turn';
           }
         });
+        var meta = card.querySelector('.brief-wrong-meta');
         if (open) {
           card.classList.remove('is-open');
           card.classList.add('is-collapsed');
           card.setAttribute('aria-expanded', 'false');
+          if (meta) meta.textContent = 'Show this wrong turn';
         } else {
           card.classList.add('is-open');
           card.classList.remove('is-collapsed');
           card.setAttribute('aria-expanded', 'true');
+          if (meta) meta.textContent = 'Hide this wrong turn';
         }
       });
       grid.appendChild(card);
@@ -2120,7 +2350,11 @@ function attachKpiPeels(kpiStrip, key) {
     var label = labelEl ? labelEl.textContent.trim() : '';
     var peel = cfg.peels[label];
     if (!peel) return;
-    card.setAttribute('aria-label', label + '. Show proof.');
+    var cue = document.createElement('div');
+    cue.className = 'brief-kpi-proof-cue';
+    cue.textContent = 'Press for proof';
+    card.appendChild(cue);
+    card.setAttribute('aria-label', label + '. Press for proof.');
     function showPeel() {
       kpiStrip.querySelectorAll('.brief-kpi-card').forEach(function(c) { c.classList.remove('is-peeled'); });
       card.classList.add('is-peeled');
@@ -2171,7 +2405,7 @@ function renderDrawer(key) {
       '<div class="brief-hdr-top-row">' +
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
         '<div class="brief-hdr-tools">' +
-          (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="View on GitHub" title="View on GitHub">' + githubSvg + '<span class="brief-github-label">GitHub</span></a>' : '') +
+          (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="Code on GitHub" title="Code on GitHub (leaves page)">' + githubSvg + '<span class="brief-github-label">Code on GitHub</span></a>' : '') +
           '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Switch to light mode" title="Dark mode" data-mode="dark"><span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">&#127769;</span></button>' +
           '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" onclick="closeDD()" aria-label="Close deep dive" title="Close (Esc)">' +
             '<span class="brief-close-x" aria-hidden="true">&#x2715;</span>' +
@@ -2216,7 +2450,7 @@ function renderDrawer(key) {
   var scrollBody = document.createElement('div');
   scrollBody.className = 'brief-scroll-body';
 
-  /* Same section list as spine — horizontal on phone/tablet so info is not lost */
+  /* Same section list as spine - horizontal on phone/tablet so info is not lost */
   /* Sticky mobile chapter rail + expandable sheet (stays while scrolling) */
   var mobRail = document.createElement('nav');
   mobRail.className = 'brief-mob-rail';
@@ -2349,14 +2583,25 @@ function renderDrawer(key) {
   var overview = document.createElement('div');
   overview.className = 'brief-chapter brief-chapter--overview';
 
-  /* ── First screen: Result → KPIs (recruiter 10s) ── */
+  /* ── Proof Bench first screen: Finding → KPIs → Cold open ── */
+  function goToPlayableTarget(id) {
+    var idx = -1;
+    for (var si = 0; si < spineItems.length; si++) {
+      if (spineItems[si].id === id) { idx = si; break; }
+    }
+    if (idx >= 0) goToSpineIndex(idx);
+    else {
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   if (p.outcome) {
     var outcomeEl = document.createElement('div');
     outcomeEl.className = 'brief-outcome';
     outcomeEl.innerHTML =
-      '<div class="brief-outcome-kicker">Result</div>' +
-      '<p class="brief-outcome-text">' + p.outcome + '</p>' +
-      (p.bridge ? '<p class="brief-outcome-bridge">' + p.bridge + '</p>' : '');
+      '<div class="brief-outcome-kicker">Finding</div>' +
+      '<p class="brief-outcome-text">' + p.outcome + '</p>';
     overview.appendChild(outcomeEl);
   }
 
@@ -2373,96 +2618,44 @@ function renderDrawer(key) {
   overview.appendChild(kpiStrip);
   attachKpiPeels(kpiStrip, key);
 
-  /* Playable episode: beats jump into real chapters */
-  function goToPlayableTarget(id) {
-    var idx = -1;
-    for (var si = 0; si < spineItems.length; si++) {
-      if (spineItems[si].id === id) { idx = si; break; }
-    }
-    if (idx >= 0) goToSpineIndex(idx);
-    else {
-      var el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  /* Cold open interactive: star control above the fold */
+  renderColdOpen(overview, key, p, goToPlayableTarget);
+
+  /* Why it mattered: always open, short */
+  if (p.decision) {
+    var db = document.createElement('div');
+    db.className = 'brief-decision brief-decision--open';
+    db.innerHTML =
+      '<div class="brief-decision-kicker">Why it mattered</div>' +
+      '<p class="brief-decision-open-text">' + p.decision.what + ' ' + p.decision.why + '</p>';
+    overview.appendChild(db);
   }
+
+  /* Playable episode beats */
   renderPlayableEpisode(overview, key, p, goToPlayableTarget);
 
   overview.id = 'ch-overview';
   scrollBody.appendChild(overview);
 
-  /* ── Decision Brief (collapsed by default) ── */
-  if (p.decision) {
-    var dbWrap = document.createElement('div');
-    dbWrap.className = 'brief-decision-wrap';
-    var dbToggle = document.createElement('button');
-    dbToggle.type = 'button';
-    dbToggle.className = 'brief-disclose-btn';
-    dbToggle.textContent = 'Why this mattered';
-    var db = document.createElement('div');
-    db.className = 'brief-decision';
-    db.hidden = true;
-    db.innerHTML =
-      '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill what">The Situation</span>' +
-        '<span class="brief-decision-text">' + p.decision.what + '</span>' +
-      '</div>' +
-      '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill why">Why Decisions Break</span>' +
-        '<span class="brief-decision-text">' + p.decision.why + '</span>' +
-      '</div>' +
-      '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill next">What Clean Data Unlocks</span>' +
-        '<span class="brief-decision-text">' + p.decision.next + '</span>' +
-      '</div>';
-    dbToggle.addEventListener('click', function() {
-      var on = db.hidden;
-      db.hidden = !on;
-      dbToggle.textContent = on ? 'Hide context' : 'Why this mattered';
-    });
-    dbWrap.appendChild(dbToggle);
-    dbWrap.appendChild(db);
-    overview.appendChild(dbWrap);
-  }
-
-  /* ── Insight Headline (lead only if long) ── */
-  var headline = document.createElement('div');
-  headline.className = 'brief-headline';
-  var insightFull = String(p.insight || '');
-  var insightLead = insightFull.split(/(?<=[.!?])\s+/)[0] || insightFull;
-  var insightRest = insightFull.slice(insightLead.length).trim();
-  headline.innerHTML = '<div class="brief-headline-label">The Key Finding</div>' +
-    '<div class="brief-headline-text">' + insightLead + '</div>';
-  overview.appendChild(headline);
-  if (insightRest && insightRest.length > 30) {
-    var moreH = document.createElement('button');
-    moreH.type = 'button';
-    moreH.className = 'brief-disclose-btn brief-disclose-btn--inline';
-    moreH.textContent = 'Full finding';
-    var restH = document.createElement('div');
-    restH.className = 'brief-headline-text brief-headline-text--rest';
-    restH.hidden = true;
-    restH.textContent = insightRest;
-    moreH.addEventListener('click', function() {
-      var on = restH.hidden;
-      restH.hidden = !on;
-      moreH.textContent = on ? 'Less' : 'Full finding';
-    });
-    overview.appendChild(moreH);
-    overview.appendChild(restH);
-  }
-
-  /* ── Explore This Project (question-based lens) ── */
+  /* Explore (collapsed door with count) */
   if (p.stakeholders && p.stakeholders.length) {
     var sl = document.createElement('div');
     sl.className = 'brief-explore-wrap';
+    var nQ = p.stakeholders.length;
+    var slToggle = document.createElement('button');
+    slToggle.type = 'button';
+    slToggle.className = 'brief-disclose-btn';
+    slToggle.setAttribute('aria-expanded', 'false');
+    slToggle.textContent = 'Show ' + nQ + ' explore questions';
+    var slBody = document.createElement('div');
+    slBody.hidden = true;
+    slBody.className = 'brief-explore-body';
 
-    /* Header row */
     var slHdr = document.createElement('div');
     slHdr.className = 'brief-explore-hdr';
     slHdr.innerHTML = '<span class="brief-explore-label">What do you want to know?</span>';
-    sl.appendChild(slHdr);
+    slBody.appendChild(slHdr);
 
-    /* Question cards - each is a full tappable card, not a small pill */
     var slCards = document.createElement('div');
     slCards.className = 'brief-explore-cards';
     var slAnswer = document.createElement('div');
@@ -2489,7 +2682,6 @@ function renderDrawer(key) {
         card.classList.add('active');
         slAnswer.querySelectorAll('.brief-explore-pane').forEach(function(pn) { pn.classList.remove('active'); });
         slAnswer.querySelector('[data-sl-pane="' + i + '"]').classList.add('active');
-        /* On mobile: scroll answer into view */
         if (window.innerWidth < 640) {
           setTimeout(function() { slAnswer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
         }
@@ -2497,12 +2689,47 @@ function renderDrawer(key) {
       slCards.appendChild(card);
     });
 
-    sl.appendChild(slCards);
-    sl.appendChild(slAnswer);
+    slBody.appendChild(slCards);
+    slBody.appendChild(slAnswer);
+    slToggle.addEventListener('click', function() {
+      var on = slBody.hidden;
+      slBody.hidden = !on;
+      slToggle.setAttribute('aria-expanded', on ? 'true' : 'false');
+      slToggle.textContent = on ? ('Hide ' + nQ + ' explore questions') : ('Show ' + nQ + ' explore questions');
+    });
+    sl.appendChild(slToggle);
+    sl.appendChild(slBody);
     overview.appendChild(sl);
   }
 
+  /* Wrong turns + honest limits after cold open path */
   renderPlayableDepth(overview, key);
+
+  /* Optional full finding (counted) */
+  if (p.insight) {
+    var insightFull = String(p.insight || '');
+    var insightLead = insightFull.split(/(?<=[.!?])\s+/)[0] || insightFull;
+    var insightRest = insightFull.slice(insightLead.length).trim();
+    if (insightRest && insightRest.length > 30) {
+      var moreH = document.createElement('button');
+      moreH.type = 'button';
+      moreH.className = 'brief-disclose-btn brief-disclose-btn--inline';
+      moreH.setAttribute('aria-expanded', 'false');
+      moreH.textContent = 'Show full finding detail';
+      var restH = document.createElement('div');
+      restH.className = 'brief-headline-text brief-headline-text--rest';
+      restH.hidden = true;
+      restH.textContent = insightRest;
+      moreH.addEventListener('click', function() {
+        var on = restH.hidden;
+        restH.hidden = !on;
+        moreH.setAttribute('aria-expanded', on ? 'true' : 'false');
+        moreH.textContent = on ? 'Hide full finding detail' : 'Show full finding detail';
+      });
+      overview.appendChild(moreH);
+      overview.appendChild(restH);
+    }
+  }
 
   p.sections.forEach(function(sec, si) {
     var chapter = p.chapters[si] || p.chapters[p.chapters.length - 1];
@@ -2529,11 +2756,11 @@ function renderDrawer(key) {
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'brief-disclose-btn brief-disclose-btn--inline';
-        btn.textContent = 'More context';
+        btn.textContent = 'Show problem detail';
         btn.addEventListener('click', function() {
           var on = restEl.hidden;
           restEl.hidden = !on;
-          btn.textContent = on ? 'Less context' : 'More context';
+          btn.textContent = on ? 'Hide problem detail' : 'Show problem detail';
         });
         insightWrap.appendChild(btn);
         insightWrap.appendChild(restEl);
@@ -2580,6 +2807,12 @@ function renderDrawer(key) {
 
     } else if (sec.type === 'whatif') {
       chWrap.innerHTML = '<h3 class="brief-section-title">Interactive Scenario</h3>';
+      if (key === 'excel') {
+        var discEl = document.createElement('p');
+        discEl.className = 'brief-section-sub brief-cold-open__disclaimer';
+        discEl.textContent = 'Illustrative lead-mix model. Not a raw dataset finding.';
+        chWrap.appendChild(discEl);
+      }
       renderWhatIf(chWrap, sec.wi);
 
     } else if (sec.type === 'conviction-meters') {
@@ -2613,7 +2846,7 @@ function renderDrawer(key) {
           '<div class="bitc-body">' +
             '<div class="bitc-heading-row">' +
               '<div class="bitc-heading">' + (item.heading || '') + '</div>' +
-              '<span class="bitc-toggle">Why</span>' +
+              '<span class="bitc-toggle">Show proof</span>' +
             '</div>' +
             '<div class="bitc-text">' + (item.body || '') + '</div>' +
           '</div>';

@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════
-   THE BRIEF v5 — Redesigned for readability across light + dark
+   THE BRIEF v5 - Redesigned for readability across light + dark
    Clean typography, clear hierarchy, easy close, visible GitHub.
 ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Design tokens — dark (default) ── */
+/* ── Design tokens - dark (default) ── */
 :root {
   --dd-bg:            #111318;
   --dd-surface:       #191d26;
@@ -140,7 +140,7 @@
 }
 
 /* ═══════════════════════════════════
-   HEADER — completely redesigned
+   HEADER - completely redesigned
 ═══════════════════════════════════ */
 .brief-hdr {
   flex-shrink: 0;
@@ -193,7 +193,7 @@
   box-shadow: 0 1px 6px rgba(0,0,0,0.25);
 }
 
-/* Close button — top right of header */
+/* Close button - top right of header */
 #dd-close {
   display: flex;
   align-items: center;
@@ -267,7 +267,7 @@
 }
 .brief-github-btn:active { transform: translateY(0); }
 
-/* Theme toggle button — subtle, text style */
+/* Theme toggle button - subtle, text style */
 #dd-theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -1170,10 +1170,10 @@
 .brief-tooltip.visible { opacity: 1; }
 
 /* ═══════════════════════════════════
-   BOTTOM BAR (close + theme) — desktop
+   BOTTOM BAR (close + theme) - desktop
 ═══════════════════════════════════ */
 #dd-bottom-bar {
-  display: none; /* Hidden — close is now in header */
+  display: none; /* Hidden - close is now in header */
 }
 
 /* ═══════════════════════════════════
@@ -1187,7 +1187,7 @@
 #dd-panel.brief-light .brief-kpi-card { background: var(--dd-surface); }
 
 /* ═══════════════════════════════════
-   MOBILE — full redesign
+   MOBILE - full redesign
    max-width: 640px
 ═══════════════════════════════════ */
 @media (max-width: 640px) {
@@ -1378,7 +1378,7 @@
   .brief-conviction-row { justify-content: flex-start !important; padding: 0 !important; }
 
   /* Morph table: 2 cols */
-  /* Same columns as desktop — horizontal scroll instead of dropping fields */
+  /* Same columns as desktop - horizontal scroll instead of dropping fields */
   .brief-morph-tbl { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
   .brief-morph-row {
     grid-template-columns: repeat(4, minmax(7.5rem, 1fr)) !important;
@@ -1436,7 +1436,7 @@
 }
 .brief-sql__run { display: none !important; }
 
-/* Spine items (dot + label) — labels show from tablet landscape up */
+/* Spine items (dot + label) - labels show from tablet landscape up */
 .brief-spine-item {
   display: flex;
   align-items: center;
@@ -1796,7 +1796,7 @@ body.dd-open {
 
 
 /* ═══════════════════════════════════
-   NAVIGATION — back / close / exit bar
+   NAVIGATION - back / close / exit bar
 ═══════════════════════════════════ */
 .brief-hdr-nav {
   display: flex;
@@ -1884,7 +1884,7 @@ body.dd-open {
   color: var(--dd-accent);
 }
 
-/* Sticky footer exit — always on screen */
+/* Sticky footer exit - always on screen */
 .brief-exit-bar {
   flex-shrink: 0;
   display: flex;
@@ -2109,7 +2109,7 @@ body.dd-open {
   .brief-spine { display: flex !important; }
 }
 
-/* Keep decision pills + KPIs + outcome readable on all widths — same content, reflow only */
+/* Keep decision pills + KPIs + outcome readable on all widths - same content, reflow only */
 @media (max-width: 640px) {
   .brief-decision {
     display: flex !important;
@@ -2149,7 +2149,7 @@ body.dd-open {
   }
 }
 
-/* Exit controls always reachable — same actions on every device */
+/* Exit controls always reachable - same actions on every device */
 .brief-exit-bar {
   position: fixed !important;
   left: 50% !important;
@@ -2663,7 +2663,7 @@ body.dd-open {
 .brief-morph-cell:nth-child(4) { flex: 0 0 110px; max-width: 120px; }
 
 
-/* READABILITY PASS — body copy easy to read in light and dark */
+/* READABILITY PASS - body copy easy to read in light and dark */
 #dd-panel,
 #dd-body {
   color: var(--dd-text);
@@ -2748,7 +2748,7 @@ body.dd-open {
 }
 
 
-/* HDR TOOLS CLUSTER — GitHub / theme / close as one compact control group */
+/* HDR TOOLS CLUSTER - GitHub / theme / close as one compact control group */
 .brief-hdr-tools {
   display: flex;
   align-items: center;
@@ -3166,7 +3166,7 @@ a.brief-tool-btn.brief-github-btn {
 }
 
 
-/* MOBILE CHAPTER RAIL — sticky, always useful while scrolling */
+/* MOBILE CHAPTER RAIL - sticky, always useful while scrolling */
 .brief-mob-rail {
   display: none;
   flex-shrink: 0;
@@ -3189,7 +3189,7 @@ a.brief-tool-btn.brief-github-btn {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, var(--dd-accent, #0d9488), color-mix(in oklab, var(--dd-accent, #0d9488) 55%, #fff));
-  /* No width transition — must track scroll in real time */
+  /* No width transition - must track scroll in real time */
   transition: none;
   border-radius: 0 2px 2px 0;
   will-change: width;
@@ -3426,7 +3426,7 @@ a.brief-tool-btn.brief-github-btn {
 @media (max-width: 899px) {
   .brief-mob-rail { display: block; }
   .brief-mob-chapters { display: none !important; }
-  /* Stick below compact header — body is scroll root on phone */
+  /* Stick below compact header - body is scroll root on phone */
   .brief-hdr { z-index: 20; }
   .brief-mob-rail {
     top: 0;
@@ -3455,7 +3455,7 @@ a.brief-tool-btn.brief-github-btn {
 }
 
 
-/* RAIL STICKY WINS — header scrolls away; chapter rail stays */
+/* RAIL STICKY WINS - header scrolls away; chapter rail stays */
 @media (max-width: 899px) {
   #dd-panel .brief-hdr {
     position: relative !important;
@@ -3469,7 +3469,7 @@ a.brief-tool-btn.brief-github-btn {
 }
 
 
-/* BOTTOM PAD PASS — kill dead desktop scroll past last nav item */
+/* BOTTOM PAD PASS - kill dead desktop scroll past last nav item */
 /* Desktop/tablet stage: small clearance for floating exit pill only */
 @media (min-width: 900px) {
   .brief-scroll-body {
@@ -3484,7 +3484,7 @@ a.brief-tool-btn.brief-github-btn {
   .brief-chapter:last-of-type {
     min-height: 0 !important;
   }
-  /* Exit bar sits over content edge — 64px is enough; no 18vh spacer */
+  /* Exit bar sits over content edge - 64px is enough; no 18vh spacer */
   .brief-exit-bar {
     bottom: 16px !important;
   }
@@ -3502,7 +3502,7 @@ a.brief-tool-btn.brief-github-btn {
 }
 
 
-/* SPINE REDESIGN V3 — numbered section list, no line through numbers */
+/* SPINE REDESIGN V3 - numbered section list, no line through numbers */
 .brief-spine {
   width: 200px !important;
   flex-shrink: 0 !important;
@@ -3704,12 +3704,12 @@ a.brief-tool-btn.brief-github-btn {
   }
 }
 
-/* Keep spine hidden on small screens — mobile uses shared-language rail */
+/* Keep spine hidden on small screens - mobile uses shared-language rail */
 @media (max-width: 899px) {
   .brief-spine { display: none !important; }
 }
 
-/* MOBILE RAIL — same visual language as desktop spine */
+/* MOBILE RAIL - same visual language as desktop spine */
 .brief-mob-rail-progress {
   height: 4px !important;
   background: color-mix(in oklab, var(--dd-border) 70%, transparent) !important;
@@ -3762,7 +3762,7 @@ a.brief-tool-btn.brief-github-btn {
 }
 
 
-/* SPINE CONTAIN PASS — numbers/marks stay inside list items, no clip bounce */
+/* SPINE CONTAIN PASS - numbers/marks stay inside list items, no clip bounce */
 .brief-spine {
   overflow-x: hidden !important;
   overflow-y: auto !important;
@@ -3891,7 +3891,7 @@ a.brief-tool-btn.brief-github-btn {
   display: none !important;
   transform: none !important;
 }
-/* Progress fill is a bar in the header only — never a vertical line in the list */
+/* Progress fill is a bar in the header only - never a vertical line in the list */
 .brief-spine > .brief-spine-fill:not(.brief-spine-progress-fill) {
   display: none !important;
 }
@@ -3904,9 +3904,9 @@ a.brief-tool-btn.brief-github-btn {
 }
 
 
-/* DD READ COMFORT V1 — larger type + progressive disclosure
-   Research baseline: body ≥16px, long-form 17–18px, line-height ≥1.5,
-   measure ~45–75ch. Skim layer first; detail on demand. */
+/* DD READ COMFORT V1 - larger type + progressive disclosure
+   Research baseline: body ≥16px, long-form 17-18px, line-height ≥1.5,
+   measure ~45-75ch. Skim layer first; detail on demand. */
 .brief-scroll-body {
   font-size: 17px !important;
   line-height: 1.65 !important;
@@ -4002,7 +4002,7 @@ a.brief-tool-btn.brief-github-btn {
   margin: 8px 0 12px;
 }
 
-/* Thinking trail — collapsed by default */
+/* Thinking trail - collapsed by default */
 .brief-trail--progressive {
   display: flex;
   flex-direction: column;
@@ -4100,7 +4100,7 @@ a.brief-tool-btn.brief-github-btn {
   max-width: 62ch;
 }
 
-/* Impact cards — headline first */
+/* Impact cards - headline first */
 .brief-impact-text-grid {
   display: grid !important;
   grid-template-columns: 1fr !important;
@@ -4165,7 +4165,7 @@ a.brief-tool-btn.brief-github-btn {
 .brief-sql__editor, .brief-sql__table, .sql-dash__sql { font-size: 14px !important; }
 .brief-sql__tab, .sql-dash__lens { font-size: 13px !important; }
 
-/* Mobile: keep ≥16px body — never shrink the story below comfort */
+/* Mobile: keep ≥16px body - never shrink the story below comfort */
 @media (max-width: 700px) {
   .brief-scroll-body { font-size: 16.5px !important; }
   .brief-insight-block,
@@ -4185,7 +4185,7 @@ a.brief-tool-btn.brief-github-btn {
   .bitc-heading { font-size: 16px !important; }
 }
 
-/* Calm chapter spacing — less wall-of-text feel */
+/* Calm chapter spacing - less wall-of-text feel */
 .brief-chapter {
   padding: 26px 0 22px !important;
 }
@@ -4423,4 +4423,183 @@ a.brief-tool-btn.brief-github-btn {
   .brief-playable-title { font-size: 17px; }
   .brief-playable-beat { grid-template-columns: 28px minmax(0, 1fr); }
   .brief-playable-go { display: none; }
+}
+
+
+/* ═══ Proof Bench: cold open + disclosure + KPI proof ═══ */
+.brief-cold-open {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--brief-accent) 35%, var(--brief-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brief-accent) 10%, var(--brief-surface)) 0%, var(--brief-surface) 55%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brief-accent) 12%, transparent);
+}
+.brief-cold-open__kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brief-accent);
+  margin-bottom: 0.25rem;
+}
+.brief-cold-open__caption {
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--brief-text);
+  font-weight: 600;
+}
+.brief-cold-open__stage { display: flex; flex-direction: column; gap: 0.75rem; }
+.brief-cold-open__jump { align-self: flex-start; margin-top: 0.25rem; }
+.brief-cold-open__secondary {
+  margin-top: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--brief-border);
+}
+.brief-cold-open__disclaimer,
+.brief-section-sub.brief-cold-open__disclaimer {
+  font-size: 0.82rem;
+  color: var(--brief-text-faint);
+  font-style: italic;
+  margin: 0.25rem 0 0.5rem;
+}
+.brief-cold-open__peak-note {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, #E8AF34 18%, var(--brief-surface2));
+  border: 1px solid color-mix(in srgb, #E8AF34 40%, var(--brief-border));
+  color: var(--brief-text);
+}
+
+.brief-morph-scrub-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.65rem 0 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: var(--brief-surface2);
+  border: 1px solid var(--brief-border);
+}
+.brief-morph-scrub-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--brief-text);
+}
+.brief-morph-scrub {
+  width: 100%;
+  accent-color: var(--brief-accent);
+  height: 1.5rem;
+  cursor: pointer;
+}
+.brief-morph-scrub-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--brief-text-faint);
+  font-weight: 600;
+}
+.brief-morph-scrub-pct { color: var(--brief-accent); }
+
+.brief-filter-bench {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.brief-filter-bench__title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--brief-text);
+}
+.brief-filter-bench__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.brief-filter-chip {
+  appearance: none;
+  border: 1px solid var(--brief-border);
+  background: var(--brief-surface2);
+  color: var(--brief-text);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 36px;
+}
+.brief-filter-chip.is-active {
+  background: color-mix(in srgb, var(--brief-accent) 18%, var(--brief-surface));
+  border-color: var(--brief-accent);
+  color: var(--brief-text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brief-accent) 35%, transparent);
+}
+.brief-filter-bench__count {
+  font-size: 0.78rem;
+  color: var(--brief-text-faint);
+  font-weight: 600;
+}
+
+.brief-kpi-proof-cue {
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brief-accent);
+  opacity: 0.9;
+}
+.brief-kpi-card--peelable {
+  cursor: pointer;
+  position: relative;
+}
+.brief-kpi-card--peelable:hover,
+.brief-kpi-card--peelable:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brief-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+.brief-kpi-card--peelable.is-peeled {
+  box-shadow: inset 0 0 0 2px var(--brief-accent);
+}
+
+.brief-decision--open {
+  margin: 0.85rem 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: var(--brief-surface2);
+  border: 1px solid var(--brief-border);
+}
+.brief-decision-kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--brief-text-faint);
+  margin-bottom: 0.35rem;
+}
+.brief-decision-open-text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--brief-text);
+}
+
+.brief-github-label,
+.brief-close-text {
+  display: inline !important;
+}
+.brief-tool-btn {
+  gap: 0.35rem;
+  min-height: 40px;
+  padding: 0.35rem 0.65rem;
+}
+
+@media (max-width: 640px) {
+  .brief-cold-open { padding: 0.85rem 0.8rem; }
+  .brief-filter-chip { min-height: 40px; }
 }

@@ -191,6 +191,16 @@ function renderLineChart(container, datasets, opts) {
         var dot = document.createElementNS(ns, 'circle');
         dot.setAttribute('cx', px(pi)); dot.setAttribute('cy', py(ds.values[pi]));
         dot.setAttribute('r', 4); dot.setAttribute('fill', '#E8AF34');
+        var peakLabel = document.createElementNS(ns, 'text');
+        peakLabel.setAttribute('x', px(pi));
+        peakLabel.setAttribute('y', Math.max(12, py(ds.values[pi]) - 10));
+        peakLabel.setAttribute('text-anchor', 'middle');
+        peakLabel.setAttribute('font-size', '9');
+        peakLabel.setAttribute('font-weight', '700');
+        peakLabel.setAttribute('fill', 'var(--brief-text)');
+        var weekLbl = (opts.labels && opts.labels[pi]) ? opts.labels[pi] : ('W' + (pi + 1));
+        peakLabel.textContent = weekLbl + ' $' + Math.round(ds.values[pi] / 1000) + 'K';
+        svg.appendChild(peakLabel);
         dot.addEventListener('mouseenter', function(e) {
           showTip('<strong>Week ' + (pi+1) + '</strong><br>$' + ds.values[pi].toLocaleString(), e.clientX, e.clientY);
         });
@@ -234,7 +244,8 @@ function countUp(el, target, duration, opts) {
 /* ─────────────────────────────────────────────────────────────────
    MORPHING TABLE - rows animate from dirty to clean state
 ───────────────────────────────────────────────────────────────── */
-function renderMorphTable(container, before, after, columns, note) {
+function renderMorphTable(container, before, after, columns, note, opts) {
+  opts = opts || {};
   var wrap = document.createElement('div');
   wrap.className = 'brief-morph-table';
   wrap.innerHTML = '<div class="brief-morph-header">' +
@@ -302,7 +313,39 @@ function renderMorphTable(container, before, after, columns, note) {
     badge.className = 'brief-morph-badge ' + (mode === 'before' ? 'raw' : 'clean');
     badge.textContent = mode === 'before' ? 'Before' : 'After';
     renderRows(mode === 'before' ? before : after, mode);
+    var scrub = wrap.querySelector('.brief-morph-scrub');
+    if (scrub) scrub.value = mode === 'before' ? '0' : '100';
   });
+
+  if (opts.scrub) {
+    var scrubWrap = document.createElement('div');
+    scrubWrap.className = 'brief-morph-scrub-wrap';
+    scrubWrap.innerHTML =
+      '<label class="brief-morph-scrub-label" for="morph-scrub-range">Drag: raw to cleaned</label>' +
+      '<input type="range" class="brief-morph-scrub" id="morph-scrub-range" min="0" max="100" value="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
+      '<div class="brief-morph-scrub-meta">' +
+        '<span data-scrub-side="raw">Raw</span>' +
+        '<span class="brief-morph-scrub-pct" data-scrub-pct>0% cleaned</span>' +
+        '<span data-scrub-side="clean">Clean</span>' +
+      '</div>';
+    wrap.insertBefore(scrubWrap, tbl);
+    var scrub = scrubWrap.querySelector('.brief-morph-scrub');
+    var pctEl = scrubWrap.querySelector('[data-scrub-pct]');
+    function applyScrub(v) {
+      var cleaned = parseInt(v, 10) >= 50;
+      mode = cleaned ? 'after' : 'before';
+      wrap.querySelectorAll('.brief-morph-btn').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      var badge = wrap.querySelector('.brief-morph-badge');
+      badge.className = 'brief-morph-badge ' + (cleaned ? 'clean' : 'raw');
+      badge.textContent = cleaned ? 'After' : 'Before';
+      renderRows(cleaned ? after : before, mode);
+      scrub.setAttribute('aria-valuenow', String(v));
+      if (pctEl) pctEl.textContent = v + '% cleaned';
+    }
+    scrub.addEventListener('input', function() { applyScrub(scrub.value); });
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -345,13 +388,11 @@ function renderConviction(container, label, pct, color) {
   ptxt.setAttribute('fill', 'var(--brief-text)');
   ptxt.textContent = '0%';
   svg.appendChild(ptxt);
-  var ltxt = document.createElementNS(ns, 'text');
-  ltxt.setAttribute('x', cx); ltxt.setAttribute('y', cy + 10);
-  ltxt.setAttribute('text-anchor', 'middle');
-  ltxt.setAttribute('font-size', '8.5'); ltxt.setAttribute('fill', 'var(--brief-text-dim)');
-  ltxt.textContent = label;
-  svg.appendChild(ltxt);
   wrap.appendChild(svg);
+  var lab = document.createElement('div');
+  lab.className = 'brief-conviction-label';
+  lab.textContent = label;
+  wrap.appendChild(lab);
   container.appendChild(wrap);
 
   var obs = new IntersectionObserver(function(entries) {
@@ -409,53 +450,435 @@ function renderWhatIf(container, wi) {
    THINKING TRAIL - decision log with branching paths
 ───────────────────────────────────────────────────────────────── */
 function renderThinkingTrail(container, steps) {
+  steps = steps || [];
   var wrap = document.createElement('div');
-  wrap.className = 'brief-trail';
+  wrap.className = 'brief-trail brief-trail--progressive';
+
+  var skim = document.createElement('div');
+  skim.className = 'brief-skim-note';
+  skim.innerHTML = '<span class="brief-skim-note__label">Skim</span> ' +
+    '<span class="brief-skim-note__text">' + steps.length +
+    ' analytical moves. Open a step only if you want the full reasoning.</span>';
+  wrap.appendChild(skim);
+
+  var list = document.createElement('div');
+  list.className = 'brief-trail__list';
+  var iconMap = { assume: '?', find: '!', pivot: '↻', insight: '★', limit: '⚠' };
+  var PREVIEW = 3; // first N open-ready collapsed rows always visible
+
   steps.forEach(function(step, i) {
-    var div = document.createElement('div');
-    div.className = 'brief-trail__step';
-    div.style.animationDelay = (i * 60) + 'ms';
-    var iconMap = { assume: '?', find: '!', pivot: '↻', insight: '★', limit: '⚠' };
-    div.innerHTML = '<div class="brief-trail__icon ' + step.type + '">' + (iconMap[step.type] || '•') + '</div>' +
+    var div = document.createElement('button');
+    div.type = 'button';
+    div.className = 'brief-trail__step is-collapsed' + (i >= PREVIEW ? ' is-extra' : '');
+    if (i >= PREVIEW) div.hidden = true;
+    div.style.animationDelay = (Math.min(i, PREVIEW) * 50) + 'ms';
+    div.setAttribute('aria-expanded', 'false');
+
+    var preview = String(step.text || '');
+    // One-line preview: first clause or hard clip
+    var short = preview.split(/[.!?]/)[0].trim();
+    if (short.length > 110) short = short.slice(0, 107).replace(/\s+\S*$/, '') + '…';
+    if (!/[.!?]$/.test(short) && short.length < preview.length) short += '…';
+
+    div.innerHTML =
+      '<div class="brief-trail__icon ' + step.type + '" aria-hidden="true">' + (iconMap[step.type] || '•') + '</div>' +
       '<div class="brief-trail__body">' +
-      '<div class="brief-trail__type">' + step.type.toUpperCase() + '</div>' +
-      '<div class="brief-trail__text">' + step.text + '</div>' +
-      (step.result ? '<div class="brief-trail__result">' + step.result + '</div>' : '') +
+        '<div class="brief-trail__top">' +
+          '<span class="brief-trail__type">' + String(step.type || 'step').toUpperCase() + '</span>' +
+          '<span class="brief-trail__toggle" aria-hidden="true">Show step</span>' +
+        '</div>' +
+        '<div class="brief-trail__text brief-trail__text--preview">' + short + '</div>' +
+        '<div class="brief-trail__text brief-trail__text--full">' + preview + '</div>' +
+        (step.result ? '<div class="brief-trail__result">' + step.result + '</div>' : '') +
       '</div>';
-    wrap.appendChild(div);
+
+    div.addEventListener('click', function() {
+      var open = div.classList.contains('is-open');
+      list.querySelectorAll('.brief-trail__step.is-open').forEach(function(el) {
+        if (el !== div) {
+          el.classList.remove('is-open');
+          el.classList.add('is-collapsed');
+          el.setAttribute('aria-expanded', 'false');
+          var t0 = el.querySelector('.brief-trail__toggle');
+          if (t0) t0.textContent = 'Show step';
+        }
+      });
+      var tog = div.querySelector('.brief-trail__toggle');
+      if (open) {
+        div.classList.remove('is-open');
+        div.classList.add('is-collapsed');
+        div.setAttribute('aria-expanded', 'false');
+        if (tog) tog.textContent = 'Show step';
+      } else {
+        div.classList.add('is-open');
+        div.classList.remove('is-collapsed');
+        div.setAttribute('aria-expanded', 'true');
+        if (tog) tog.textContent = 'Hide step';
+      }
+    });
+    list.appendChild(div);
   });
+  wrap.appendChild(list);
+
+  if (steps.length > PREVIEW) {
+    var more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'brief-disclose-btn';
+    more.textContent = 'Show all ' + steps.length + ' trail moves';
+    more.addEventListener('click', function() {
+      var expanded = wrap.classList.toggle('is-trail-expanded');
+      list.querySelectorAll('.brief-trail__step.is-extra').forEach(function(el) {
+        el.hidden = !expanded;
+      });
+      more.textContent = expanded ? ('Hide extra trail moves') : ('Show all ' + steps.length + ' trail moves');
+    });
+    wrap.appendChild(more);
+  }
+
   container.appendChild(wrap);
 }
 
 /* ─────────────────────────────────────────────────────────────────
    SCROLL SPINE
 ───────────────────────────────────────────────────────────────── */
-function initSpine(panel) {
-  var spine = panel.querySelector('.brief-spine');
-  var chapters = panel.querySelectorAll('.brief-chapter');
-  var items = panel.querySelectorAll('.brief-spine-item');
-  var dots = panel.querySelectorAll('.brief-spine-dot');
-  if (!spine || !chapters.length) return;
-  var content = panel.querySelector('.brief-scroll-body');
-  if (!content) return;
-  function onScroll() {
-    var scrollTop = content.scrollTop;
-    var scrollH = content.scrollHeight - content.clientHeight;
-    var pct = scrollH > 0 ? Math.min(scrollTop / scrollH, 1) : 0;
-    var fill = spine.querySelector('.brief-spine-fill');
-    if (fill) fill.style.height = (pct * 100) + '%';
-
-    var active = 0;
-    chapters.forEach(function(ch, i) {
-      if (ch.offsetTop - 48 <= scrollTop) active = i;
-    });
-    items.forEach(function(it, i) { it.classList.toggle('active', i === active); });
-    dots.forEach(function(d, i) { d.classList.toggle('active', i === active); });
-    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, i) { c.classList.toggle('active', i === active); });
-  }
-  content.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+function initMobileChrome(panel) {
+  if (!panel) return;
+  var bodyEl = document.getElementById('dd-body');
+  var hdr = panel.querySelector('.brief-hdr');
+  if (!bodyEl || !hdr) return;
+  var phone = false;
+  try { phone = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches); } catch (e) {}
+  if (!phone) return;
+  var onScr = function() {
+    hdr.classList.toggle('is-compact', bodyEl.scrollTop > 36);
+  };
+  bodyEl.addEventListener('scroll', onScr, { passive: true });
+  onScr();
 }
+
+function initSpine(panel) {
+  var spineEl = panel.querySelector('.brief-spine');
+  var scrollBody = panel.querySelector('.brief-scroll-body');
+  var bodyEl = document.getElementById('dd-body');
+  var rail = panel.querySelector('.brief-mob-rail');
+  // Fresh spy state each open - prevents stale last-lock across projects
+  panel._spineActiveIndex = 0;
+  panel._spineLockedLast = false;
+  panel._spineMaxScrollTop = 0;
+  panel._spineFreezeUntil = 0;
+  panel._spineFreezeIndex = null;
+
+  // Prefer the element that actually scrolls. On phones #dd-body is the root;
+  // rail is shown up to 899px, so use the same breakpoint for scroll listening.
+  var content = scrollBody;
+  var isNarrow = false;
+  try {
+    isNarrow = !!(window.matchMedia && window.matchMedia('(max-width: 899px)').matches);
+  } catch (e) { isNarrow = false; }
+  if (isNarrow && bodyEl) {
+    var bodyScrolls = bodyEl.scrollHeight > bodyEl.clientHeight + 4;
+    var innerScrolls = scrollBody && scrollBody.scrollHeight > scrollBody.clientHeight + 4
+      && window.getComputedStyle(scrollBody).overflowY !== 'visible';
+    content = (!innerScrolls && bodyEl) ? bodyEl : (scrollBody || bodyEl);
+    if (bodyScrolls) content = bodyEl;
+  }
+  if (!content) return;
+  try {
+    var oldSp = content.querySelector('.brief-scroll-spacer');
+    if (oldSp) oldSp.parentNode.removeChild(oldSp);
+  } catch (eSp) { /* ignore */ }
+
+  // Nav items: desktop spine buttons, else mobile sheet items, else rail spine data
+  var items = Array.prototype.slice.call(panel.querySelectorAll('.brief-spine-item'));
+  if (!items.length) {
+    items = Array.prototype.slice.call(panel.querySelectorAll('.brief-mob-sheet-item'));
+  }
+  var spineMeta = (rail && rail._spineItems) ? rail._spineItems.slice() : [];
+  if (!items.length && !spineMeta.length) return;
+
+  function resolveTargets() {
+    var ids = [];
+    if (items.length) {
+      ids = items.map(function(it) { return it.getAttribute('data-target'); });
+    } else {
+      ids = spineMeta.map(function(ch) { return ch.id; });
+    }
+    return ids.map(function(id) {
+      if (!id) return null;
+      return document.getElementById(id) || (content && content.querySelector('#' + id));
+    }).filter(Boolean);
+  }
+
+  function sectionTop(el) {
+    return el.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop;
+  }
+
+  function setRailUI(active, scrollPct, targetsLen) {
+    var r = panel.querySelector('.brief-mob-rail');
+    if (!r) return;
+    var meta = r._spineItems || spineMeta || [];
+    var total = Math.max(meta.length, items.length, targetsLen || 0, 1);
+    if (active < 0) active = 0;
+    if (active > total - 1) active = total - 1;
+
+    var countEl = r.querySelector('.brief-mob-rail-count');
+    var titleEl = r.querySelector('.brief-mob-rail-title');
+    var fillEl = r.querySelector('.brief-mob-rail-fill');
+    if (countEl) countEl.textContent = (active + 1) + ' / ' + total;
+    if (titleEl) {
+      var label = (meta[active] && meta[active].title)
+        || (items[active] && (items[active].getAttribute('title') || items[active].textContent))
+        || ('Section ' + (active + 1));
+      titleEl.textContent = String(label).replace(/\s+/g, ' ').trim();
+    }
+    // Real-time bar follows scroll position; section steps still drive labels
+    if (fillEl) {
+      var w;
+      if (typeof scrollPct === 'number' && !isNaN(scrollPct)) {
+        w = Math.min(100, Math.max(0, scrollPct * 100));
+      } else {
+        w = total <= 1 ? 100 : ((active + 1) / total) * 100;
+      }
+      fillEl.style.width = w + '%';
+    }
+    r.querySelectorAll('.brief-mob-sheet-item').forEach(function(c, i) {
+      c.classList.toggle('active', i === active);
+      c.classList.toggle('is-done', i < active);
+      c.classList.toggle('is-upcoming', i > active);
+    });
+    r.querySelectorAll('.brief-mob-dot').forEach(function(d, i) {
+      d.classList.toggle('active', i === active);
+    });
+    var prevBtn = r.querySelector('.brief-mob-rail-prev');
+    var nextBtn = r.querySelector('.brief-mob-rail-next');
+    if (prevBtn) prevBtn.disabled = active <= 0;
+    if (nextBtn) nextBtn.disabled = active >= total - 1;
+    r._activeIndex = active;
+  }
+
+  // Expose for arrow/jump handlers (optimistic UI before scroll settles)
+  panel._setRailUI = setRailUI;
+  panel._spineOnScroll = null;
+
+  function sectionDocTop(el) {
+    // Section Y in the scroll content's document coordinates
+    return el.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop;
+  }
+
+  function ensureScrollRoom(targets, force) {
+    // Enough end room that the LAST section heading can reach the reading line.
+    // Resize only when forced or not yet sized - never on every scroll tick.
+    if (!content || !targets || !targets.length) return;
+    var viewH = content.clientHeight || 0;
+    if (viewH < 120) return;
+
+    var spacer = content.querySelector('.brief-scroll-spacer');
+    if (!spacer) {
+      spacer = document.createElement('div');
+      spacer.className = 'brief-scroll-spacer';
+      spacer.setAttribute('aria-hidden', 'true');
+      content.appendChild(spacer);
+    }
+    if (!force && spacer.getAttribute('data-sized') === '1') return;
+
+    var pinOff = Math.max(96, 18);
+    var last = targets[targets.length - 1];
+    // Measure without relying on current spacer height
+    spacer.style.height = '0px';
+    var lastTop = sectionDocTop(last);
+    var scrollH0 = Math.max(content.scrollHeight - viewH, 0);
+    // Need maxScroll >= lastTop - pinOff so last can become active via pin
+    var needScroll = Math.max(0, lastTop - pinOff);
+    var extra = Math.ceil(needScroll - scrollH0 + 8);
+    // Cap so we don't recreate a huge empty desert; still enough for last pin
+    extra = Math.max(48, Math.min(Math.max(extra, Math.round(viewH * 0.2)), Math.round(viewH * 0.55)));
+    spacer.style.height = extra + 'px';
+    spacer.setAttribute('data-sized', '1');
+  }
+
+  function paintActive(targets, active, pct) {
+    var activeId = targets[active] ? targets[active].id : '';
+    var activeItemIndex = active;
+    // Prefer index match when lengths align (avoids id edge cases)
+    if (items.length === targets.length) {
+      activeItemIndex = active;
+      items.forEach(function(it, idx) {
+        it.classList.toggle('active', idx === active);
+        it.classList.toggle('is-done', idx < active);
+        it.classList.toggle('is-upcoming', idx > active);
+      });
+    } else {
+      items.forEach(function(it, idx) {
+        var tid = it.getAttribute('data-target') || '';
+        var on = activeId ? tid === activeId : idx === active;
+        if (on) activeItemIndex = idx;
+        it.classList.toggle('active', on);
+      });
+      items.forEach(function(it, idx) {
+        it.classList.toggle('is-done', idx < activeItemIndex);
+        it.classList.toggle('is-upcoming', idx > activeItemIndex);
+      });
+    }
+    if (spineEl) {
+      var pc = spineEl.querySelector('.brief-spine-progress-count');
+      var totalN = Math.max(items.length, targets.length, 1);
+      if (pc) pc.textContent = (activeItemIndex + 1) + ' / ' + totalN;
+    }
+    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, idx) {
+      c.classList.toggle('active', idx === activeItemIndex);
+    });
+    setRailUI(activeItemIndex, pct, Math.max(items.length, targets.length));
+  }
+
+  function onScroll() {
+    var targets = resolveTargets();
+    var viewH = content.clientHeight || 1;
+    var scrollTop = content.scrollTop;
+    var scrollH = Math.max(content.scrollHeight - viewH, 0);
+    // Clamp elastic overscroll so spring-back cannot flip the active index
+    var st = scrollH > 0 ? Math.max(0, Math.min(scrollTop, scrollH)) : 0;
+    var pct = scrollH > 0 ? st / scrollH : (targets.length ? 1 : 0);
+
+    if (spineEl) {
+      var fill = spineEl.querySelector('.brief-spine-progress-fill') || spineEl.querySelector('.brief-spine-fill');
+      if (fill) {
+        fill.style.width = (pct * 100) + '%';
+        fill.style.height = '';
+      }
+    }
+
+    if (!targets.length) {
+      setRailUI(0, pct, 0);
+      return;
+    }
+
+    ensureScrollRoom(targets, false);
+    // Recompute after possible first-time spacer (only changes once)
+    scrollH = Math.max(content.scrollHeight - viewH, 0);
+    st = scrollH > 0 ? Math.max(0, Math.min(content.scrollTop, scrollH)) : 0;
+    pct = scrollH > 0 ? st / scrollH : 1;
+
+    var railH = 0;
+    var rnow = panel.querySelector('.brief-mob-rail');
+    if (rnow) {
+      try {
+        var rs = window.getComputedStyle(rnow);
+        if (rs.display !== 'none' && rs.visibility !== 'hidden') {
+          railH = rnow.getBoundingClientRect().height || 0;
+        }
+      } catch (eR) { railH = 0; }
+    }
+    var pinOffset = Math.max(96, railH + 18);
+    var lastIdx = targets.length - 1;
+
+    // Programmatic freeze (click / arrows)
+    var freezeUntil = panel._spineFreezeUntil || 0;
+    var freezeIdx = panel._spineFreezeIndex;
+    if (freezeUntil && Date.now() < freezeUntil && typeof freezeIdx === 'number') {
+      var fActive = Math.max(0, Math.min(lastIdx, freezeIdx));
+      panel._spineActiveIndex = fActive;
+      paintActive(targets, fActive, pct);
+      return;
+    }
+    if (freezeUntil && Date.now() >= freezeUntil) {
+      panel._spineFreezeUntil = 0;
+      panel._spineFreezeIndex = null;
+    }
+
+    // Document-coordinate spy (stable vs elastic overscroll)
+    var raw = 0;
+    var pin = st + pinOffset;
+    for (var i = 0; i < targets.length; i++) {
+      if (sectionDocTop(targets[i]) <= pin + 1) raw = i;
+      else break;
+    }
+
+    // Track farthest scroll so "reached the end" survives tiny spring-back
+    var maxSt = typeof panel._spineMaxScrollTop === 'number' ? panel._spineMaxScrollTop : 0;
+    if (st > maxSt) {
+      maxSt = st;
+      panel._spineMaxScrollTop = maxSt;
+    }
+
+    var nearEnd = scrollH <= 0 || st >= scrollH - 48 || pct >= 0.98 ||
+      (maxSt >= scrollH - 48 && st >= maxSt - 64);
+
+    var prev = typeof panel._spineActiveIndex === 'number' ? panel._spineActiveIndex : 0;
+    if (prev < 0) prev = 0;
+    if (prev > lastIdx) prev = lastIdx;
+
+    var active;
+
+    // HARD RULE: once the user is at/near the bottom, the LAST number stays.
+    // This is exactly the bug: last → previous when fully scrolled down.
+    if (nearEnd) {
+      active = lastIdx;
+      panel._spineLockedLast = true;
+    } else if (panel._spineLockedLast) {
+      // Stay locked on last until user scrolls clearly upward away from the end
+      if (st <= scrollH - 140 && raw < lastIdx) {
+        panel._spineLockedLast = false;
+        active = raw;
+      } else {
+        active = lastIdx;
+      }
+    } else if (raw >= prev) {
+      active = raw;
+      if (active === lastIdx) panel._spineLockedLast = true;
+    } else {
+      // Mid-list upward scroll only
+      var prevTop = sectionDocTop(targets[prev]);
+      if (prevTop > pin + 56) active = raw;
+      else active = prev;
+    }
+
+    panel._spineActiveIndex = active;
+    paintActive(targets, active, pct);
+  }
+
+  panel._spineOnScroll = onScroll;
+
+  // Listen only on the element that actually scrolls (plus body on narrow if used).
+  // Multiple nested listeners were firing with jitter and bouncing the active index.
+  var roots = [];
+  function watch(el) {
+    if (!el || roots.indexOf(el) !== -1) return;
+    roots.push(el);
+    el.addEventListener('scroll', onScroll, { passive: true });
+  }
+  watch(content);
+  if (bodyEl && bodyEl !== content) {
+    // phones: #dd-body may be the scroll root
+    try {
+      if (bodyEl.scrollHeight > bodyEl.clientHeight + 4) watch(bodyEl);
+    } catch (eW) { /* ignore */ }
+  }
+
+  window.setTimeout(onScroll, 300);
+  if (typeof ResizeObserver !== 'undefined') {
+    try {
+      var ro = new ResizeObserver(function() {
+        var sp = content.querySelector('.brief-scroll-spacer');
+        if (sp) sp.removeAttribute('data-sized');
+        ensureScrollRoom(resolveTargets(), true);
+        onScroll();
+      });
+      ro.observe(content);
+      if (scrollBody && scrollBody !== content) ro.observe(scrollBody);
+    } catch (e) { /* ignore */ }
+  }
+  // Initial spacer + seed (force size once layout is ready)
+  ensureScrollRoom(resolveTargets(), true);
+  onScroll();
+  window.setTimeout(function() {
+    var sp = content.querySelector('.brief-scroll-spacer');
+    if (sp) sp.removeAttribute('data-sized');
+    ensureScrollRoom(resolveTargets(), true);
+    onScroll();
+  }, 120);
+}
+
+
 
 /* ─────────────────────────────────────────────────────────────────
    LIVE MINI SQL RUNNER - DuckDB-WASM style, actually runs SQL
@@ -758,7 +1181,6 @@ nashville: {
   subtitle: 'SQL Data Cleaning',
   outcome: 'Turned 56,477 messy property sales into a query-ready table: zero blank addresses, zero same-day duplicate closings.',
   bridge: 'Metro housing, assessor, and brokerage teams need the same thing: addresses you can map, sales you can count once, and labels that mean one thing.',
-  nextSteps: 'With more time: wire this scorecard to a scheduled Metro refresh and fail the pipeline when completeness drops below 99.9%.',
   insight: '56,477 Nashville property sales. 29 homes with blank street addresses, 104 duplicate sale rows, and four different spellings of "sold vacant." None of that was random - each issue was a repeatable pattern. One self-join restored every missing address without deleting a single home from the file.',
   kpis: [
     { label: 'Sales Records Reviewed', value: 56477, comma: true, suffix: '', icon: '🗂' },
@@ -829,7 +1251,7 @@ nashville: {
           desc: 'Share of sales rows with a usable property street address.',
           before: 99.95,
           after: 100,
-          delta: '29 blank addresses recovered via ParcelID self-join (ISNULL) — zero rows deleted.'
+          delta: '29 blank addresses recovered via ParcelID self-join (ISNULL) - zero rows deleted.'
         },
         {
           name: 'Uniqueness',
@@ -880,13 +1302,13 @@ WHERE OwnerAddress LIKE '%,%,%';`
     {
       type: 'sql-dashboard',
       title: 'SQL Dashboard',
-      subtitle: 'Pick a SQL lens. KPIs and the chart are the answer to that question — the pattern analysts use before a metric hits a dashboard.',
+      subtitle: 'Pick a SQL lens. KPIs and the chart are the answer to that question - the pattern analysts use before a metric hits a dashboard.',
       hint: 'Each lens is a SQL question. The dashboard is the result, not a separate BI file.',
       meta: 'Project grain: 56,477 Metro sales · SQL on GitHub',
       lenses: [
         {
           label: 'Land use mix',
-          why: 'Shows which property types dominate volume and typical price — the first cut a housing analyst runs after cleaning.',
+          why: 'Shows which property types dominate volume and typical price - the first cut a housing analyst runs after cleaning.',
           sql: 'SELECT LandUse,\n       COUNT(*) AS sales,\n       ROUND(AVG(SalePrice), 0) AS avg_price\nFROM housing\nGROUP BY LandUse\nORDER BY sales DESC;',
           kpis: [
             { label: 'Land-use groups', value: 5 },
@@ -962,7 +1384,7 @@ WHERE OwnerAddress LIKE '%,%,%';`
         },
         {
           label: 'Vacancy split',
-          why: 'After Yes/No standardization, vacancy share is one number you can trust — not four competing spellings.',
+          why: 'After Yes/No standardization, vacancy share is one number you can trust - not four competing spellings.',
           sql: 'SELECT SoldAsVacant,\n       COUNT(*) AS sales,\n       ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct\nFROM housing\nGROUP BY SoldAsVacant;',
           kpis: [
             { label: 'Sold vacant', value: 4635 },
@@ -1034,7 +1456,6 @@ python: {
   subtitle: 'Python + CDC Standards',
   outcome: 'A live BMI tool that updates as you move the sliders - transparent math, no submit button.',
   bridge: 'Interactive health metrics the way care teams want them: instant and explainable.',
-  nextSteps: 'With more time: add CDC risk bands and a plain-English what-this-means line for each range.',
   insight: 'BMI is a screening tool, not a diagnosis - the CDC says so explicitly. This program applies the CDC formula, then adds WHO waist-to-hip ratio thresholds as a second independent signal. A person can read Normal on BMI and still flag elevated cardiovascular risk on WHR. This tool shows both.',
   kpis: [
     { label: 'BMI Categories', value: 4, suffix: '', icon: '📊' },
@@ -1147,7 +1568,6 @@ powerbi: {
   title: 'Data Professionals Survey',
   outcome: 'Turned a multi-sheet professional survey into one interactive dashboard stakeholders can filter themselves.',
   bridge: 'Same pattern hospitals use for census, throughput, and revenue-cycle scorecards.',
-  nextSteps: 'With more time: lock certified metrics and add a one-page glossary so every chart uses the same definitions.',
   subtitle: 'Power BI Dashboard',
   insight: 'Education level does not predict salary as cleanly as most people assume. PhD holders average $206K, but there are only 5 of them. Bachelor\'s degree data scientists average $93K across 329 participants. The real salary driver in this dataset is role, not credential.',
   kpis: [
@@ -1267,7 +1687,6 @@ tableau: {
   title: 'Airbnb Seattle Analysis',
   outcome: 'Joined Airbnb listing tables into one clear view of price, availability, and review patterns.',
   bridge: 'Join logic + visual hierarchy is how analytics teams keep clinical and finance views aligned.',
-  nextSteps: 'With more time: publish a parameter-driven “what if” view and document grain of every join.',
   subtitle: 'Tableau Dashboard',
   insight: '323,346 Airbnb records. 7 missing zip codes manually corrected through neighborhood cross-referencing. One inner join across three worksheets. What came out: December 25th generated $2,110,350 in city-wide revenue - the single highest week of 2016. Gut-feel pricing missed it.',
   kpis: [
@@ -1354,7 +1773,6 @@ excel: {
   title: 'Bike Sales Analysis',
   outcome: 'Cleaned buyer data and isolated where demand concentrates - Pacific leads this sample.',
   bridge: 'Segment → prioritize → act is the same loop used in service-line and panel analytics.',
-  nextSteps: 'With more time: hold out a test slice and check whether Pacific still leads after controlling for income.',
   subtitle: 'Excel Dashboard',
   insight: '13,351 records, 338 duplicates removed. Three regions surveyed. One clear answer: the Pacific region. The highest-income buyer profile, the farthest commutes, the strongest profit margins. North America and Europe are secondary. This is not a close call.',
   kpis: [
@@ -1469,9 +1887,497 @@ excel: {
 
 }; // end PROJECTS
 
+/* ═══════════════════════════════════════════════════════════════
+   PLAYABLE EPISODES - skim-first path for every deep dive
+   Beats jump to real chapters. Limits + wrong turns stay honest.
+═══════════════════════════════════════════════════════════════ */
+var PLAYABLE = {
+  nashville: {
+    tagline: 'Play this analysis',
+    sub: 'Five beats. Real SQL and cleaning proof. Skip anything you already get.',
+    beats: [
+      { title: 'Land the result', blurb: '56,477 sales. Blank addresses gone. Duplicates gone.', target: 'ch-overview' },
+      { title: 'Feel the mess', blurb: 'Scrub before vs after on real field patterns.', target: 'ch-morph' },
+      { title: 'Run a lens', blurb: 'SQL dashboard answers one business question at a time.', target: 'ch-dash' },
+      { title: 'Query it yourself', blurb: 'Live lab in the browser on the cleaning grain.', target: 'ch-sql' },
+      { title: 'See what it unlocks', blurb: 'Impact for maps, counts, and one clean vocabulary.', target: 'ch-impact' }
+    ],
+    wrongTurns: [
+      { title: 'Delete blank-address rows', looked: 'Fast completeness win on a filter.', killed: 'Self-join on ParcelID restored all 29 addresses. Deleting would have erased real homes.' },
+      { title: 'Treat Y/N/Yes/No as four categories', looked: 'Raw SoldAsVacant distribution.', killed: 'CASE standardization collapsed labels so vacant counts stopped double-counting spellings.' },
+      { title: 'Count every sale row as a unique closing', looked: 'Simple COUNT(*).', killed: 'ROW_NUMBER duplicates showed 104 same-day double bookings that inflated volume.' }
+    ],
+    limits: [
+      'Public Metro Nashville housing sales only. Not a fraud or owner-intent investigation.',
+      'Cleaning improves analytic readiness. It does not create new market prices or appraisals.',
+      'Demo table grain in the live lab is compact so the UI stays instant. Project metrics reflect the full 56,477-row cleaning work.',
+      'No claim of production warehouse deployment or client engagement.'
+    ],
+    peels: {
+      'Sales Records Reviewed': 'Full municipal sales extract reviewed end to end before any row was dropped or fixed.',
+      'Cleaning Methods': 'Seven SQL methods: null address recovery, duplicate drop, date cast, address split, vacant label standardize, and related fixes.',
+      'Duplicate Sales Removed': 'ROW_NUMBER() partitioned on sale identity keys. 104 same-day duplicate closings removed.',
+      'Addresses Restored': 'ISNULL self-join on ParcelID filled 29 blank PropertyAddress values from sibling rows. Zero homes deleted for null address.'
+    }
+  },
+  python: {
+    tagline: 'Play this analysis',
+    sub: 'Move the sliders. Watch categories update. No submit button.',
+    beats: [
+      { title: 'Land the result', blurb: 'Live BMI tool with transparent CDC math.', target: 'ch-overview' },
+      { title: 'Challenge the default', blurb: 'BMI screens. It does not diagnose. Trail shows why WHR was added.', target: 'ch-trail' },
+      { title: 'Build a scenario', blurb: 'Drag height, weight, waist, hip. Categories update live.', target: 'ch-slider' },
+      { title: 'See the spread', blurb: 'Sample distribution across four BMI categories.', target: 'ch-bar' },
+      { title: 'Read the value', blurb: 'What a care team can and cannot use this for.', target: 'ch-impact' }
+    ],
+    wrongTurns: [
+      { title: 'BMI-only output as a health verdict', looked: 'One number, four neat bins.', killed: 'CDC language: screening tool, not diagnosis. WHR added as a second independent signal.' },
+      { title: 'Hide the formula behind a black box', looked: 'Cleaner consumer UI.', killed: 'Care teams need explainable math. Formula stays visible and interactive.' },
+      { title: 'Skip sex-specific WHR thresholds', looked: 'One cutoff is simpler.', killed: 'WHO thresholds differ by sex. A single cut misclassifies risk bands.' }
+    ],
+    limits: [
+      'Educational screening demo. Not medical advice and not a clinical device.',
+      'Sample distribution chart uses program sample data, not a patient population study.',
+      'BMI and WHR are incomplete pictures of health. Lab work, history, and clinician judgment are out of scope.',
+      'No real patient or PHI data is used.'
+    ],
+    peels: {
+      'BMI Categories': 'Four CDC adult bins: underweight, healthy, overweight, obesity range.',
+      'WHR Risk Tiers': 'WHO sex-specific waist-to-hip thresholds layered on top of BMI.',
+      'Program Steps': 'Eight explicit program steps from inputs through plain-English assessment.',
+      'Retry Attempts (WHR)': 'Bounded retries when waist/hip inputs are missing or inconsistent.'
+    }
+  },
+  powerbi: {
+    tagline: 'Play this analysis',
+    sub: 'Filter the story the way a stakeholder would. Role beats degree.',
+    beats: [
+      { title: 'Land the result', blurb: '630 professionals. Role and country move pay more than degree.', target: 'ch-overview' },
+      { title: 'See the trail', blurb: 'Free-text salary and messy titles had to become measures first.', target: 'ch-trail' },
+      { title: 'Language mix', blurb: 'Who prefers Python vs other tools.', target: 'ch-lang' },
+      { title: 'Salary by education', blurb: 'Hold role steady. Watch the degree story weaken.', target: 'ch-salary' },
+      { title: 'Workforce takeaways', blurb: 'What hiring and people teams can actually use.', target: 'ch-impact' }
+    ],
+    wrongTurns: [
+      { title: 'Treat free-text salary as already numeric', looked: 'Column named salary.', killed: 'Ranges like 60k-80k needed a multi-step DAX midpoint before any average was honest.' },
+      { title: 'Keep 86 write-in job titles as separate careers', looked: 'More categories feel richer.', killed: 'Power Query consolidation kept signal without exploding the legend.' },
+      { title: 'Generalize from 5 PhD rows', looked: 'Highest average at the top of the chart.', killed: 'Sample size too small. Role volume tells the stable story.' }
+    ],
+    limits: [
+      'Survey sample, not a census of the global data workforce.',
+      'Country filter used four preselected markets. Other write-ins were excluded.',
+      'Original .pbix is not fully embedded here. Azure AD and Premium capacity block anonymous embed. Screenshots and interactive recreations carry the story.',
+      'Currency comparisons need purchasing-power context before cross-country pay claims harden.'
+    ],
+    peels: {
+      'Survey Respondents': '630 completed responses after cleaning empty columns and consolidating titles.',
+      'Avg Salary Satisfaction': 'Self-reported satisfaction on a 10-point scale, not actual comp fairness.',
+      'Python Preference': 'Share preferring Python among respondents with a language preference.',
+      'Avg Work/Life Balance': 'Self-reported balance score. Below midpoint in this sample.'
+    }
+  },
+  tableau: {
+    tagline: 'Play this analysis',
+    sub: 'Seasonality and joins, not a static screenshot wall.',
+    beats: [
+      { title: 'Land the result', blurb: '323k records. One peak week that gut-feel pricing missed.', target: 'ch-overview' },
+      { title: 'Follow the trail', blurb: 'Missing zips and join choices before the charts.', target: 'ch-trail' },
+      { title: 'Weekly revenue', blurb: 'Trace the year. Find the holiday spike.', target: 'ch-line' },
+      { title: 'Price by bedrooms', blurb: 'Where the premium actually sits.', target: 'ch-price' },
+      { title: 'Host takeaways', blurb: 'What a host or market analyst can act on.', target: 'ch-impact' }
+    ],
+    wrongTurns: [
+      { title: 'Drop rows with missing zip codes', looked: 'Cleaner map layer.', killed: 'Neighborhood cross-reference recovered 7 zips without throwing out revenue.' },
+      { title: 'Chart listings without fixing the grain', looked: 'Fast visual.', killed: 'Inner join across worksheets had to be validated so revenue did not double-count.' },
+      { title: 'Average price only, ignore calendar', looked: 'One KPI tile.', killed: 'Weekly revenue showed Dec 25 as the real story, not the mean nightly rate alone.' }
+    ],
+    limits: [
+      'Seattle Airbnb 2016 historical snapshot. Not current market rates.',
+      'Dashboard here is a faithful interactive recreation path, not a live Tableau Cloud embed of the original workbook.',
+      'Revenue figures follow the project joins and calendar aggregation documented in the trail.',
+      'No claim about current host strategy or platform policy.'
+    ],
+    peels: {
+      'Records Analyzed': '323,346 listing-calendar grain rows after join and cleaning.',
+      'Peak Revenue (Dec 25 wk)': 'City-wide weekly revenue peak on the week of Dec 25, 2016: the calendar story gut-feel pricing missed.',
+      'Listings at 1 Bedroom': 'One-bedroom inventory share in the cleaned join, used as a baseline product mix signal.',
+      'Missing Zip Codes Fixed': 'Seven missing zips restored via neighborhood cross-reference instead of dropping map rows.'
+    }
+  },
+  excel: {
+    tagline: 'Play this analysis',
+    sub: 'Region, commute, and scenario levers on real bike-buyer patterns.',
+    beats: [
+      { title: 'Land the result', blurb: 'Which regions and profiles actually convert.', target: 'ch-overview' },
+      { title: 'Trail the logic', blurb: 'How the sales question was framed before the pivot.', target: 'ch-trail' },
+      { title: 'Commute conversion', blurb: 'Distance and purchase behavior in one view.', target: 'ch-commute' },
+      { title: 'Regional split', blurb: 'Where income and volume concentrate.', target: 'ch-region' },
+      { title: 'Run a scenario', blurb: 'Move levers. Watch the story update.', target: 'ch-scenario' }
+    ],
+    wrongTurns: [
+      { title: 'Rank regions by headcount only', looked: 'Biggest bar wins.', killed: 'Income and commute patterns flipped which region looked like the best growth bet.' },
+      { title: 'Ignore purchaser profile mix', looked: 'One regional average.', killed: 'Homeowner and commute segments changed the conversion read.' },
+      { title: 'Static pivot as the final deliverable', looked: 'Familiar Excel finish line.', killed: 'Scenario controls let stakeholders test the assumption instead of accepting one freeze.' }
+    ],
+    limits: [
+      'Bike sales training/analysis dataset. Not a live retailer feed.',
+      'Scenario tools illustrate sensitivity. They are not a production demand forecast.',
+      'Regional labels follow the source workbook definitions.',
+      'No claim of client engagement or inventory optimization deployment.'
+    ],
+    peels: {
+      'Records (Raw)': 'Starting row count before Excel dedup and shape fixes.',
+      'After Deduplication': 'Row count after removing duplicate buyer or transaction noise.',
+      'Regions Surveyed': 'Regions kept in the regional comparison and scenario views.',
+      'Pivot Tables Built': 'Pivot layouts used to move from flat rows to decision-ready cuts.'
+    }
+  }
+};
+
+
+
 /* ═══════════════════════════════════════════════════════════════════
    DRAWER RENDERER
 ═══════════════════════════════════════════════════════════════════ */
+
+
+/* ─────────────────────────────────────────────────────────────────
+   PROOF BENCH: cold open + filter bench (portfolio deep dives)
+───────────────────────────────────────────────────────────────── */
+function findProjectSection(p, type) {
+  var secs = (p && p.sections) || [];
+  for (var i = 0; i < secs.length; i++) {
+    if (secs[i].type === type) return secs[i];
+  }
+  return null;
+}
+
+function findAllProjectSections(p, type) {
+  return ((p && p.sections) || []).filter(function(s) { return s.type === type; });
+}
+
+function renderFilterBench(container, barSec, opts) {
+  opts = opts || {};
+  if (!barSec || !barSec.data || !barSec.data.length) return;
+  var wrap = document.createElement('div');
+  wrap.className = 'brief-filter-bench';
+  var title = document.createElement('div');
+  title.className = 'brief-filter-bench__title';
+  title.textContent = opts.title || barSec.title || 'Filter the chart';
+  wrap.appendChild(title);
+
+  var chips = document.createElement('div');
+  chips.className = 'brief-filter-bench__chips';
+  chips.setAttribute('role', 'group');
+  chips.setAttribute('aria-label', opts.chipLabel || 'Filter options');
+
+  var allBtn = document.createElement('button');
+  allBtn.type = 'button';
+  allBtn.className = 'brief-filter-chip is-active';
+  allBtn.textContent = 'All (' + barSec.data.length + ')';
+  allBtn.setAttribute('data-filter', '__all__');
+  chips.appendChild(allBtn);
+
+  barSec.data.forEach(function(d, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'brief-filter-chip';
+    b.textContent = d.label;
+    b.setAttribute('data-filter', String(i));
+    chips.appendChild(b);
+  });
+  wrap.appendChild(chips);
+
+  var count = document.createElement('div');
+  count.className = 'brief-filter-bench__count';
+  count.textContent = 'Showing ' + barSec.data.length + ' of ' + barSec.data.length + ' groups';
+  wrap.appendChild(count);
+
+  var chart = document.createElement('div');
+  chart.className = 'brief-chart-wrap brief-filter-bench__chart';
+  wrap.appendChild(chart);
+  container.appendChild(wrap);
+
+  function paint(rows) {
+    chart.innerHTML = '';
+    count.textContent = 'Showing ' + rows.length + ' of ' + barSec.data.length + ' groups';
+    setTimeout(function() {
+      renderBarChart(chart, rows, { fmt: barSec.fmt, labelW: 120 });
+    }, 0);
+  }
+  paint(barSec.data);
+
+  chips.addEventListener('click', function(e) {
+    var btn = e.target.closest('.brief-filter-chip');
+    if (!btn) return;
+    chips.querySelectorAll('.brief-filter-chip').forEach(function(c) { c.classList.remove('is-active'); });
+    btn.classList.add('is-active');
+    var f = btn.getAttribute('data-filter');
+    if (f === '__all__') paint(barSec.data);
+    else {
+      var idx = parseInt(f, 10);
+      paint([barSec.data[idx]]);
+    }
+  });
+}
+
+function renderColdOpen(container, key, p, goToId) {
+  var captions = {
+    nashville: 'Drag raw rows into cleaned sales.',
+    python: 'Move height and weight. BMI updates live.',
+    powerbi: 'Filter a group. The chart re-draws live.',
+    tableau: 'December spikes stay labeled. No hover needed.',
+    excel: 'Filter a buyer segment. Bars re-draw live.'
+  };
+  var shell = document.createElement('section');
+  shell.className = 'brief-cold-open';
+  shell.setAttribute('aria-label', 'Live interactive');
+  shell.innerHTML =
+    '<div class="brief-cold-open__kicker">Try it now</div>' +
+    '<p class="brief-cold-open__caption">' + (captions[key] || 'Touch the live control below.') + '</p>';
+  var stage = document.createElement('div');
+  stage.className = 'brief-cold-open__stage';
+
+  if (key === 'nashville') {
+    var morph = findProjectSection(p, 'morph-table');
+    if (morph) {
+      renderMorphTable(stage, morph.before, morph.after, morph.columns, morph.note, { scrub: true });
+      var labBtn = document.createElement('button');
+      labBtn.type = 'button';
+      labBtn.className = 'brief-disclose-btn brief-cold-open__jump';
+      labBtn.textContent = 'Open Live Query Lab';
+      labBtn.addEventListener('click', function() {
+        if (typeof goToId === 'function') goToId('ch-sql');
+      });
+      stage.appendChild(labBtn);
+    }
+  } else if (key === 'python') {
+    var wi = findProjectSection(p, 'whatif');
+    if (wi && wi.wi) renderWhatIf(stage, wi.wi);
+  } else if (key === 'powerbi') {
+    var bars = findAllProjectSections(p, 'bar-chart');
+    if (bars[0]) renderFilterBench(stage, bars[0], { title: 'Language filter (live)', chipLabel: 'Languages' });
+    var wi2 = findProjectSection(p, 'whatif');
+    if (wi2 && wi2.wi) {
+      var gap = document.createElement('div');
+      gap.className = 'brief-cold-open__secondary';
+      renderWhatIf(gap, wi2.wi);
+      stage.appendChild(gap);
+    }
+  } else if (key === 'tableau') {
+    var line = findProjectSection(p, 'line-chart');
+    if (line) {
+      var jump = document.createElement('button');
+      jump.type = 'button';
+      jump.className = 'brief-disclose-btn brief-cold-open__jump';
+      jump.textContent = 'Jump to December 25 spike';
+      var lc = document.createElement('div');
+      lc.className = 'brief-chart-wrap';
+      stage.appendChild(jump);
+      stage.appendChild(lc);
+      var peakIdx = (line.peaks && line.peaks.length) ? line.peaks[line.peaks.length - 1] : 51;
+      jump.addEventListener('click', function() {
+        var note = stage.querySelector('.brief-cold-open__peak-note');
+        if (!note) {
+          note = document.createElement('div');
+          note.className = 'brief-cold-open__peak-note';
+          stage.insertBefore(note, lc);
+        }
+        var val = line.values[peakIdx];
+        note.textContent = 'Week ' + (peakIdx + 1) + ': $' + Number(val).toLocaleString() + ' weekly revenue peak (holiday demand).';
+        note.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+      setTimeout(function() {
+        renderLineChart(lc, [{ values: line.values, peaks: line.peaks, color: 'var(--brief-accent)', width: 2 }], {
+          labels: line.labels,
+          yFmt: function(v) { return '$' + Math.round(v / 1000) + 'K'; },
+          height: 170
+        });
+      }, 0);
+      // Auto-highlight last peak note
+      jump.click();
+    }
+  } else if (key === 'excel') {
+    var eBars = findAllProjectSections(p, 'bar-chart');
+    // Prefer region-ish chart if labeled
+    var region = eBars.find(function(s) {
+      return /region|commute|income|buyer/i.test(String(s.title || '') + ' ' + String(s.subtitle || ''));
+    }) || eBars[0];
+    if (region) renderFilterBench(stage, region, { title: (region.title || 'Segment') + ' filter', chipLabel: 'Segments' });
+    var eWi = findProjectSection(p, 'whatif');
+    if (eWi && eWi.wi) {
+      var disc = document.createElement('div');
+      disc.className = 'brief-cold-open__disclaimer';
+      disc.textContent = 'Scenario below is illustrative lead mix, not a dataset finding.';
+      stage.appendChild(disc);
+      var gap2 = document.createElement('div');
+      gap2.className = 'brief-cold-open__secondary';
+      renderWhatIf(gap2, eWi.wi);
+      stage.appendChild(gap2);
+    }
+  }
+
+  shell.appendChild(stage);
+  container.appendChild(shell);
+}
+
+function renderPlayableEpisode(container, key, p, goToId) {
+  var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
+  if (!cfg) return;
+
+  var ep = document.createElement('div');
+  ep.className = 'brief-playable';
+  ep.innerHTML =
+    '<div class="brief-playable-head">' +
+      '<div class="brief-playable-kicker">Episode</div>' +
+      '<div class="brief-playable-title">' + (cfg.tagline || 'Play this analysis') + '</div>' +
+      '<p class="brief-playable-sub">' + (cfg.sub || '') + '</p>' +
+    '</div>';
+
+  var track = document.createElement('div');
+  track.className = 'brief-playable-track';
+  track.setAttribute('role', 'list');
+  (cfg.beats || []).forEach(function(beat, i) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'brief-playable-beat';
+    btn.setAttribute('role', 'listitem');
+    btn.innerHTML =
+      '<span class="brief-playable-num">' + (i + 1) + '</span>' +
+      '<span class="brief-playable-beat-body">' +
+        '<span class="brief-playable-beat-title">' + beat.title + '</span>' +
+        '<span class="brief-playable-beat-blurb">' + beat.blurb + '</span>' +
+      '</span>' +
+      '<span class="brief-playable-go" aria-hidden="true">Go</span>';
+    btn.addEventListener('click', function() {
+      track.querySelectorAll('.brief-playable-beat').forEach(function(b) { b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+      if (typeof goToId === 'function') goToId(beat.target);
+      else {
+        var el = document.getElementById(beat.target);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+    track.appendChild(btn);
+  });
+  ep.appendChild(track);
+
+  var first = track.querySelector('.brief-playable-beat');
+  if (first) first.classList.add('is-active');
+  container.appendChild(ep);
+}
+
+function renderPlayableDepth(container, key) {
+  var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
+  if (!cfg) return;
+
+  if (cfg.wrongTurns && cfg.wrongTurns.length) {
+    var wt = document.createElement('div');
+    wt.className = 'brief-wrong-turns';
+    var nTurns = cfg.wrongTurns.length;
+    wt.innerHTML = '<h3 class="brief-section-title">Wrong turns that looked right</h3>' +
+      '<p class="brief-section-sub">Open ' + nTurns + ' approaches that failed. Real failures only.</p>';
+    var grid = document.createElement('div');
+    grid.className = 'brief-wrong-grid';
+    cfg.wrongTurns.forEach(function(w) {
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'brief-wrong-card is-collapsed';
+      card.setAttribute('aria-expanded', 'false');
+      card.innerHTML =
+        '<div class="brief-wrong-title">' + w.title + '</div>' +
+        '<div class="brief-wrong-meta">Show this wrong turn</div>' +
+        '<div class="brief-wrong-detail">' +
+          '<div class="brief-wrong-label">Looked right</div>' +
+          '<div class="brief-wrong-text">' + w.looked + '</div>' +
+          '<div class="brief-wrong-label">What killed it</div>' +
+          '<div class="brief-wrong-text">' + w.killed + '</div>' +
+        '</div>';
+      card.addEventListener('click', function() {
+        var open = card.classList.contains('is-open');
+        grid.querySelectorAll('.brief-wrong-card.is-open').forEach(function(c) {
+          if (c !== card) {
+            c.classList.remove('is-open');
+            c.classList.add('is-collapsed');
+            c.setAttribute('aria-expanded', 'false');
+            var m0 = c.querySelector('.brief-wrong-meta');
+            if (m0) m0.textContent = 'Show this wrong turn';
+          }
+        });
+        var meta = card.querySelector('.brief-wrong-meta');
+        if (open) {
+          card.classList.remove('is-open');
+          card.classList.add('is-collapsed');
+          card.setAttribute('aria-expanded', 'false');
+          if (meta) meta.textContent = 'Show this wrong turn';
+        } else {
+          card.classList.add('is-open');
+          card.classList.remove('is-collapsed');
+          card.setAttribute('aria-expanded', 'true');
+          if (meta) meta.textContent = 'Hide this wrong turn';
+        }
+      });
+      grid.appendChild(card);
+    });
+    wt.appendChild(grid);
+    container.appendChild(wt);
+  }
+
+  if (cfg.limits && cfg.limits.length) {
+    var lim = document.createElement('div');
+    lim.className = 'brief-limits';
+    lim.innerHTML = '<div class="brief-limits-kicker">Honest limits</div>' +
+      '<ul class="brief-limits-list">' +
+      cfg.limits.map(function(line) { return '<li>' + line + '</li>'; }).join('') +
+      '</ul>';
+    container.appendChild(lim);
+  }
+}
+
+function attachKpiPeels(kpiStrip, key) {
+  var cfg = (typeof PLAYABLE !== 'undefined' && PLAYABLE[key]) ? PLAYABLE[key] : null;
+  if (!cfg || !cfg.peels || !kpiStrip) return;
+  var peelBox = document.createElement('div');
+  peelBox.className = 'brief-kpi-peel';
+  peelBox.hidden = true;
+  kpiStrip.insertAdjacentElement('afterend', peelBox);
+
+  kpiStrip.querySelectorAll('.brief-kpi-card').forEach(function(card) {
+    card.classList.add('brief-kpi-card--peelable');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
+    var labelEl = card.querySelector('.brief-kpi-label');
+    var label = labelEl ? labelEl.textContent.trim() : '';
+    var peel = cfg.peels[label];
+    if (!peel) return;
+    var cue = document.createElement('div');
+    cue.className = 'brief-kpi-proof-cue';
+    cue.textContent = 'Press for proof';
+    card.appendChild(cue);
+    card.setAttribute('aria-label', label + '. Press for proof.');
+    function showPeel() {
+      kpiStrip.querySelectorAll('.brief-kpi-card').forEach(function(c) { c.classList.remove('is-peeled'); });
+      card.classList.add('is-peeled');
+      peelBox.hidden = false;
+      peelBox.innerHTML =
+        '<div class="brief-kpi-peel-label">Proof under the number</div>' +
+        '<div class="brief-kpi-peel-title">' + label + '</div>' +
+        '<p class="brief-kpi-peel-text">' + peel + '</p>' +
+        '<button type="button" class="brief-disclose-btn brief-disclose-btn--inline brief-kpi-peel-hide">Hide proof</button>';
+      var hide = peelBox.querySelector('.brief-kpi-peel-hide');
+      if (hide) hide.addEventListener('click', function() {
+        peelBox.hidden = true;
+        card.classList.remove('is-peeled');
+      });
+    }
+    card.addEventListener('click', showPeel);
+    card.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showPeel(); }
+    });
+  });
+}
+
+
 function renderDrawer(key) {
   var p = PROJECTS[key];
   if (!p) return;
@@ -1498,12 +2404,10 @@ function renderDrawer(key) {
     '<div class="brief-hdr-content">' +
       '<div class="brief-hdr-top-row">' +
         '<span class="brief-badge" style="background:' + bc + '">' + p.badge + '</span>' +
-        '<div class="brief-hdr-nav">' +
-          '<button type="button" id="dd-back" class="brief-back-btn" onclick="closeDD()" aria-label="Back to portfolio">' +
-            '<span class="brief-back-arrow" aria-hidden="true">&#8592;</span>' +
-            '<span class="brief-back-label">Back to portfolio</span>' +
-          '</button>' +
-          '<button type="button" id="dd-close" class="brief-close-btn" onclick="closeDD()" aria-label="Close deep dive and return to portfolio" title="Close (Esc)">' +
+        '<div class="brief-hdr-tools">' +
+          (p.github ? '<a class="brief-tool-btn brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="Code on GitHub" title="Code on GitHub (leaves page)">' + githubSvg + '<span class="brief-github-label">Code on GitHub</span></a>' : '') +
+          '<button type="button" id="dd-theme-toggle" class="brief-tool-btn" onclick="toggleDDTheme()" aria-label="Switch to light mode" title="Dark mode" data-mode="dark"><span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">&#127769;</span></button>' +
+          '<button type="button" id="dd-close" class="brief-tool-btn brief-close-btn" onclick="closeDD()" aria-label="Close deep dive" title="Close (Esc)">' +
             '<span class="brief-close-x" aria-hidden="true">&#x2715;</span>' +
             '<span class="brief-close-text">Close</span>' +
           '</button>' +
@@ -1511,10 +2415,6 @@ function renderDrawer(key) {
       '</div>' +
       '<h2 class="brief-hdr-title">' + p.title + '</h2>' +
       '<p class="brief-hdr-sub">' + p.subtitle + '</p>' +
-      '<div class="brief-hdr-actions">' +
-        (p.github ? '<a class="brief-github-btn" href="' + p.github + '" target="_blank" rel="noopener noreferrer" aria-label="View on GitHub" onclick="var w=window.open(this.href,\"_blank\",\"noopener,noreferrer\");if(!w){try{window.top.location.href=this.href;}catch(e){}}return false;">' + githubSvg + '<span class="brief-github-label">View on GitHub</span></a>' : '') +
-        '<button id="dd-theme-toggle" onclick="toggleDDTheme()" aria-label="Toggle light / dark"><span id="dd-theme-icon">&#9790;</span> Dark</button>' +
-      '</div>' +
     '</div>';
   body.appendChild(hdr);
 
@@ -1527,54 +2427,181 @@ function renderDrawer(key) {
   spine.className = 'brief-spine';
   spine.setAttribute('aria-label', 'Deep dive sections');
   var spineItems = [{ id: 'ch-overview', title: 'Overview' }].concat(p.chapters || []);
-  spine.innerHTML = '<div class="brief-spine-title">On this page</div>' +
-    '<div class="brief-spine-fill"></div>' +
+  if (p.context) {
+    spineItems = spineItems.concat([{ id: 'ch-ask', title: 'Ask This Project' }]);
+  }
+  spine.innerHTML =
+    '<div class="brief-spine-head">' +
+      '<div class="brief-spine-title">Sections</div>' +
+      '<div class="brief-spine-progress" aria-hidden="true"><div class="brief-spine-progress-fill brief-spine-fill"></div></div>' +
+      '<div class="brief-spine-progress-meta"><span class="brief-spine-progress-count">1 / ' + spineItems.length + '</span></div>' +
+    '</div>' +
+    '<div class="brief-spine-list" role="list">' +
     spineItems.map(function(ch, idx) {
-      return '<button type="button" class="brief-spine-item" data-target="' + ch.id + '" title="' + ch.title + '">' +
-        '<span class="brief-spine-num" aria-hidden="true">' + (idx + 1) + '</span>' +
-        '<span class="brief-spine-dot" aria-hidden="true"></span>' +
+      return '<button type="button" class="brief-spine-item' + (idx === 0 ? ' active' : '') + '" role="listitem" data-target="' + ch.id + '" data-index="' + idx + '" title="' + ch.title + '">' +
+        '<span class="brief-spine-num" aria-hidden="true">' + (idx + 1 < 10 ? '0' : '') + (idx + 1) + '</span>' +
         '<span class="brief-spine-label">' + ch.title + '</span>' +
+        '<span class="brief-spine-mark" aria-hidden="true"></span>' +
       '</button>';
-    }).join('');
+    }).join('') +
+    '</div>';
   layout.appendChild(spine);
 
   var scrollBody = document.createElement('div');
   scrollBody.className = 'brief-scroll-body';
 
-  /* Same section list as spine — horizontal on phone/tablet so info is not lost */
-  var mobNav = document.createElement('nav');
-  mobNav.className = 'brief-mob-chapters';
-  mobNav.setAttribute('aria-label', 'Deep dive sections');
-  mobNav.innerHTML =
-    '<div class="brief-mob-chapters-label">On this page</div>' +
-    '<div class="brief-mob-chapters-track" role="list">' +
-    spineItems.map(function(ch, idx) {
-      return '<button type="button" class="brief-mob-chip" role="listitem" data-target="' + ch.id + '">' +
-        '<span class="brief-mob-chip-num">' + (idx + 1) + '</span>' +
-        '<span class="brief-mob-chip-label">' + ch.title + '</span>' +
-      '</button>';
-    }).join('') +
+  /* Same section list as spine - horizontal on phone/tablet so info is not lost */
+  /* Sticky mobile chapter rail + expandable sheet (stays while scrolling) */
+  var mobRail = document.createElement('nav');
+  mobRail.className = 'brief-mob-rail';
+  mobRail.setAttribute('aria-label', 'Deep dive sections');
+  mobRail.innerHTML =
+    '<div class="brief-mob-rail-progress" aria-hidden="true"><div class="brief-mob-rail-fill"></div></div>' +
+    '<div class="brief-mob-rail-row">' +
+      '<button type="button" class="brief-mob-rail-btn brief-mob-rail-prev" aria-label="Previous section">&#8249;</button>' +
+      '<button type="button" class="brief-mob-rail-current" aria-expanded="false" aria-controls="dd-mob-sheet">' +
+        '<span class="brief-mob-rail-meta"><span class="brief-mob-rail-count">1 / ' + spineItems.length + '</span>' +
+        '<span class="brief-mob-rail-hint">Jump</span></span>' +
+        '<span class="brief-mob-rail-title">' + (spineItems[0] ? spineItems[0].title : 'Overview') + '</span>' +
+        '<span class="brief-mob-rail-chevron" aria-hidden="true">&#9662;</span>' +
+      '</button>' +
+      '<button type="button" class="brief-mob-rail-btn brief-mob-rail-next" aria-label="Next section">&#8250;</button>' +
+    '</div>' +
+    '<div class="brief-mob-sheet" id="dd-mob-sheet" hidden>' +
+      '<div class="brief-mob-sheet-head">' +
+        '<span>Jump to section</span>' +
+        '<button type="button" class="brief-mob-sheet-close" aria-label="Close section list">&#10005;</button>' +
+      '</div>' +
+      '<div class="brief-mob-sheet-list" role="list">' +
+      spineItems.map(function(ch, idx) {
+        return '<button type="button" class="brief-mob-sheet-item' + (idx === 0 ? ' active' : '') + '" role="listitem" data-target="' + ch.id + '" data-index="' + idx + '">' +
+          '<span class="brief-mob-sheet-num">' + (idx + 1) + '</span>' +
+          '<span class="brief-mob-sheet-label">' + ch.title + '</span>' +
+          '<span class="brief-mob-sheet-check" aria-hidden="true">&#10003;</span>' +
+        '</button>';
+      }).join('') +
+      '</div>' +
+      '<div class="brief-mob-sheet-dots" aria-hidden="true">' +
+      spineItems.map(function(_, idx) {
+        return '<span class="brief-mob-dot' + (idx === 0 ? ' active' : '') + '" data-index="' + idx + '"></span>';
+      }).join('') +
+      '</div>' +
     '</div>';
-  scrollBody.appendChild(mobNav);
-  mobNav.addEventListener('click', function(e) {
+
+  // Place rail after header so it sticks under it while body scrolls
+  if (hdr && hdr.parentNode) {
+    if (hdr.nextSibling) hdr.parentNode.insertBefore(mobRail, hdr.nextSibling);
+    else hdr.parentNode.appendChild(mobRail);
+  } else {
+    body.insertBefore(mobRail, body.firstChild);
+  }
+
+  function closeMobSheet() {
+    var sheet = mobRail.querySelector('.brief-mob-sheet');
+    var cur = mobRail.querySelector('.brief-mob-rail-current');
+    if (sheet) sheet.hidden = true;
+    if (cur) cur.setAttribute('aria-expanded', 'false');
+    mobRail.classList.remove('sheet-open');
+  }
+  function openMobSheet() {
+    var sheet = mobRail.querySelector('.brief-mob-sheet');
+    var cur = mobRail.querySelector('.brief-mob-rail-current');
+    if (sheet) sheet.hidden = false;
+    if (cur) cur.setAttribute('aria-expanded', 'true');
+    mobRail.classList.add('sheet-open');
+    var active = mobRail.querySelector('.brief-mob-sheet-item.active');
+    if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest' });
+  }
+  function goToSpineIndex(idx) {
+    if (idx < 0 || idx >= spineItems.length) return;
+    if (panel) {
+      panel._spineFreezeIndex = idx;
+      panel._spineFreezeUntil = Date.now() + 700;
+      panel._spineActiveIndex = idx;
+      panel._spineScrollDir = 0;
+    }
+    var id = spineItems[idx].id;
+    var t = document.getElementById(id);
+    closeMobSheet();
+    // Optimistic rail update so arrows/progress feel instant
+    var total = spineItems.length;
+    var pct = total <= 1 ? 1 : (idx + 0.5) / total;
+    if (panel && typeof panel._setRailUI === 'function') {
+      panel._setRailUI(idx, pct, total);
+    } else {
+      var countEl = mobRail.querySelector('.brief-mob-rail-count');
+      var titleEl = mobRail.querySelector('.brief-mob-rail-title');
+      var fillEl = mobRail.querySelector('.brief-mob-rail-fill');
+      if (countEl) countEl.textContent = (idx + 1) + ' / ' + total;
+      if (titleEl) titleEl.textContent = spineItems[idx].title;
+      if (fillEl) fillEl.style.width = ((idx + 1) / total * 100) + '%';
+      mobRail.querySelectorAll('.brief-mob-sheet-item').forEach(function(c, i) {
+        c.classList.toggle('active', i === idx);
+      });
+      mobRail.querySelectorAll('.brief-mob-dot').forEach(function(d, i) {
+        d.classList.toggle('active', i === idx);
+      });
+      var prevBtn = mobRail.querySelector('.brief-mob-rail-prev');
+      var nextBtn = mobRail.querySelector('.brief-mob-rail-next');
+      if (prevBtn) prevBtn.disabled = idx <= 0;
+      if (nextBtn) nextBtn.disabled = idx >= total - 1;
+    }
+    if (t) {
+      t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Re-sync after smooth scroll settles
+      window.setTimeout(function() {
+        if (panel && typeof panel._spineOnScroll === 'function') panel._spineOnScroll();
+      }, 420);
+    }
+  }
+  mobRail._spineItems = spineItems;
+  mobRail._goToSpineIndex = goToSpineIndex;
+
+  mobRail.querySelector('.brief-mob-rail-current').addEventListener('click', function() {
+    var sheet = mobRail.querySelector('.brief-mob-sheet');
+    if (sheet && !sheet.hidden) closeMobSheet();
+    else openMobSheet();
+  });
+  mobRail.querySelector('.brief-mob-sheet-close').addEventListener('click', closeMobSheet);
+  mobRail.querySelector('.brief-mob-rail-prev').addEventListener('click', function() {
+    var active = mobRail.querySelector('.brief-mob-sheet-item.active');
+    var idx = active ? parseInt(active.getAttribute('data-index'), 10) : 0;
+    goToSpineIndex(Math.max(0, idx - 1));
+  });
+  mobRail.querySelector('.brief-mob-rail-next').addEventListener('click', function() {
+    var active = mobRail.querySelector('.brief-mob-sheet-item.active');
+    var idx = active ? parseInt(active.getAttribute('data-index'), 10) : 0;
+    goToSpineIndex(Math.min(spineItems.length - 1, idx + 1));
+  });
+  mobRail.querySelector('.brief-mob-sheet-list').addEventListener('click', function(e) {
     var btn = e.target.closest('[data-target]');
     if (!btn) return;
-    var t = document.getElementById(btn.getAttribute('data-target'));
-    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    goToSpineIndex(parseInt(btn.getAttribute('data-index'), 10));
   });
 
   /* Overview anchor */
   var overview = document.createElement('div');
   overview.className = 'brief-chapter brief-chapter--overview';
 
-  /* ── First screen: Result → KPIs (recruiter 10s) ── */
+  /* ── Proof Bench first screen: Finding → KPIs → Cold open ── */
+  function goToPlayableTarget(id) {
+    var idx = -1;
+    for (var si = 0; si < spineItems.length; si++) {
+      if (spineItems[si].id === id) { idx = si; break; }
+    }
+    if (idx >= 0) goToSpineIndex(idx);
+    else {
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   if (p.outcome) {
     var outcomeEl = document.createElement('div');
     outcomeEl.className = 'brief-outcome';
     outcomeEl.innerHTML =
-      '<div class="brief-outcome-kicker">Result</div>' +
-      '<p class="brief-outcome-text">' + p.outcome + '</p>' +
-      (p.bridge ? '<p class="brief-outcome-bridge">' + p.bridge + '</p>' : '');
+      '<div class="brief-outcome-kicker">Finding</div>' +
+      '<p class="brief-outcome-text">' + p.outcome + '</p>';
     overview.appendChild(outcomeEl);
   }
 
@@ -1589,51 +2616,46 @@ function renderDrawer(key) {
     kpiStrip.appendChild(card);
   });
   overview.appendChild(kpiStrip);
+  attachKpiPeels(kpiStrip, key);
+
+  /* Cold open interactive: star control above the fold */
+  renderColdOpen(overview, key, p, goToPlayableTarget);
+
+  /* Why it mattered: always open, short */
+  if (p.decision) {
+    var db = document.createElement('div');
+    db.className = 'brief-decision brief-decision--open';
+    db.innerHTML =
+      '<div class="brief-decision-kicker">Why it mattered</div>' +
+      '<p class="brief-decision-open-text">' + p.decision.what + ' ' + p.decision.why + '</p>';
+    overview.appendChild(db);
+  }
+
+  /* Playable episode beats */
+  renderPlayableEpisode(overview, key, p, goToPlayableTarget);
 
   overview.id = 'ch-overview';
   scrollBody.appendChild(overview);
 
-  /* ── Decision Brief ── */
-  if (p.decision) {
-    var db = document.createElement('div');
-    db.className = 'brief-decision';
-    db.innerHTML =
-      '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill what">The Situation</span>' +
-        '<span class="brief-decision-text">' + p.decision.what + '</span>' +
-      '</div>' +
-      '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill why">Why Decisions Break</span>' +
-        '<span class="brief-decision-text">' + p.decision.why + '</span>' +
-      '</div>' +
-      '<div class="brief-decision-row">' +
-        '<span class="brief-decision-pill next">What Clean Data Unlocks</span>' +
-        '<span class="brief-decision-text">' + p.decision.next + '</span>' +
-      '</div>';
-    overview.appendChild(db);
-  }
-
-  /* ── Insight Headline ── */
-  var headline = document.createElement('div');
-  headline.className = 'brief-headline';
-  headline.innerHTML = '<div class="brief-headline-label">The Key Finding</div>' +
-    '<div class="brief-headline-text">' + p.insight + '</div>';
-  overview.appendChild(headline);
-
-  /* KPI strip already rendered at top of first screen */
-
-  /* ── Explore This Project (question-based lens) ── */
+  /* Explore (collapsed door with count) */
   if (p.stakeholders && p.stakeholders.length) {
     var sl = document.createElement('div');
     sl.className = 'brief-explore-wrap';
+    var nQ = p.stakeholders.length;
+    var slToggle = document.createElement('button');
+    slToggle.type = 'button';
+    slToggle.className = 'brief-disclose-btn';
+    slToggle.setAttribute('aria-expanded', 'false');
+    slToggle.textContent = 'Show ' + nQ + ' explore questions';
+    var slBody = document.createElement('div');
+    slBody.hidden = true;
+    slBody.className = 'brief-explore-body';
 
-    /* Header row */
     var slHdr = document.createElement('div');
     slHdr.className = 'brief-explore-hdr';
     slHdr.innerHTML = '<span class="brief-explore-label">What do you want to know?</span>';
-    sl.appendChild(slHdr);
+    slBody.appendChild(slHdr);
 
-    /* Question cards - each is a full tappable card, not a small pill */
     var slCards = document.createElement('div');
     slCards.className = 'brief-explore-cards';
     var slAnswer = document.createElement('div');
@@ -1660,7 +2682,6 @@ function renderDrawer(key) {
         card.classList.add('active');
         slAnswer.querySelectorAll('.brief-explore-pane').forEach(function(pn) { pn.classList.remove('active'); });
         slAnswer.querySelector('[data-sl-pane="' + i + '"]').classList.add('active');
-        /* On mobile: scroll answer into view */
         if (window.innerWidth < 640) {
           setTimeout(function() { slAnswer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
         }
@@ -1668,9 +2689,46 @@ function renderDrawer(key) {
       slCards.appendChild(card);
     });
 
-    sl.appendChild(slCards);
-    sl.appendChild(slAnswer);
+    slBody.appendChild(slCards);
+    slBody.appendChild(slAnswer);
+    slToggle.addEventListener('click', function() {
+      var on = slBody.hidden;
+      slBody.hidden = !on;
+      slToggle.setAttribute('aria-expanded', on ? 'true' : 'false');
+      slToggle.textContent = on ? ('Hide ' + nQ + ' explore questions') : ('Show ' + nQ + ' explore questions');
+    });
+    sl.appendChild(slToggle);
+    sl.appendChild(slBody);
     overview.appendChild(sl);
+  }
+
+  /* Wrong turns + honest limits after cold open path */
+  renderPlayableDepth(overview, key);
+
+  /* Optional full finding (counted) */
+  if (p.insight) {
+    var insightFull = String(p.insight || '');
+    var insightLead = insightFull.split(/(?<=[.!?])\s+/)[0] || insightFull;
+    var insightRest = insightFull.slice(insightLead.length).trim();
+    if (insightRest && insightRest.length > 30) {
+      var moreH = document.createElement('button');
+      moreH.type = 'button';
+      moreH.className = 'brief-disclose-btn brief-disclose-btn--inline';
+      moreH.setAttribute('aria-expanded', 'false');
+      moreH.textContent = 'Show full finding detail';
+      var restH = document.createElement('div');
+      restH.className = 'brief-headline-text brief-headline-text--rest';
+      restH.hidden = true;
+      restH.textContent = insightRest;
+      moreH.addEventListener('click', function() {
+        var on = restH.hidden;
+        restH.hidden = !on;
+        moreH.setAttribute('aria-expanded', on ? 'true' : 'false');
+        moreH.textContent = on ? 'Hide full finding detail' : 'Show full finding detail';
+      });
+      overview.appendChild(moreH);
+      overview.appendChild(restH);
+    }
   }
 
   p.sections.forEach(function(sec, si) {
@@ -1680,8 +2738,34 @@ function renderDrawer(key) {
     chWrap.id = chapter.id;
 
     if (sec.type === 'insight-card') {
-      chWrap.innerHTML = '<h3 class="brief-section-title">The Problem</h3>' +
-        '<div class="brief-insight-block">' + sec.text + '</div>';
+      chWrap.innerHTML = '<h3 class="brief-section-title">The Problem</h3>';
+      var insightWrap = document.createElement('div');
+      insightWrap.className = 'brief-insight-progressive';
+      var full = String(sec.text || '');
+      var lead = full.split(/(?<=[.!?])\s+/)[0] || full;
+      var rest = full.slice(lead.length).trim();
+      var leadEl = document.createElement('div');
+      leadEl.className = 'brief-insight-block brief-insight-block--lead';
+      leadEl.textContent = lead;
+      insightWrap.appendChild(leadEl);
+      if (rest && rest.length > 40) {
+        var restEl = document.createElement('div');
+        restEl.className = 'brief-insight-block brief-insight-block--rest';
+        restEl.hidden = true;
+        restEl.textContent = rest;
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'brief-disclose-btn brief-disclose-btn--inline';
+        btn.textContent = 'Show problem detail';
+        btn.addEventListener('click', function() {
+          var on = restEl.hidden;
+          restEl.hidden = !on;
+          btn.textContent = on ? 'Hide problem detail' : 'Show problem detail';
+        });
+        insightWrap.appendChild(btn);
+        insightWrap.appendChild(restEl);
+      }
+      chWrap.appendChild(insightWrap);
 
     } else if (sec.type === 'thinking-trail') {
       chWrap.innerHTML = '<h3 class="brief-section-title">' + (sec.title || 'Thinking Trail') + '</h3>';
@@ -1723,6 +2807,12 @@ function renderDrawer(key) {
 
     } else if (sec.type === 'whatif') {
       chWrap.innerHTML = '<h3 class="brief-section-title">Interactive Scenario</h3>';
+      if (key === 'excel') {
+        var discEl = document.createElement('p');
+        discEl.className = 'brief-section-sub brief-cold-open__disclaimer';
+        discEl.textContent = 'Illustrative lead-mix model. Not a raw dataset finding.';
+        chWrap.appendChild(discEl);
+      }
       renderWhatIf(chWrap, sec.wi);
 
     } else if (sec.type === 'conviction-meters') {
@@ -1741,15 +2831,44 @@ function renderDrawer(key) {
       chWrap.innerHTML = '<h3 class="brief-section-title">' + itTitle + '</h3>';
       var itGrid = document.createElement('div');
       itGrid.className = 'brief-impact-text-grid';
+      var itSkim = document.createElement('div');
+      itSkim.className = 'brief-skim-note';
+      itSkim.innerHTML = '<span class="brief-skim-note__label">Skim</span> ' +
+        '<span class="brief-skim-note__text">Headlines first. Open a card only if you want the proof.</span>';
+      chWrap.appendChild(itSkim);
       (sec.items || []).forEach(function(item) {
-        var card = document.createElement('div');
-        card.className = 'brief-impact-text-card';
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'brief-impact-text-card is-collapsed';
+        card.setAttribute('aria-expanded', 'false');
         card.innerHTML =
-          '<div class="bitc-icon">' + (item.icon || '') + '</div>' +
+          '<div class="bitc-icon" aria-hidden="true">' + (item.icon || '') + '</div>' +
           '<div class="bitc-body">' +
-            '<div class="bitc-heading">' + (item.heading || '') + '</div>' +
+            '<div class="bitc-heading-row">' +
+              '<div class="bitc-heading">' + (item.heading || '') + '</div>' +
+              '<span class="bitc-toggle">Show proof</span>' +
+            '</div>' +
             '<div class="bitc-text">' + (item.body || '') + '</div>' +
           '</div>';
+        card.addEventListener('click', function() {
+          var open = card.classList.contains('is-open');
+          itGrid.querySelectorAll('.brief-impact-text-card.is-open').forEach(function(el) {
+            if (el !== card) {
+              el.classList.remove('is-open');
+              el.classList.add('is-collapsed');
+              el.setAttribute('aria-expanded', 'false');
+            }
+          });
+          if (open) {
+            card.classList.remove('is-open');
+            card.classList.add('is-collapsed');
+            card.setAttribute('aria-expanded', 'false');
+          } else {
+            card.classList.add('is-open');
+            card.classList.remove('is-collapsed');
+            card.setAttribute('aria-expanded', 'true');
+          }
+        });
         itGrid.appendChild(card);
       });
       chWrap.appendChild(itGrid);
@@ -1761,7 +2880,8 @@ function renderDrawer(key) {
   /* ── Ask This Project ── */
   if (p.context) {
     var askWrap = document.createElement('div');
-    askWrap.className = 'brief-ask-wrap';
+    askWrap.className = 'brief-chapter brief-ask-wrap';
+    askWrap.id = 'ch-ask';
 
     /* Per-project Q&A - precise, pre-written answers */
     var ASK_QA = {
@@ -1843,16 +2963,6 @@ function renderDrawer(key) {
   /* Sticky exit bar - always visible way back to portfolio */
   var exitBar = document.createElement('div');
   
-  if (p.nextSteps) {
-    var ns = document.createElement('div');
-    ns.className = 'brief-chapter brief-next-steps';
-    ns.id = 'ch-next';
-    ns.innerHTML =
-      '<h3 class="brief-section-title">What I\'d do next</h3>' +
-      '<p class="brief-next-text">' + p.nextSteps + '</p>';
-    scrollBody.appendChild(ns);
-  }
-
   exitBar.className = 'brief-exit-bar';
   exitBar.innerHTML =
     '<button type="button" class="brief-exit-back" onclick="closeDD()">' +
@@ -1865,8 +2975,20 @@ function renderDrawer(key) {
   /* Spine nav: click label/dot to jump */
   spine.querySelectorAll('.brief-spine-item').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      var t = scrollBody.querySelector('#' + btn.getAttribute('data-target'));
+      var tid = btn.getAttribute('data-target');
+      var t = (scrollBody && scrollBody.querySelector('#' + tid)) || document.getElementById(tid);
+      var idx = parseInt(btn.getAttribute('data-index'), 10);
+      if (isNaN(idx)) {
+        var all = panel.querySelectorAll('.brief-spine-item');
+        idx = Array.prototype.indexOf.call(all, btn);
+      }
+      panel._spineFreezeIndex = idx;
+      panel._spineFreezeUntil = Date.now() + 700;
+      panel._spineActiveIndex = idx;
+      panel._spineScrollDir = 0;
       if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Optimistic paint
+      if (typeof panel._spineOnScroll === 'function') panel._spineOnScroll();
     });
   });
 
@@ -1885,7 +3007,8 @@ function renderDrawer(key) {
   kpiObs.observe(kpiStrip);
 
   /* ── Spine ── */
-  setTimeout(function() { initSpine(panel); }, 100);
+  setTimeout(function() { initSpine(panel);
+  initMobileChrome(panel); }, 100);
 
   /* ── Bottom bar is hidden - close and theme are in the header ── */
   /* Keep the element for backwards compat but keep it empty */
@@ -1897,16 +3020,43 @@ function renderDrawer(key) {
    PANEL OPEN / CLOSE
 ═══════════════════════════════════════════════════════════════════ */
 /* ── Deep dive theme toggle - delegates to main portfolio toggle ── */
+
+function ddThemeIconHtml(isLight) {
+  // Sun = light mode active, moon = dark mode active
+  if (isLight) {
+    return '<span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">\u2600\uFE0F</span>';
+  }
+  return '<span id="dd-theme-icon" class="dd-theme-emoji" aria-hidden="true">\uD83C\uDF19</span>';
+}
+function setDDThemeButton(isLight) {
+  var btn = document.getElementById('dd-theme-toggle');
+  if (!btn) return;
+  btn.innerHTML = ddThemeIconHtml(!!isLight);
+  btn.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+  btn.setAttribute('title', isLight ? 'Light mode' : 'Dark mode');
+  btn.setAttribute('data-mode', isLight ? 'light' : 'dark');
+}
+
 window.toggleDDTheme = function() {
-  /* Fire the main page toggle so both update together */
-  var mainToggle = document.querySelector('[data-theme-toggle]');
-  if (mainToggle) { mainToggle.click(); return; }
-  /* Fallback: toggle the panel directly if main toggle not found */
   var panel = document.getElementById('dd-panel');
-  var btn   = document.getElementById('dd-theme-toggle');
+  var mainToggle = document.querySelector('[data-theme-toggle]');
+  if (mainToggle) {
+    mainToggle.click();
+    // Sync icon after main page flips html[data-theme]
+    window.setTimeout(function() {
+      var t = document.documentElement.getAttribute('data-theme') || 'dark';
+      var light = t === 'light';
+      if (panel) {
+        if (light) panel.classList.add('brief-light');
+        else panel.classList.remove('brief-light');
+      }
+      setDDThemeButton(light);
+    }, 0);
+    return;
+  }
   if (!panel) return;
   var isLight = panel.classList.toggle('brief-light');
-  if (btn) btn.innerHTML = (isLight ? '<span id="dd-theme-icon">\u2600</span> Light' : '<span id="dd-theme-icon">\u263E</span> Dark');
+  setDDThemeButton(isLight);
 };
 
 
@@ -1936,14 +3086,12 @@ window.openDD = function(key) {
   renderDrawer(key);
   /* Mirror the main portfolio theme - deep dive never has its own independent state */
   var mainTheme = document.documentElement.getAttribute('data-theme') || 'light';
-  var themeBtn = document.getElementById('dd-theme-toggle');
   if (mainTheme === 'light') {
     panel.classList.add('brief-light');
-    if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon">\u2600</span> Light';
   } else {
     panel.classList.remove('brief-light');
-    if (themeBtn) themeBtn.innerHTML = '<span id="dd-theme-icon">\u263E</span> Dark';
   }
+  setDDThemeButton(mainTheme === 'light');
   panel.classList.add('open');
   document.body.classList.add('dd-open');
   if (overlay) overlay.classList.add('visible');
