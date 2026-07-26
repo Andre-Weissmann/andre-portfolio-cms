@@ -347,7 +347,6 @@
               <h3 class="project-block-title">Nashville Housing: Turning 56,477 Corrupt Records Into a Trusted Data Asset</h3>
               <p class="project-block-desc">A real estate dataset with missing addresses, duplicated parcels, and four inconsistent values where two should exist cannot support any downstream decision. Using SQL Server, I applied seven data cleaning methods: self-join imputation for missing addresses, PARSENAME to split owner and property address columns, CASE WHEN standardization across 56,477 rows, CTE-plus-ROW_NUMBER deduplication, and date format normalization. The output is a fully queryable, trustworthy table any analyst or business team can build on without second-guessing the data.</p>
               <div class="project-tech-row"><span>SQL</span><span>Data Cleaning</span><span>Data Quality</span><span>Database Management</span></div>
-              <img src="images/nashville-home.jpg" alt="Nashville Housing Data" width="358" height="202" class="project-block-img" loading="lazy"/>
             </div>
             <div class="project-block-demo">
               <div class="demo-header">
@@ -383,11 +382,16 @@
               <h3 class="project-block-title">Data Professionals Survey: Does Education Level Actually Drive Salary?</h3>
               <p class="project-block-desc">630 data professionals across the US, India, Canada, and UK reported their salaries, tools, and satisfaction. The central question was whether education level predicts compensation. The Power BI dashboard I built across five charts and two KPI cards answers it clearly: PhD holders average $206K, yet bachelor's degree data scientists average $93K and outperform associates and masters tiers in total employment volume. Education level alone is not the salary driver people assume. The real signal is role, not credential. That distinction matters to every hiring manager setting compensation bands and every early-career analyst deciding whether to go back to school.</p>
               <div class="project-tech-row"><span>Power BI</span><span>Survey Analysis</span><span>DAX</span><span>Data Visualization</span></div>
+            </div>
+            <div class="project-block-demo project-block-demo--static">
+              <div class="demo-header">
+                <span class="demo-badge demo-badge--static">Dashboard preview</span>
+                <p class="demo-hint">Click Deep Dive for the interactive walkthrough, findings, and filters.</p>
+              </div>
               <div class="project-block-img-link project-block-img-link--static"><img src="images/powerbi-dashboard.png" alt="Power BI data professionals survey dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></div>
             </div>
-
           </article>
-<article class="project-block project-block--flip" id="proj-airbnb">
+<article class="project-block" id="proj-airbnb">
             <div class="project-block-info">
               <div class="project-meta-row">
                 <span class="proj-badge badge-tableau">Tableau</span>
@@ -397,9 +401,14 @@
               <h3 class="project-block-title">Seattle Airbnb 2016: The Three Variables That Explain Every Pricing Decision</h3>
               <p class="project-block-desc">323,346 booking records across Seattle's Airbnb market. Seven missing zip codes manually corrected through neighborhood cross-referencing. An inner join across Listings and Calendar tables to connect property attributes to revenue timing. What emerged were three clean levers any host can act on: zip code 98134 commands the city's highest average nightly rate, a four-bedroom generates nearly four times the revenue of a one-bedroom, and the week of December 25th ($2,110,350 in city-wide revenue) outperforms the week of March 27th ($1,906,735). Gut-feel pricing ignores all three. This Tableau dashboard makes all three visible and interactive.</p>
               <div class="project-tech-row"><span>Tableau</span><span>Geospatial</span><span>Time Series</span><span>Airbnb Data</span></div>
+            </div>
+            <div class="project-block-demo project-block-demo--static">
+              <div class="demo-header">
+                <span class="demo-badge demo-badge--static">Dashboard preview</span>
+                <p class="demo-hint">Click Deep Dive for the interactive dashboard walk and Dec 25 revenue spike.</p>
+              </div>
               <div class="project-block-img-link project-block-img-link--static"><img src="images/airbnb-dashboard.png" alt="Tableau Airbnb Seattle dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></div>
             </div>
-
           </article>
         </div>
 
@@ -412,7 +421,7 @@
             <span class="projects-archive-toggle__mark" aria-hidden="true"></span>
             <span class="projects-archive-toggle__text">
               <span class="projects-archive-toggle__label">Earlier data projects (2023)</span>
-              <span class="projects-archive-toggle__meta">2 more · Excel and Python · full demos inside</span>
+              <span class="projects-archive-toggle__meta">2 more data projects</span>
             </span>
             <span class="projects-archive-toggle__chev" aria-hidden="true"></span>
           </button>
@@ -430,11 +439,16 @@
               <h3 class="project-block-title">Bike Sales: Pacific Region Shows Strong Margins on a Smaller Sample Worth Watching</h3>
               <p class="project-block-desc">13,351 sales records across Europe, North America, and the Pacific region. After deduplication and field standardization (marital status, gender, and age brackets via nested IF formula), four pivot tables and an interactive slicer dashboard revealed one clear finding: the Pacific region generates the highest profit margins in bike sales. The highest-income buyer profile is a married Pacific-region homeowner in a management role averaging $90,000 annually. The farthest commute distances are also in the Pacific region, where middle-aged female buyers ride more than 10 miles. For any stakeholder allocating sales or marketing investment, this dataset points to one region, one demographic, and one clear next move.</p>
               <div class="project-tech-row"><span>Microsoft Excel</span><span>Data Visualization</span><span>Sales Analytics</span><span>BI</span></div>
+            </div>
+            <div class="project-block-demo project-block-demo--static">
+              <div class="demo-header">
+                <span class="demo-badge demo-badge--static">Dashboard preview</span>
+                <p class="demo-hint">Click Deep Dive for the pivot tables, slicer story, and Pacific margin finding.</p>
+              </div>
               <div class="project-block-img-link project-block-img-link--static"><img src="images/bike-sales.png" alt="Excel bike sales dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></div>
             </div>
-
           </article>
-<article class="project-block project-block--flip" id="proj-bmi">
+<article class="project-block" id="proj-bmi">
             <div class="project-block-info">
               <div class="project-meta-row">
                 <span class="proj-badge badge-python">Python</span>
@@ -444,7 +458,6 @@
               <h3 class="project-block-title">BMI and Waist-to-Hip Ratio: Clinical Risk Screening in Plain Language</h3>
               <p class="project-block-desc">Raw BMI scores are screening tools, not diagnoses. This Python program applies the CDC formula across four clinical weight categories, then optionally calculates Waist-to-Hip Ratio using WHO thresholds (0.90 for men, 0.85 for women) to add a cardiovascular risk dimension BMI alone cannot provide. The output is not a number to Google. It is a plain-English assessment: your classification, your risk tier, and what it means, delivered in seconds to a patient or provider with no medical background required.</p>
               <div class="project-tech-row"><span>Python</span><span>Health Analytics</span><span>Data Validation</span><span>CLI Programming</span></div>
-              <img src="images/bmi-main.jpg" alt="BMI Health Analysis" width="358" height="202" class="project-block-img" loading="lazy"/>
             </div>
             <div class="project-block-demo">
               <div class="demo-header">

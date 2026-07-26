@@ -13066,3 +13066,133 @@ body, .header, .qb-block, .cmp-card, .qb-input {
 .projects-archive-toggle[aria-expanded="true"] .projects-archive-toggle__meta::after {
   content: " · expanded";
 }
+
+
+/* ─────────────────────────────────────────────────────────────────
+   PROJECT BLOCK — sharpened identity-left / interactive-right pattern
+   Applied to all five data projects (featured + archive) for a
+   consistent "name on the left, live thing on the right" cadence.
+   Featured 3 keep full page width per project row so dashboards can
+   breathe. On mobile everything stacks to a single column so the
+   same information reads on every device.
+   ───────────────────────────────────────────────────────────────── */
+
+/* Give the interactive side more breathing room without squishing */
+.projects-list > .project-block,
+.projects-list--archive > .project-block {
+  grid-template-columns: 5fr 7fr;
+  gap: var(--sp-10);
+}
+
+/* Identity column — bigger project name, prominent Deep Dive CTA */
+.projects-list > .project-block > .project-block-info,
+.projects-list--archive > .project-block > .project-block-info {
+  gap: var(--sp-5);
+  padding-top: var(--sp-2);
+}
+
+.projects-list > .project-block .project-meta-row,
+.projects-list--archive > .project-block .project-meta-row {
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.projects-list > .project-block .project-block-title,
+.projects-list--archive > .project-block .project-block-title {
+  font-size: 1.85rem;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+}
+
+.projects-list > .project-block .project-block-desc,
+.projects-list--archive > .project-block .project-block-desc {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* Sharpen the badge so it reads as an identity chip, not decoration */
+.projects-list > .project-block .proj-badge,
+.projects-list--archive > .project-block .proj-badge {
+  font-size: 0.72rem;
+  padding: 4px var(--sp-3);
+  letter-spacing: 0.09em;
+}
+
+/* Prominent Deep Dive button, cleanly aligned right of the meta */
+.projects-list > .project-block .proj-explore-btn,
+.projects-list--archive > .project-block .proj-explore-btn {
+  font-size: 0.82rem;
+  padding: 8px var(--sp-4);
+  min-height: 40px;
+  border-width: 1.5px;
+}
+
+/* Right column — static dashboard variant */
+.project-block-demo--static {
+  min-height: 0;
+  padding: var(--sp-5);
+  gap: var(--sp-4);
+  background: color-mix(in oklab, var(--color-surface2) 92%, transparent);
+}
+
+.project-block-demo--static .demo-header {
+  gap: var(--sp-2);
+}
+
+.demo-badge--static {
+  background: color-mix(in oklab, var(--color-text-muted) 12%, transparent);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 3px var(--sp-3);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+}
+
+.project-block-demo--static .project-block-img {
+  max-height: none;
+  aspect-ratio: auto;
+  min-height: 0;
+  object-fit: contain;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+}
+
+/* Tablet: shrink gap, keep two columns */
+@media (max-width: 1100px) and (min-width: 901px) {
+  .projects-list > .project-block,
+  .projects-list--archive > .project-block {
+    gap: var(--sp-7);
+  }
+  .projects-list > .project-block .project-block-title,
+  .projects-list--archive > .project-block .project-block-title {
+    font-size: 1.6rem;
+  }
+}
+
+/* Mobile: single column, info first, live thing second — same content */
+@media (max-width: 900px) {
+  .projects-list > .project-block,
+  .projects-list--archive > .project-block {
+    grid-template-columns: 1fr !important;
+    gap: var(--sp-6);
+  }
+  .projects-list > .project-block .project-block-title,
+  .projects-list--archive > .project-block .project-block-title {
+    font-size: 1.5rem;
+  }
+  .projects-list > .project-block .project-block-desc,
+  .projects-list--archive > .project-block .project-block-desc {
+    font-size: 0.98rem;
+  }
+  .project-block-demo--static {
+    padding: var(--sp-4);
+  }
+}
