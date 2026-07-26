@@ -448,6 +448,12 @@ function initSpine(panel) {
   var scrollBody = panel.querySelector('.brief-scroll-body');
   var bodyEl = document.getElementById('dd-body');
   var rail = panel.querySelector('.brief-mob-rail');
+  // Fresh spy state each open — prevents stale last-lock across projects
+  panel._spineActiveIndex = 0;
+  panel._spineLockedLast = false;
+  panel._spineMaxScrollTop = 0;
+  panel._spineFreezeUntil = 0;
+  panel._spineFreezeIndex = null;
 
   // Prefer the element that actually scrolls. On phones #dd-body is the root;
   // rail is shown up to 899px, so use the same breakpoint for scroll listening.
@@ -464,6 +470,10 @@ function initSpine(panel) {
     if (bodyScrolls) content = bodyEl;
   }
   if (!content) return;
+  try {
+    var oldSp = content.querySelector('.brief-scroll-spacer');
+    if (oldSp) oldSp.parentNode.removeChild(oldSp);
+  } catch (eSp) { /* ignore */ }
 
   // Nav items: desktop spine buttons, else mobile sheet items, else rail spine data
   var items = Array.prototype.slice.call(panel.querySelectorAll('.brief-spine-item'));
@@ -537,21 +547,19 @@ function initSpine(panel) {
   panel._setRailUI = setRailUI;
   panel._spineOnScroll = null;
 
+  function sectionDocTop(el) {
+    // Section Y in the scroll content's document coordinates
+    return el.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop;
+  }
+
   function ensureScrollRoom(targets, force) {
-    // Size once (or on resize). Never rewrite during scroll — mid-scroll
-    // height changes reclamp scrollTop and bounce the active nav item.
+    // Enough end room that the LAST section heading can reach the reading line.
+    // Resize only when forced or not yet sized — never on every scroll tick.
     if (!content || !targets || !targets.length) return;
     var viewH = content.clientHeight || 0;
     if (viewH < 120) return;
 
-    var spacer = null;
-    var kids = content.children;
-    for (var si = 0; si < kids.length; si++) {
-      if (kids[si].classList && kids[si].classList.contains('brief-scroll-spacer')) {
-        spacer = kids[si];
-        break;
-      }
-    }
+    var spacer = content.querySelector('.brief-scroll-spacer');
     if (!spacer) {
       spacer = document.createElement('div');
       spacer.className = 'brief-scroll-spacer';
@@ -560,21 +568,63 @@ function initSpine(panel) {
     }
     if (!force && spacer.getAttribute('data-sized') === '1') return;
 
+    var pinOff = Math.max(96, 18);
     var last = targets[targets.length - 1];
-    var lastH = last.offsetHeight || 0;
-    var pinOff = Math.max(80, Math.min(Math.round(viewH * 0.2), 140));
-    var need = Math.round(viewH - pinOff - Math.min(lastH, viewH * 0.6));
-    need = Math.max(24, Math.min(need, Math.round(viewH * 0.32)));
-    spacer.style.height = need + 'px';
+    // Measure without relying on current spacer height
+    spacer.style.height = '0px';
+    var lastTop = sectionDocTop(last);
+    var scrollH0 = Math.max(content.scrollHeight - viewH, 0);
+    // Need maxScroll >= lastTop - pinOff so last can become active via pin
+    var needScroll = Math.max(0, lastTop - pinOff);
+    var extra = Math.ceil(needScroll - scrollH0 + 8);
+    // Cap so we don't recreate a huge empty desert; still enough for last pin
+    extra = Math.max(48, Math.min(Math.max(extra, Math.round(viewH * 0.2)), Math.round(viewH * 0.55)));
+    spacer.style.height = extra + 'px';
     spacer.setAttribute('data-sized', '1');
+  }
+
+  function paintActive(targets, active, pct) {
+    var activeId = targets[active] ? targets[active].id : '';
+    var activeItemIndex = active;
+    // Prefer index match when lengths align (avoids id edge cases)
+    if (items.length === targets.length) {
+      activeItemIndex = active;
+      items.forEach(function(it, idx) {
+        it.classList.toggle('active', idx === active);
+        it.classList.toggle('is-done', idx < active);
+        it.classList.toggle('is-upcoming', idx > active);
+      });
+    } else {
+      items.forEach(function(it, idx) {
+        var tid = it.getAttribute('data-target') || '';
+        var on = activeId ? tid === activeId : idx === active;
+        if (on) activeItemIndex = idx;
+        it.classList.toggle('active', on);
+      });
+      items.forEach(function(it, idx) {
+        it.classList.toggle('is-done', idx < activeItemIndex);
+        it.classList.toggle('is-upcoming', idx > activeItemIndex);
+      });
+    }
+    if (spineEl) {
+      var pc = spineEl.querySelector('.brief-spine-progress-count');
+      var totalN = Math.max(items.length, targets.length, 1);
+      if (pc) pc.textContent = (activeItemIndex + 1) + ' / ' + totalN;
+    }
+    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, idx) {
+      c.classList.toggle('active', idx === activeItemIndex);
+    });
+    setRailUI(activeItemIndex, pct, Math.max(items.length, targets.length));
   }
 
   function onScroll() {
     var targets = resolveTargets();
-    var scrollTop = content.scrollTop;
     var viewH = content.clientHeight || 1;
+    var scrollTop = content.scrollTop;
     var scrollH = Math.max(content.scrollHeight - viewH, 0);
-    var pct = scrollH > 0 ? Math.min(Math.max(scrollTop / scrollH, 0), 1) : 0;
+    // Clamp elastic overscroll so spring-back cannot flip the active index
+    var st = scrollH > 0 ? Math.max(0, Math.min(scrollTop, scrollH)) : 0;
+    var pct = scrollH > 0 ? st / scrollH : (targets.length ? 1 : 0);
 
     if (spineEl) {
       var fill = spineEl.querySelector('.brief-spine-progress-fill') || spineEl.querySelector('.brief-spine-fill');
@@ -590,8 +640,11 @@ function initSpine(panel) {
     }
 
     ensureScrollRoom(targets, false);
+    // Recompute after possible first-time spacer (only changes once)
+    scrollH = Math.max(content.scrollHeight - viewH, 0);
+    st = scrollH > 0 ? Math.max(0, Math.min(content.scrollTop, scrollH)) : 0;
+    pct = scrollH > 0 ? st / scrollH : 1;
 
-    var rootRect = content.getBoundingClientRect();
     var railH = 0;
     var rnow = panel.querySelector('.brief-mob-rail');
     if (rnow) {
@@ -602,16 +655,14 @@ function initSpine(panel) {
         }
       } catch (eR) { railH = 0; }
     }
-
-    // Fixed reading line under sticky chrome
     var pinOffset = Math.max(96, railH + 18);
-    var pinY = rootRect.top + pinOffset;
+    var lastIdx = targets.length - 1;
 
-    // Programmatic nav freeze (click / arrows) wins during smooth scroll
+    // Programmatic freeze (click / arrows)
     var freezeUntil = panel._spineFreezeUntil || 0;
     var freezeIdx = panel._spineFreezeIndex;
     if (freezeUntil && Date.now() < freezeUntil && typeof freezeIdx === 'number') {
-      var fActive = Math.max(0, Math.min(targets.length - 1, freezeIdx));
+      var fActive = Math.max(0, Math.min(lastIdx, freezeIdx));
       panel._spineActiveIndex = fActive;
       paintActive(targets, fActive, pct);
       return;
@@ -621,60 +672,55 @@ function initSpine(panel) {
       panel._spineFreezeIndex = null;
     }
 
-    // Raw: last section whose top has crossed the reading line
+    // Document-coordinate spy (stable vs elastic overscroll)
     var raw = 0;
+    var pin = st + pinOffset;
     for (var i = 0; i < targets.length; i++) {
-      if (targets[i].getBoundingClientRect().top <= pinY + 0.5) raw = i;
+      if (sectionDocTop(targets[i]) <= pin + 1) raw = i;
       else break;
     }
 
+    // Track farthest scroll so "reached the end" survives tiny spring-back
+    var maxSt = typeof panel._spineMaxScrollTop === 'number' ? panel._spineMaxScrollTop : 0;
+    if (st > maxSt) {
+      maxSt = st;
+      panel._spineMaxScrollTop = maxSt;
+    }
+
+    var nearEnd = scrollH <= 0 || st >= scrollH - 48 || pct >= 0.98 ||
+      (maxSt >= scrollH - 48 && st >= maxSt - 64);
+
     var prev = typeof panel._spineActiveIndex === 'number' ? panel._spineActiveIndex : 0;
     if (prev < 0) prev = 0;
-    if (prev > targets.length - 1) prev = targets.length - 1;
+    if (prev > lastIdx) prev = lastIdx;
 
     var active;
-    if (raw >= prev) {
-      // Scrolling down (or same): always advance. Never bounce backward here.
-      active = raw;
-    } else {
-      // Scrolling up: only release the current item once its heading has
-      // clearly dropped below the reading line. Trackpad jitter cannot
-      // yank the highlight back to the previous number.
-      var stickTop = targets[prev].getBoundingClientRect().top;
-      if (stickTop > pinY + 36) {
+
+    // HARD RULE: once the user is at/near the bottom, the LAST number stays.
+    // This is exactly the bug: last → previous when fully scrolled down.
+    if (nearEnd) {
+      active = lastIdx;
+      panel._spineLockedLast = true;
+    } else if (panel._spineLockedLast) {
+      // Stay locked on last until user scrolls clearly upward away from the end
+      if (st <= scrollH - 140 && raw < lastIdx) {
+        panel._spineLockedLast = false;
         active = raw;
       } else {
-        active = prev;
+        active = lastIdx;
       }
+    } else if (raw >= prev) {
+      active = raw;
+      if (active === lastIdx) panel._spineLockedLast = true;
+    } else {
+      // Mid-list upward scroll only
+      var prevTop = sectionDocTop(targets[prev]);
+      if (prevTop > pin + 56) active = raw;
+      else active = prev;
     }
 
     panel._spineActiveIndex = active;
     paintActive(targets, active, pct);
-  }
-
-  function paintActive(targets, active, pct) {
-    var activeId = targets[active] ? targets[active].id : '';
-    var activeItemIndex = active;
-    items.forEach(function(it, idx) {
-      var tid = it.getAttribute('data-target') || '';
-      var on = activeId ? tid === activeId : idx === active;
-      if (on) activeItemIndex = idx;
-      it.classList.toggle('active', on);
-    });
-    items.forEach(function(it, idx) {
-      it.classList.toggle('is-done', idx < activeItemIndex);
-      it.classList.toggle('is-upcoming', idx > activeItemIndex);
-    });
-    if (spineEl) {
-      var pc = spineEl.querySelector('.brief-spine-progress-count');
-      var totalN = Math.max(items.length, targets.length, 1);
-      if (pc) pc.textContent = (activeItemIndex + 1) + ' / ' + totalN;
-    }
-    panel.querySelectorAll('.brief-mob-chip').forEach(function(c, idx) {
-      var tid = c.getAttribute('data-target') || '';
-      c.classList.toggle('active', activeId ? tid === activeId : idx === activeItemIndex);
-    });
-    setRailUI(activeItemIndex, pct, Math.max(items.length, targets.length));
   }
 
   panel._spineOnScroll = onScroll;
