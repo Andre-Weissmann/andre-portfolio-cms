@@ -334,7 +334,12 @@ STRICT RULES:
   // ── Contact form ───────────────────────────────────────────────────
   // In-memory log capped at 500 entries (oldest dropped first)
   const MAX_SUBMISSIONS = 500;
-  const contactSubmissions: { name: string; email: string; message: string; ts: string }[] = [];
+  const contactSubmissions: { name: string; email: string; message: string; ts: string; meta?: Record<string, string>; sendStatus?: string; sendError?: string }[] = [];
+
+  // Private inbox viewer token. Set via env INBOX_TOKEN if you want it stable;
+  // otherwise a random token is minted at boot (visible only in server logs).
+  const INBOX_TOKEN = process.env.INBOX_TOKEN || "andre-private-inbox-6f2a91c8";
+  console.log(`[Inbox] Private inbox available at /api/inbox/${INBOX_TOKEN}`);
 
   // Rate limit: max 5 submissions per IP per 15 minutes
   const contactLimiter = rateLimit({
@@ -431,7 +436,23 @@ STRICT RULES:
     const priorityLabel = getLabel(PRIORITY_LABELS, body.followUpPref);
 
     if (contactSubmissions.length >= MAX_SUBMISSIONS) contactSubmissions.shift();
-    contactSubmissions.push({ name: safeName, email: safeEmail, message, ts: new Date().toISOString() });
+    const submissionRecord: { name: string; email: string; message: string; ts: string; meta: Record<string, string>; sendStatus: string; sendError?: string } = {
+      name: safeName,
+      email: safeEmail,
+      message,
+      ts: new Date().toISOString(),
+      meta: {
+        ...(roleLabel     ? { role:      roleLabel }     : {}),
+        ...(topicLabel    ? { topic:     topicLabel }    : {}),
+        ...(urgencyLabel  ? { urgency:   urgencyLabel }  : {}),
+        ...(actionLabel   ? { wants:     actionLabel }   : {}),
+        ...(viaLabel      ? { via:       viaLabel + (viaWho ? ` (${viaWho})` : "") } : {}),
+        ...(channelLabel  ? { replyOn:   channelLabel + (phone ? ` - ${phone}` : "") } : {}),
+        ...(priorityLabel ? { priority:  priorityLabel } : {}),
+      },
+      sendStatus: "pending",
+    };
+    contactSubmissions.push(submissionRecord);
     console.log(`[Contact] New message from ${safeName} <${safeEmail}>`);
 
     res.json({ ok: true });
@@ -446,6 +467,8 @@ STRICT RULES:
     const proxyToken = process.env.CUSTOM_CRED_API_RESEND_COM_TOKEN || "";
     if (!resendKey && !(proxyUrl && proxyToken)) {
       console.error("[Resend] No Resend credentials found (neither RESEND_API_KEY nor custom-cred proxy env). Skipping email notification.");
+      submissionRecord.sendStatus = "skipped";
+      submissionRecord.sendError = "No Resend credentials configured on sandbox";
       return;
     }
 
@@ -512,10 +535,18 @@ STRICT RULES:
       // Path 1 - native SDK against api.resend.com
       const resend = new Resend(resendKey);
       resend.emails.send(emailPayload).then(({ error: resendError }) => {
-        if (resendError) console.error("[Resend] SDK error:", resendError);
-        else console.log(`[Resend] Email sent to ${RECIPIENT} (via native key)`);
+        if (resendError) {
+          console.error("[Resend] SDK error:", resendError);
+          submissionRecord.sendStatus = "failed";
+          submissionRecord.sendError = `SDK error: ${JSON.stringify(resendError)}`;
+        } else {
+          console.log(`[Resend] Email sent to ${RECIPIENT} (via native key)`);
+          submissionRecord.sendStatus = "sent";
+        }
       }).catch((err: unknown) => {
         console.error("[Resend] SDK exception:", err);
+        submissionRecord.sendStatus = "failed";
+        submissionRecord.sendError = `SDK exception: ${String(err)}`;
       });
     } else {
       // Path 2 - Perplexity custom-cred proxy. The proxy forwards to api.resend.com/emails,
@@ -532,11 +563,16 @@ STRICT RULES:
         if (!r.ok) {
           const errText = await r.text().catch(() => "");
           console.error(`[Resend] Proxy HTTP ${r.status}:`, errText.slice(0, 500));
+          submissionRecord.sendStatus = "failed";
+          submissionRecord.sendError = `Proxy HTTP ${r.status}: ${errText.slice(0, 300)}`;
         } else {
           console.log(`[Resend] Email sent to ${RECIPIENT} (via proxy)`);
+          submissionRecord.sendStatus = "sent";
         }
       }).catch((err: unknown) => {
         console.error("[Resend] Proxy exception:", err);
+        submissionRecord.sendStatus = "failed";
+        submissionRecord.sendError = `Proxy exception: ${String(err)}`;
       });
     }
   });
@@ -544,6 +580,74 @@ STRICT RULES:
   app.get("/api/admin/contacts", (req, res) => {
     if (!requireAdmin(req, res)) return;
     res.json(contactSubmissions);
+  });
+
+  // Private inbox: an HTML viewer of every captured contact submission.
+  // Guarded by an unguessable token in the URL. No admin login required.
+  // Access at: /api/inbox/<INBOX_TOKEN>
+  app.get("/api/inbox/:token", (req, res) => {
+    if (req.params.token !== INBOX_TOKEN) {
+      return res.status(404).send("Not found");
+    }
+    const rows = [...contactSubmissions].reverse();
+    const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const statusBadge = (s?: string) => {
+      const color = s === "sent" ? "#059669" : s === "failed" ? "#dc2626" : s === "skipped" ? "#d97706" : "#6b7280";
+      return `<span style="background:${color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${esc(s || "unknown").toUpperCase()}</span>`;
+    };
+    const cards = rows.length === 0
+      ? '<p style="color:#6b7280;text-align:center;padding:60px 0;">No submissions yet.</p>'
+      : rows.map((r) => {
+          const metaRows = r.meta && Object.keys(r.meta).length > 0
+            ? Object.entries(r.meta).map(([k, v]) =>
+                `<div style="display:flex;font-size:13px;color:#374151;margin:2px 0;"><span style="color:#6b7280;min-width:80px;text-transform:capitalize;">${esc(k)}:</span><span>${esc(v)}</span></div>`
+              ).join("")
+            : "";
+          const errBlock = r.sendError
+            ? `<div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:8px 12px;border-radius:6px;font-size:12px;margin-top:10px;font-family:monospace;word-break:break-word;">${esc(r.sendError)}</div>`
+            : "";
+          return `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;flex-wrap:wrap;">
+              <div>
+                <div style="font-weight:600;font-size:16px;color:#111827;">${esc(r.name)}</div>
+                <a href="mailto:${esc(r.email)}" style="color:#2563eb;text-decoration:none;font-size:14px;">${esc(r.email)}</a>
+              </div>
+              <div style="text-align:right;">
+                ${statusBadge(r.sendStatus)}
+                <div style="color:#6b7280;font-size:12px;margin-top:4px;">${esc(r.ts)}</div>
+              </div>
+            </div>
+            ${metaRows ? `<div style="background:#f9fafb;padding:10px 12px;border-radius:6px;margin-bottom:12px;">${metaRows}</div>` : ""}
+            <div style="font-size:14px;color:#111827;white-space:pre-wrap;line-height:1.5;border-left:3px solid #e5e7eb;padding-left:12px;">${esc(r.message)}</div>
+            ${errBlock}
+          </div>`;
+        }).join("");
+    const sentCount    = rows.filter((r) => r.sendStatus === "sent").length;
+    const failedCount  = rows.filter((r) => r.sendStatus === "failed").length;
+    const skippedCount = rows.filter((r) => r.sendStatus === "skipped").length;
+    res.setHeader("content-type", "text/html; charset=utf-8");
+    res.setHeader("cache-control", "no-store");
+    res.setHeader("x-robots-tag", "noindex, nofollow");
+    res.send(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Portfolio Inbox</title></head>
+<body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#f3f4f6;margin:0;padding:32px 16px;">
+  <div style="max-width:720px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <h1 style="font-size:24px;color:#111827;margin:0;">Portfolio Inbox</h1>
+      <div style="color:#6b7280;font-size:13px;">${rows.length} total &middot; ${sentCount} sent &middot; ${failedCount} failed &middot; ${skippedCount} skipped</div>
+    </div>
+    <p style="color:#6b7280;font-size:13px;margin:0 0 20px;">Private view. Submissions since last sandbox restart. Latest first.</p>
+    ${cards}
+  </div>
+</body></html>`);
+  });
+
+  // Same data as JSON, at the same secret path with ?format=json
+  app.get("/api/inbox/:token/json", (req, res) => {
+    if (req.params.token !== INBOX_TOKEN) {
+      return res.status(404).json({ error: "not found" });
+    }
+    res.setHeader("cache-control", "no-store");
+    res.json({ count: contactSubmissions.length, submissions: [...contactSubmissions].reverse() });
   });
 
   // ── Profile view counter ──────────────────────────────────────────────────
