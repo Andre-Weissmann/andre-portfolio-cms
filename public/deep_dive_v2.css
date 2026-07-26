@@ -979,6 +979,7 @@
   font-size: 10.5px;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.2s;
 }
 .brief-sql__tab.active, .brief-sql__tab:hover {
@@ -1016,7 +1017,11 @@
 .brief-sql__run:hover { background: var(--dd-accent-h); }
 .brief-sql__run:active { transform: scale(0.98); }
 .brief-sql__run:disabled { opacity: 0.6; cursor: default; }
-.brief-sql__result { padding: 0 14px 14px; }
+.brief-sql__result {
+  padding: 0 14px 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .brief-sql__table {
   width: 100%;
   border-collapse: collapse;
