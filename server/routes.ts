@@ -440,16 +440,21 @@ STRICT RULES:
 
     try {
       const url = `${GH_API_BASE}/repos/${GH_OWNER}/${GH_REPO}/issues`;
+      // The Perplexity custom-cred proxy expects the token as `x-api-key`.
+      // The proxy forwards to api.github.com with Authorization: Bearer <token>.
+      // For direct calls (no proxy), we set Authorization ourselves.
+      const useProxy = !!process.env.CUSTOM_CRED_API_GITHUB_COM_URL;
+      const authHeaders: Record<string, string> = useProxy
+        ? { "x-api-key": GH_TOKEN }
+        : { "Authorization": `Bearer ${GH_TOKEN}` };
       const r = await fetch(url, {
         method: "POST",
         headers: {
           "Accept": "application/vnd.github+json",
           "X-GitHub-Api-Version": "2022-11-28",
           "Content-Type": "application/json",
-          // The custom-cred proxy injects the Authorization: Bearer header automatically
-          // when hitting api.github.com through CUSTOM_CRED_API_GITHUB_COM_URL. If we're
-          // using a direct token, we set it explicitly.
-          ...(process.env.CUSTOM_CRED_API_GITHUB_COM_URL ? {} : { "Authorization": `Bearer ${GH_TOKEN}` }),
+          "User-Agent": "portfolio-contact-form",
+          ...authHeaders,
         },
         body: JSON.stringify({ title, body: bodyLines.join("\n"), labels }),
       });
