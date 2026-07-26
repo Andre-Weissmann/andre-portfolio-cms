@@ -1038,11 +1038,21 @@ input, select, textarea { font-family: inherit; }
 
 .project-block {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--sp-12);
   align-items: start;
+  min-width: 0;
   /* Ensure sticky header + pill nav never cover the project title on anchor jump */
   scroll-margin-top: 0;  /* desktop: 68px nav + 28px breathing room */
+}
+
+/* Prevent grid children from forcing horizontal overflow (classic CSS grid gotcha).
+   Without min-width: 0, grid items refuse to shrink below their intrinsic content width. */
+.project-block > *,
+.project-block-info,
+.project-block-demo {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .project-block--flip {
@@ -1244,6 +1254,8 @@ input, select, textarea { font-family: inherit; }
   flex-direction: column;
   gap: var(--sp-3);
   flex: 1;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .sql-examples {
@@ -1327,7 +1339,7 @@ input, select, textarea { font-family: inherit; }
   padding: var(--sp-3);
 }
 
-.sql-table-wrap { overflow-x: auto; }
+.sql-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
 
 .sql-table {
   width: 100%;
@@ -2759,12 +2771,21 @@ a.nav-link, .nav-links a, .footer-links a { min-height: 44px; display: inline-fl
   .stat-value { font-size: 1.6rem; }
 
   /* Project blocks */
-  .project-block, .project-block--flip { grid-template-columns: 1fr; gap: var(--sp-6); }
-  .project-block-demo { padding: var(--sp-3); overflow-x: auto; }
-  .project-block-info { padding: var(--sp-4) 0; }
+  .project-block, .project-block--flip { grid-template-columns: minmax(0, 1fr); gap: var(--sp-6); }
+  .project-block-demo {
+    padding: var(--sp-3);
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .project-block-info { padding: var(--sp-4) 0; min-width: 0; max-width: 100%; }
   .project-block-img { max-height: 280px; cursor: zoom-in; }
 
-  /* SQL demo */
+  /* SQL demo — clamp all descendants of the live sandbox so nowrap cells
+     inside .sql-table can't inflate the parent grid track. */
+  .sql-sandbox, .sql-sandbox * { min-width: 0; max-width: 100%; }
+  .sql-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  .sql-code-block { max-width: 100%; overflow-x: auto; }
   .sql-editor textarea { font-size: 0.8rem; min-height: 100px; }
   .sql-results-table { font-size: 0.78rem; }
   .sql-results-table th, .sql-results-table td { padding: 6px 8px; white-space: nowrap; }
