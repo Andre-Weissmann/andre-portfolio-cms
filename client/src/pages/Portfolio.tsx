@@ -33,7 +33,7 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
           <div>
             <div className="flex items-center gap-2 mb-2">
               <ToolBadge tool={project.tool} color={project.tool_color} />
-              {project.is_featured && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400">Featured</span>}
+              {project.is_featured && <span className="text-xs px-2 py-0.5 rounded-full bg-teal-300 text-teal-950 font-semibold border border-teal-400">Featured</span>}
             </div>
             <h2 className="text-xl font-bold text-white">{project.title}</h2>
           </div>
@@ -92,7 +92,7 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
       <div className="p-5">
         <div className="flex items-center gap-2 mb-3">
           <ToolBadge tool={project.tool} color={project.tool_color} />
-          {project.is_featured && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 font-medium">Featured</span>}
+          {project.is_featured && <span className="text-xs px-2 py-0.5 rounded-full bg-teal-300 text-teal-950 font-semibold border border-teal-400 font-medium">Featured</span>}
         </div>
         <h3 className="text-white font-semibold text-base mb-2 leading-snug">{project.title}</h3>
         <p className="text-gray-400 text-sm line-clamp-2 leading-relaxed">{project.description}</p>
