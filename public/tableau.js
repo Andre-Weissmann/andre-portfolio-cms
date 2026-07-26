@@ -466,6 +466,16 @@
     if(t>40)return; setTimeout(()=>waitForChartJS(cb,t+1),150);
   }
 
-  document.addEventListener('DOMContentLoaded',()=>{const r=document.getElementById('tableau-replica');if(r)waitForChartJS(()=>init(r));});
-  if(document.readyState!=='loading'){const r=document.getElementById('tableau-replica');if(r)waitForChartJS(()=>init(r));}
+  function mount(root) {
+    if (!root) return;
+    waitForChartJS(function () { init(root); });
+  }
+  window.mountTableauReplica = mount;
+
+  function autoMount() {
+    const r = document.getElementById('tableau-replica');
+    if (r) mount(r);
+  }
+  document.addEventListener('DOMContentLoaded', autoMount);
+  if (document.readyState !== 'loading') autoMount();
 })();

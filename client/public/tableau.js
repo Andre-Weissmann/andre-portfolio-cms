@@ -1,430 +1,481 @@
 /* ══════════════════════════════════════════════════════════════
-   TABLEAU REPLICA — Airbnb Seattle 2016 Dashboard
-   Matches the real dashboard screenshot exactly:
-   White canvas, sheet tabs, Tableau sidebar, 5 charts
+   TABLEAU REPLICA — Airbnb Seattle 2016
+   Desktop: 2-column grid with cross-filtering
+   Mobile: fully interactive stacked layout with touch-optimized
+           zip tap-to-filter + bedroom chips + filter banner
    ══════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
-  /* ── Airbnb Seattle 2016 data (from Maven project, verified) ── */
-
-  // Average price by zip code — from dashboard screenshot, sorted desc
+  /* ── Data ──────────────────────────────────────────────────── */
   const ZIP_DATA = [
-    { zip: '98134', price: 206.6 }, { zip: '98119', price: 169.2 },
-    { zip: '98101', price: 165.9 }, { zip: '98109', price: 156.8 },
-    { zip: '98121', price: 155.4 }, { zip: '98199', price: 152.3 },
-    { zip: '98116', price: 148.1 }, { zip: '98136', price: 145.2 },
-    { zip: '98112', price: 143.8 }, { zip: '98104', price: 132.9 },
-    { zip: '98122', price: 130.1 }, { zip: '98102', price: 128.6 },
-    { zip: '98126', price: 127.3 }, { zip: '98107', price: 125.4 },
-    { zip: '98103', price: 122.9 }, { zip: '98115', price: 120.1 },
-    { zip: '98144', price: 110.2 }, { zip: '98105', price: 104.1 },
-    { zip: '98146', price: 98.3  }, { zip: '98117', price: 95.4 },
-    { zip: '98178', price: 94.9  }, { zip: '98118', price: 93.1 },
-    { zip: '98108', price: 84.8  }, { zip: '98077', price: 82.7 },
-    { zip: '98106', price: 76.9  }, { zip: '98133', price: 74.3 },
-    { zip: '98125', price: 64.7  },
+    {zip:'98134',price:206.6,col:'#e15759'},{zip:'98119',price:169.2,col:'#f28e2b'},
+    {zip:'98101',price:165.9,col:'#4e79a7'},{zip:'98109',price:156.8,col:'#76b7b2'},
+    {zip:'98121',price:155.4,col:'#59a14f'},{zip:'98199',price:152.3,col:'#edc948'},
+    {zip:'98116',price:148.1,col:'#b07aa1'},{zip:'98136',price:145.2,col:'#ff9da7'},
+    {zip:'98112',price:143.8,col:'#9c755f'},{zip:'98104',price:132.9,col:'#bab0ac'},
+    {zip:'98122',price:130.1,col:'#e15759'},{zip:'98102',price:128.6,col:'#f28e2b'},
+    {zip:'98126',price:127.3,col:'#4e79a7'},{zip:'98107',price:125.4,col:'#76b7b2'},
+    {zip:'98103',price:122.9,col:'#59a14f'},{zip:'98115',price:120.1,col:'#edc948'},
+    {zip:'98144',price:110.2,col:'#b07aa1'},{zip:'98105',price:104.1,col:'#ff9da7'},
+    {zip:'98146',price: 98.3,col:'#9c755f'},{zip:'98117',price: 95.4,col:'#bab0ac'},
+    {zip:'98178',price: 94.9,col:'#e15759'},{zip:'98118',price: 93.1,col:'#f28e2b'},
+    {zip:'98108',price: 84.8,col:'#4e79a7'},{zip:'98077',price: 82.7,col:'#76b7b2'},
+    {zip:'98106',price: 76.9,col:'#59a14f'},{zip:'98133',price: 74.3,col:'#edc948'},
+    {zip:'98125',price: 64.7,col:'#b07aa1'},
   ];
 
-  // Bedroom count data — from dashboard table
-  const BEDROOM_COUNT = [
-    { beds: 1, count: 1811 }, { beds: 2, count: 483 },
-    { beds: 3, count: 206  }, { beds: 4, count: 55  },
-    { beds: 5, count: 20   }, { beds: 6, count: 5   },
+  const BED_PRICE = [
+    {beds:1,price:96.2},{beds:2,price:175.4},{beds:3,price:249.7},
+    {beds:4,price:315.4},{beds:5,price:450.0},{beds:6,price:584.8},
+  ];
+  const BED_COUNT = [
+    {beds:1,count:1811},{beds:2,count:483},{beds:3,count:206},
+    {beds:4,count:55},{beds:5,count:20},{beds:6,count:5},
   ];
 
-  // Avg price by bedroom
-  const BEDROOM_PRICE = [
-    { beds: 1, price: 96.2  }, { beds: 2, price: 175.4 },
-    { beds: 3, price: 249.7 }, { beds: 4, price: 315.4 },
-    { beds: 5, price: 450.0 }, { beds: 6, price: 584.8 },
-  ];
-
-  // Weekly revenue 2016 — approximated from screenshot curve
-  // Weeks: Jan→Dec, values in $k matching the chart shape
-  const WEEKLY_REVENUE = (() => {
-    const base = [
-      1323, 1380, 1440, 1510, 1580, 1640, 1700, 1750, 1800, 1840,
-      1870, 1890, 1910, 1920, 1930, 1915, 1900, 1920, 1930, 1940,
-      1950, 1960, 1975, 1985, 1990, 2010, 2030, 2030, 2020, 2010,
-      2000, 1990, 1990, 2000, 2010, 2020, 2020, 2010, 2000, 1990,
-      1980, 1960, 1950, 1970, 1990, 2010, 2030, 2050, 2060, 2080,
-      2095, 2110,
-    ];
-    // Week labels (approximate dates)
-    const labels = [];
-    const start = new Date('2016-01-10');
-    for (let i = 0; i < 52; i++) {
-      const d = new Date(start);
-      d.setDate(d.getDate() + i * 7);
-      labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', 16');
-    }
-    return { labels, values: base.map(v => v * 1000) };
+  /* Weekly revenue 2016 — 52 weeks */
+  const REV = (function(){
+    const v=[1323,1380,1440,1510,1580,1640,1700,1750,1800,1840,
+      1870,1890,1910,1920,1930,1915,1900,1920,1930,1940,
+      1950,1960,1975,1985,1990,2010,2030,2030,2020,2010,
+      2000,1990,1990,2000,2010,2020,2020,2010,2000,1990,
+      1980,1960,1950,1970,1990,2010,2030,2050,2060,2080,2095,2110];
+    const lbl=[];
+    const s=new Date('2016-01-31');
+    for(let i=0;i<52;i++){const d=new Date(s);d.setDate(d.getDate()+i*7);lbl.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+", '16");}
+    return {labels:lbl,values:v.map(x=>x*1000)};
   })();
 
-  /* ── Tableau UI colours ──────────────────────────────────────── */
-  const T = {
-    bg:      '#f9f9f9',
-    canvas:  '#ffffff',
-    sidebar: '#f5f5f5',
-    teal:    '#1fa1a1',
-    green:   '#59a14f',
-    navy:    '#4e79a7',
-    header:  '#e8e8e8',
-    tab:     '#f0f0f0',
-    tabAct:  '#ffffff',
-    text:    '#333333',
-    muted:   '#888888',
-    border:  '#d0d0d0',
-    // Zip code bar colours — each bar gets a unique colour like real Tableau
-    zipColors: [
-      '#4e79a7','#59a14f','#f28e2b','#e15759','#76b7b2',
-      '#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac',
-      '#4e79a7','#59a14f','#f28e2b','#e15759','#76b7b2',
-      '#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac',
-      '#4e79a7','#59a14f','#f28e2b','#e15759','#76b7b2',
-      '#edc948','#b07aa1',
-    ],
-  };
+  const T={bg:'#fff',border:'#d0d0d0',text:'#333',muted:'#666',blue:'#1f4e79',revLine:'#5b9bd5',navy:'#1f3864',highlight:'#ff6b35'};
 
-  /* ── Sheet definitions ───────────────────────────────────────── */
-  const SHEETS = [
-    { id: 'tb-zip',       label: 'Sheet 1 — Avg Price by Zip' },
-    { id: 'tb-revenue',   label: 'Sheet 3 — Yearly Revenue' },
-    { id: 'tb-bedroom-p', label: 'Sheet 4 — Price by Bedrooms' },
-    { id: 'tb-bedroom-c', label: 'Sheet 5 — Homes by Bedrooms' },
-    { id: 'tb-dashboard', label: 'Dashboard' },
-  ];
+  let charts={};
+  let selZip=null;
+  let selBed=null;
 
-  let activeSheet = 'tb-dashboard';
+  function destroyAll(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
 
-  /* ── Build UI ────────────────────────────────────────────────── */
-  function buildUI(root) {
-    root.innerHTML = '';
-    root.style.fontFamily = "'Segoe UI',system-ui,sans-serif";
-    root.style.background = T.bg;
-    root.style.borderRadius = '8px';
-    root.style.overflow = 'hidden';
-    root.style.border = '1px solid ' + T.border;
-
-    // ── Toolbar ──────────────────────────────────────────────────
-    const toolbar = document.createElement('div');
-    Object.assign(toolbar.style, {
-      background: T.header, padding: '6px 10px',
-      display: 'flex', alignItems: 'center', gap: '8px',
-      borderBottom: '1px solid ' + T.border, flexWrap: 'wrap',
-    });
-
-    // Tableau logo mark
-    toolbar.innerHTML = `
-      <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
-        <rect x="17" y="2" width="6" height="36" fill="#e8762d" rx="2"/>
-        <rect x="2" y="17" width="36" height="6" fill="#e8762d" rx="2"/>
-        <rect x="9" y="9" width="6" height="22" fill="#59879b" rx="2" opacity=".85"/>
-        <rect x="9" y="9" width="22" height="6" fill="#59879b" rx="2" opacity=".85"/>
-        <rect x="25" y="25" width="6" height="6" fill="#59879b" rx="1" opacity=".85"/>
-      </svg>
-      <span style="font-size:0.78rem;font-weight:700;color:#333;letter-spacing:.02em">Airbnb Seattle 2016 — Tableau Public</span>
-      <span style="margin-left:auto;font-size:0.65rem;color:${T.muted}">Interactive Replica · 323,346 rows joined</span>`;
-    root.appendChild(toolbar);
-
-    // ── Sheet tabs ────────────────────────────────────────────────
-    const tabBar = document.createElement('div');
-    Object.assign(tabBar.style, {
-      display: 'flex', alignItems: 'flex-end', gap: '2px',
-      background: T.header, padding: '0 10px',
-      borderBottom: '1px solid ' + T.border, overflowX: 'auto',
-    });
-
-    SHEETS.forEach(s => {
-      const tab = document.createElement('button');
-      const isAct = s.id === activeSheet;
-      Object.assign(tab.style, {
-        padding: '6px 12px', fontSize: '0.72rem', fontWeight: isAct ? '700' : '500',
-        color: isAct ? '#333' : T.muted, background: isAct ? T.tabAct : T.tab,
-        border: '1px solid ' + T.border, borderBottom: isAct ? '2px solid #e8762d' : '1px solid ' + T.border,
-        borderRadius: '4px 4px 0 0', cursor: 'pointer', whiteSpace: 'nowrap',
-        marginBottom: isAct ? '-1px' : '0',
-      });
-      tab.textContent = s.label;
-      tab.dataset.sheet = s.id;
-      tab.addEventListener('click', () => { activeSheet = s.id; buildUI(root); drawCharts(root); });
-      tabBar.appendChild(tab);
-    });
-    root.appendChild(tabBar);
-
-    // ── Content area ──────────────────────────────────────────────
-    const content = document.createElement('div');
-    Object.assign(content.style, {
-      display: 'flex', background: T.canvas,
-      minHeight: '360px', position: 'relative',
-    });
-
-    if (activeSheet !== 'tb-dashboard') {
-      // Sidebar (Tableau sheet view)
-      const sidebar = document.createElement('div');
-      Object.assign(sidebar.style, {
-        width: '140px', background: T.sidebar, borderRight: '1px solid ' + T.border,
-        padding: '10px 8px', fontSize: '0.68rem', color: T.muted, flexShrink: '0',
-      });
-      sidebar.innerHTML = `
-        <div style="font-weight:700;color:#333;margin-bottom:8px">Pages</div>
-        <div style="margin-bottom:14px;border-bottom:1px solid ${T.border};padding-bottom:8px"></div>
-        <div style="font-weight:700;color:#333;margin-bottom:6px">Filters</div>
-        <div style="background:#1fa1a1;color:#fff;border-radius:4px;padding:3px 7px;font-size:0.68rem;margin-bottom:12px;display:inline-block">
-          ${activeSheet === 'tb-zip' ? 'Zipcode' : activeSheet === 'tb-revenue' ? 'WEEK(Date)' : 'Bedrooms'}
-        </div>
-        <div style="font-weight:700;color:#333;margin-bottom:6px">Marks</div>
-        <div style="background:#e8e8e8;border-radius:4px;padding:3px 7px;font-size:0.65rem;margin-bottom:8px">Automatic ▾</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px">
-          ${['Color','Size','Label','Detail','Tooltip','Path'].map(m =>
-            `<div style="border:1px solid ${T.border};border-radius:3px;padding:3px 4px;text-align:center;font-size:0.62rem">${m}</div>`
-          ).join('')}
-        </div>
-        <div style="background:#1fa1a1;color:#fff;border-radius:4px;padding:3px 7px;font-size:0.65rem;display:inline-block">
-          ${activeSheet === 'tb-zip' ? 'Zipcode' : activeSheet === 'tb-revenue' ? 'SUM(price)' : 'AVG(Price)'}
-        </div>`;
-      content.appendChild(sidebar);
-    }
-
-    // Chart panel
-    const panel = document.createElement('div');
-    Object.assign(panel.style, { flex: '1', padding: '14px 16px', overflow: 'auto' });
-
-    if (activeSheet === 'tb-dashboard') {
-      // Dashboard — 2×2 layout + table
-      panel.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto;gap:14px;height:100%">
-          <div>
-            <div style="font-size:0.78rem;font-weight:600;color:${T.text};margin-bottom:6px">Yearly Airbnb Revenue in Seattle for 2016</div>
-            <canvas id="tb-dash-rev" style="height:160px;width:100%"></canvas>
-          </div>
-          <div style="min-width:160px">
-            <div style="font-size:0.72rem;font-weight:600;color:${T.text};margin-bottom:6px">Value Range for Revenue</div>
-            <div style="height:12px;border-radius:3px;background:linear-gradient(90deg,#d4e9f7,#1f4e79);margin-bottom:4px"></div>
-            <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:${T.muted};margin-bottom:14px">
-              <span>1,322,849</span><span>2,110,350</span>
-            </div>
-            <div style="font-size:0.72rem;font-weight:600;color:${T.text};margin-bottom:6px">Airbnb homes by total bedrooms</div>
-            <table style="font-size:0.7rem;width:100%;border-collapse:collapse">
-              <tr style="border-bottom:1px solid ${T.border}"><th style="text-align:left;padding:2px 4px;color:${T.muted}">Bedrooms</th><th style="text-align:right;padding:2px 4px;color:${T.muted}"></th></tr>
-              ${BEDROOM_COUNT.map(b => `<tr><td style="padding:2px 4px">${b.beds}</td><td style="text-align:right;padding:2px 8px">${b.count.toLocaleString()}</td></tr>`).join('')}
-            </table>
-          </div>
-          <div style="font-size:0.72rem;color:${T.muted};text-align:center;display:flex;align-items:center;justify-content:center">
-            <div>
-              <div style="font-size:0.78rem;font-weight:600;color:${T.text};margin-bottom:6px">Average Airbnb Home Price<br>by Zip Code (World Map)</div>
-              <img src="images/tableau-sheet2.png" style="width:100%;max-width:320px;border-radius:6px;border:1px solid ${T.border}">
-            </div>
-          </div>
-          <div>
-            <div style="font-size:0.78rem;font-weight:600;color:${T.text};margin-bottom:6px">Average Airbnb Home Price by Zipcode</div>
-            <canvas id="tb-dash-zip" style="height:160px;width:100%"></canvas>
-          </div>
-          <div></div>
-          <div>
-            <div style="font-size:0.78rem;font-weight:600;color:${T.text};margin-bottom:6px">Average Airbnb Home Price by Bedroom total</div>
-            <canvas id="tb-dash-bed" style="height:160px;width:100%"></canvas>
-          </div>
-        </div>`;
-    } else if (activeSheet === 'tb-zip') {
-      panel.innerHTML = `
-        <div style="text-align:center;font-size:0.78rem;font-weight:600;color:${T.text};margin-bottom:4px">Advertised Average Home Price by Zipcode</div>
-        <div style="text-align:center;font-size:0.7rem;color:${T.muted};margin-bottom:8px">Zipcode</div>
-        <canvas id="tb-sheet-zip" style="height:300px;width:100%"></canvas>`;
-    } else if (activeSheet === 'tb-revenue') {
-      panel.innerHTML = `
-        <div style="font-size:0.78rem;font-weight:600;color:${T.text};margin-bottom:8px">Yearly Revenue for 2016</div>
-        <div style="float:right;font-size:0.68rem;color:${T.muted};margin-bottom:4px">
-          Value Range for Revenue<br>
-          <div style="height:10px;width:120px;border-radius:2px;background:linear-gradient(90deg,#d4e9f7,#1f4e79);margin:2px 0"></div>
-          <div style="display:flex;justify-content:space-between;font-size:0.6rem">
-            <span>1,322,849</span><span>2,110,350</span>
-          </div>
-        </div>
-        <canvas id="tb-sheet-rev" style="height:260px;width:100%;clear:both"></canvas>
-        <div style="text-align:center;font-size:0.68rem;color:${T.muted};margin-top:4px">Revenue (per week) ↗</div>`;
-    } else if (activeSheet === 'tb-bedroom-p') {
-      panel.innerHTML = `
-        <div style="font-size:0.78rem;font-weight:600;color:${T.text};margin-bottom:8px">Average Home Price by Bedroom total</div>
-        <canvas id="tb-sheet-bedp" style="height:280px;width:100%"></canvas>
-        <div style="text-align:center;font-size:0.68rem;color:${T.muted};margin-top:4px">Avg Price ↗</div>`;
-    } else if (activeSheet === 'tb-bedroom-c') {
-      panel.innerHTML = `
-        <div style="font-size:0.78rem;font-weight:600;color:${T.text};margin-bottom:8px">Number of Homes by Bedroom total</div>
-        <canvas id="tb-sheet-bedc" style="height:280px;width:100%"></canvas>`;
-    }
-    content.appendChild(panel);
-    root.appendChild(content);
-
-    // Footer
-    const footer = document.createElement('div');
-    Object.assign(footer.style, {
-      background: T.header, padding: '5px 12px', fontSize: '0.62rem',
-      color: T.muted, borderTop: '1px solid ' + T.border,
-      display: 'flex', justifyContent: 'space-between',
-    });
-    footer.innerHTML = `<span>© Mapbox © OSM · 2016 Airbnb Seattle Dataset · 323,346 entries</span>
-      <span style="color:#e8762d;font-weight:600">⚡ Paste your Tableau Public URL to replace this replica</span>`;
-    root.appendChild(footer);
+  function mkCanvas(id,h){
+    const c=document.createElement('canvas');
+    c.id=id; c.setAttribute('height',h);
+    c.style.cssText='width:100%;display:block;max-height:'+h+'px;';
+    return c;
+  }
+  function mkCard(h,extra){
+    const d=document.createElement('div');
+    Object.assign(d.style,{background:T.bg,border:'1px solid '+T.border,borderRadius:'3px',
+      padding:'8px 10px 6px',overflow:'hidden',height:h+'px',boxSizing:'border-box',
+      display:'flex',flexDirection:'column',...(extra||{})});
+    return d;
+  }
+  function mkCardAuto(extra){
+    const d=document.createElement('div');
+    Object.assign(d.style,{background:T.bg,border:'1px solid '+T.border,borderRadius:'3px',
+      padding:'10px 12px 10px',boxSizing:'border-box',
+      display:'flex',flexDirection:'column',...(extra||{})});
+    return d;
+  }
+  function secTitle(text){
+    const d=document.createElement('div');
+    Object.assign(d.style,{fontSize:'0.7rem',fontWeight:'600',color:T.text,marginBottom:'4px',flexShrink:'0',lineHeight:'1.3'});
+    d.textContent=text; return d;
+  }
+  function axisLbl(text,style){
+    const d=document.createElement('div');
+    Object.assign(d.style,{fontSize:'0.6rem',color:T.muted,textAlign:'center',flexShrink:'0',marginTop:'2px',...(style||{})});
+    d.textContent=text; return d;
   }
 
-  /* ── Draw charts ─────────────────────────────────────────────── */
-  function drawCharts(root) {
-    const zipLabels = ZIP_DATA.map(d => d.zip);
-    const zipValues = ZIP_DATA.map(d => d.price);
-    const zipColors = ZIP_DATA.map((_, i) => T.zipColors[i % T.zipColors.length]);
+  /* ── Filter banner (shared desktop + mobile) ───────────────── */
+  function mkBanner(root,wrap){
+    if(!selZip&&!selBed) return;
+    const banner=document.createElement('div');
+    Object.assign(banner.style,{background:'#e8f4fd',border:'1px solid #90caf9',borderRadius:'4px',
+      padding:'6px 12px',fontSize:'0.7rem',color:'#1a4f8a',display:'flex',
+      justifyContent:'space-between',alignItems:'center',gap:'8px'});
+    const parts=[];
+    if(selZip) parts.push('Zip: '+selZip);
+    if(selBed) parts.push('Bedrooms: '+selBed);
+    banner.innerHTML='<span>Filter: <strong>'+parts.join(' + ')+'</strong></span>';
+    const clr=document.createElement('button');
+    clr.textContent='Clear';
+    Object.assign(clr.style,{cursor:'pointer',fontWeight:'700',color:'#d44',background:'none',
+      border:'1px solid #d44',borderRadius:'4px',padding:'3px 10px',fontSize:'0.65rem',
+      flexShrink:'0',touchAction:'manipulation'});
+    clr.addEventListener('click',()=>{selZip=null;selBed=null;build(root);});
+    banner.appendChild(clr);
+    wrap.appendChild(banner);
+  }
 
-    const revLabels = WEEKLY_REVENUE.labels;
-    const revValues = WEEKLY_REVENUE.values;
+  /* ── Build dispatcher ──────────────────────────────────────── */
+  function build(root){
+    destroyAll();
+    root.innerHTML='';
+    const W=root.offsetWidth||800;
+    const isMobile=W<520;
 
-    // Revenue line chart helper
-    function revChart(id, h) {
-      const ctx = document.getElementById(id);
-      if (!ctx) return;
-      // Create gradient
-      const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: revLabels,
-          datasets: [{
-            data: revValues,
-            borderColor: '#1f4e79',
-            backgroundColor: (ctx2) => {
-              const gradient = ctx2.chart.ctx.createLinearGradient(0, 0, ctx2.chart.width, 0);
-              gradient.addColorStop(0, '#d4e9f766');
-              gradient.addColorStop(1, '#1f4e7966');
-              return gradient;
-            },
-            borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0,
-          }]
-        },
-        options: {
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '$' + (c.raw / 1000).toFixed(0) + 'K' } } },
-          scales: {
-            x: { ticks: { font: { size: 8 }, color: T.muted, maxTicksLimit: 8 }, grid: { display: false } },
-            y: { ticks: { font: { size: 8 }, color: T.muted, callback: v => '$' + (v / 1000).toFixed(0) + 'K' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+    const wrap=document.createElement('div');
+    Object.assign(wrap.style,{fontFamily:'Arial,sans-serif',background:'#f8f8f8',
+      width:'100%',boxSizing:'border-box',padding:'6px',display:'flex',flexDirection:'column',gap:'6px'});
+    root.appendChild(wrap);
+
+    mkBanner(root,wrap);
+
+    if(isMobile){ buildMobile(wrap,root); return; }
+    buildDesktop(wrap,root);
+  }
+
+  /* ── Desktop layout ────────────────────────────────────────── */
+  function buildDesktop(wrap,root){
+    const grid=document.createElement('div');
+    Object.assign(grid.style,{display:'grid',gridTemplateColumns:'1.1fr 1fr',gap:'5px'});
+    wrap.appendChild(grid);
+
+    const leftCol=document.createElement('div');
+    Object.assign(leftCol.style,{display:'flex',flexDirection:'column',gap:'5px'});
+    grid.appendChild(leftCol);
+
+    const rightCol=document.createElement('div');
+    Object.assign(rightCol.style,{display:'flex',flexDirection:'column',gap:'5px'});
+    grid.appendChild(rightCol);
+
+    /* Revenue line */
+    const REV_H=170;
+    {
+      const card=mkCard(REV_H);
+      card.appendChild(secTitle('Yearly Airbnb Revenue in Seattle for 2016'));
+      card.appendChild(axisLbl('price ($)',{textAlign:'left',marginBottom:'2px'}));
+      const cv=mkCanvas('tb-rev',REV_H-46);
+      card.appendChild(cv);
+      card.appendChild(axisLbl('Revenue (per week)'));
+      leftCol.appendChild(card);
+      charts['rev']=new Chart(cv.getContext('2d'),{
+        type:'line',
+        data:{labels:REV.labels,datasets:[{data:REV.values,borderColor:T.revLine,backgroundColor:'rgba(91,155,213,0.12)',fill:true,tension:0.35,pointRadius:0,borderWidth:2}]},
+        options:{responsive:false,animation:false,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'$'+(ctx.raw/1000).toFixed(0)+'K'}}},
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:7},color:T.muted,maxTicksLimit:7,maxRotation:0},border:{color:'rgba(0,0,0,0.15)'}},
+            y:{ticks:{font:{size:9},color:T.muted,callback:v=>(v===0?'0K':(v/1000).toFixed(0)+'K'),maxTicksLimit:5},grid:{color:'rgba(0,0,0,0.06)'},border:{color:'rgba(0,0,0,0.15)'}},
           },
-          animation: { duration: 800 },
-        }
+        },
       });
     }
 
-    // Zip bar chart helper
-    function zipChart(id, horiz) {
-      const ctx = document.getElementById(id);
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: zipLabels,
-          datasets: [{ data: zipValues, backgroundColor: zipColors, borderRadius: 2, barThickness: horiz ? 10 : 12 }]
+    /* Zip bar chart */
+    const ZIP_H=220;
+    {
+      const card=mkCard(ZIP_H);
+      card.appendChild(secTitle('Avg Airbnb Price by Zipcode — click to filter'));
+      card.appendChild(axisLbl('Avg. Price ($)',{textAlign:'left',marginBottom:'1px'}));
+      const cv=mkCanvas('tb-zip',ZIP_H-44);
+      card.appendChild(cv);
+      card.appendChild(axisLbl('Zipcode'));
+      leftCol.appendChild(card);
+      charts['zip']=new Chart(cv.getContext('2d'),{
+        type:'bar',
+        data:{
+          labels:ZIP_DATA.map(z=>z.zip),
+          datasets:[{
+            data:ZIP_DATA.map(z=>z.price),
+            backgroundColor:ZIP_DATA.map(z=>selZip===z.zip?T.highlight:(selZip?'rgba(180,180,180,0.5)':z.col)),
+            borderWidth:0,maxBarThickness:16,
+          }],
         },
-        options: {
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '$' + c.raw } } },
-          indexAxis: horiz ? 'y' : 'x',
-          scales: {
-            x: { ticks: { font: { size: 7 }, color: T.muted, maxRotation: horiz ? 0 : 60 }, grid: { display: !horiz } },
-            y: { ticks: { font: { size: 7 }, color: T.muted }, grid: { display: horiz } }
+        options:{responsive:false,animation:{duration:200},maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'$'+ctx.raw.toFixed(1)+'/night avg'}}},
+          onClick:(evt,els)=>{
+            if(els.length){const z=ZIP_DATA[els[0].index].zip;selZip=(selZip===z?null:z);build(root);}
           },
-          animation: { duration: 800 },
-        }
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:6.5},color:T.muted,maxRotation:90,minRotation:45},border:{color:'rgba(0,0,0,0.15)'}},
+            y:{min:0,grid:{color:'rgba(0,0,0,0.06)'},ticks:{font:{size:9},color:T.muted,maxTicksLimit:5},border:{color:'rgba(0,0,0,0.15)'}},
+          },
+        },
       });
     }
 
-    // Bedroom price
-    function bedPriceChart(id, horiz) {
-      const ctx = document.getElementById(id);
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: BEDROOM_PRICE.map(d => d.beds + ' bed'),
-          datasets: [{ data: BEDROOM_PRICE.map(d => d.price), backgroundColor: '#4e79a7', borderRadius: 3 }]
-        },
-        options: {
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '$' + c.raw } } },
-          indexAxis: horiz ? 'y' : 'x',
-          scales: {
-            x: { ticks: { font: { size: 9 }, color: T.muted }, grid: { display: false } },
-            y: { ticks: { font: { size: 9 }, color: T.muted }, grid: { color: 'rgba(0,0,0,0.05)' } }
-          },
-          animation: { duration: 700 },
-        }
+    /* Right: Value range + Bedroom table */
+    const TOP_R=180;
+    {
+      const card=mkCard(TOP_R,{padding:'8px 10px'});
+      const vr=document.createElement('div');
+      Object.assign(vr.style,{marginBottom:'8px',flexShrink:'0'});
+      vr.innerHTML=
+        '<div style="font-size:0.65rem;font-weight:600;color:'+T.text+';margin-bottom:3px;">Value Range for Revenue</div>'
+        +'<div style="height:11px;background:linear-gradient(to right,#d6e8f5,'+T.navy+');border-radius:2px;"></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:0.58rem;color:'+T.muted+';margin-top:1px;"><span>$1,322,849</span><span>$2,110,350</span></div>';
+      card.appendChild(vr);
+
+      const bedHdr=document.createElement('div');
+      Object.assign(bedHdr.style,{fontSize:'0.68rem',fontWeight:'600',color:T.text,marginBottom:'4px',flexShrink:'0'});
+      bedHdr.textContent='Airbnb homes by total bedrooms';
+      card.appendChild(bedHdr);
+
+      const tblHdr=document.createElement('div');
+      Object.assign(tblHdr.style,{display:'flex',fontSize:'0.6rem',color:T.muted,borderBottom:'1px solid '+T.border,paddingBottom:'2px',marginBottom:'2px',flexShrink:'0'});
+      tblHdr.innerHTML='<span style="flex:1;">Bedrooms</span><span style="width:50px;text-align:right;">Listings</span>';
+      card.appendChild(tblHdr);
+
+      const bedList=document.createElement('div');
+      Object.assign(bedList.style,{display:'flex',flexDirection:'column',gap:'1px',flex:'1',overflowY:'auto'});
+      BED_COUNT.forEach(b=>{
+        const row=document.createElement('div');
+        const isSel=selBed===b.beds;
+        Object.assign(row.style,{display:'flex',fontSize:'0.65rem',cursor:'pointer',padding:'2px 3px',
+          background:isSel?'#d6e8f5':'transparent',borderRadius:'2px',transition:'background 0.15s'});
+        row.innerHTML='<span style="flex:1;color:'+T.text+';font-weight:'+(isSel?'700':'normal')+';text-decoration:'+(isSel?'underline':'none')+';">'+b.beds+'</span>'
+          +'<span style="width:50px;text-align:right;color:'+T.muted+';">'+b.count.toLocaleString()+'</span>';
+        row.addEventListener('click',()=>{ selBed=(selBed===b.beds?null:b.beds); build(root); });
+        row.addEventListener('mouseenter',()=>{ if(selBed!==b.beds) row.style.background='#f0f0f0'; });
+        row.addEventListener('mouseleave',()=>{ row.style.background=selBed===b.beds?'#d6e8f5':'transparent'; });
+        bedList.appendChild(row);
       });
+      card.appendChild(bedList);
+      card.appendChild(axisLbl('Click a row to filter by bedroom count',{fontSize:'0.58rem',fontStyle:'italic',marginTop:'3px'}));
+      rightCol.appendChild(card);
     }
 
-    // Bedroom count
-    function bedCountChart(id) {
-      const ctx = document.getElementById(id);
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: BEDROOM_COUNT.map(d => d.beds + ' bed'),
-          datasets: [{ data: BEDROOM_COUNT.map(d => d.count), backgroundColor: '#4e79a7', borderRadius: 3 }]
+    /* Right: Avg price by bedrooms (horizontal bars) */
+    const BED_H=195;
+    {
+      const card=mkCard(BED_H);
+      card.appendChild(secTitle('Avg Price by Bedroom total'));
+      card.appendChild(axisLbl('Bedrooms',{textAlign:'left',marginBottom:'2px'}));
+      const cv=mkCanvas('tb-bed',BED_H-44);
+      card.appendChild(cv);
+      card.appendChild(axisLbl('Avg Price ($)'));
+      rightCol.appendChild(card);
+      charts['bed']=new Chart(cv.getContext('2d'),{
+        type:'bar',
+        data:{
+          labels:BED_PRICE.map(b=>b.beds),
+          datasets:[{
+            data:BED_PRICE.map(b=>b.price),
+            backgroundColor:BED_PRICE.map(b=>selBed===b.beds?T.highlight:(selBed?'rgba(180,180,180,0.5)':T.navy)),
+            borderWidth:0,barThickness:18,
+          }],
         },
-        options: {
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.raw.toLocaleString() + ' homes' } } },
-          scales: {
-            x: { ticks: { font: { size: 9 }, color: T.muted }, grid: { display: false } },
-            y: { ticks: { font: { size: 9 }, color: T.muted }, grid: { color: 'rgba(0,0,0,0.05)' } }
+        options:{
+          indexAxis:'y',responsive:false,animation:{duration:200},maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'$'+ctx.raw+' avg/night'}}},
+          onClick:(evt,els)=>{ if(els.length){ const b=BED_PRICE[els[0].index].beds; selBed=(selBed===b?null:b); build(root); } },
+          scales:{
+            x:{min:0,grid:{color:'rgba(0,0,0,0.06)'},ticks:{font:{size:9},color:T.muted,maxTicksLimit:5},border:{color:'rgba(0,0,0,0.15)'}},
+            y:{grid:{display:false},ticks:{font:{size:10},color:T.text},border:{display:false}},
           },
-          animation: { duration: 700 },
-        }
+          layout:{padding:{right:44}},
+        },
+        plugins:[{
+          afterDatasetsDraw(chart){
+            const ctx2=chart.ctx;
+            chart.data.datasets[0].data.forEach((val,i)=>{
+              const meta=chart.getDatasetMeta(0).data[i];
+              if(!meta)return;
+              ctx2.save(); ctx2.fillStyle=T.text; ctx2.font='9px Arial';
+              ctx2.textAlign='left'; ctx2.textBaseline='middle';
+              ctx2.fillText('$'+val.toFixed(1),meta.x+4,meta.y);
+              ctx2.restore();
+            });
+          },
+        }],
       });
-    }
-
-    // Draw based on active sheet
-    if (activeSheet === 'tb-dashboard') {
-      revChart('tb-dash-rev');
-      zipChart('tb-dash-zip', false);
-      bedPriceChart('tb-dash-bed', true);
-    } else if (activeSheet === 'tb-zip') {
-      zipChart('tb-sheet-zip', false);
-    } else if (activeSheet === 'tb-revenue') {
-      revChart('tb-sheet-rev');
-    } else if (activeSheet === 'tb-bedroom-p') {
-      bedPriceChart('tb-sheet-bedp', true);
-    } else if (activeSheet === 'tb-bedroom-c') {
-      bedCountChart('tb-sheet-bedc');
     }
   }
 
-  /* ── Init ────────────────────────────────────────────────────── */
-  function init() {
-    const root = document.getElementById('tableau-replica');
+  /* ══════════════════════════════════════════════════════════════
+     MOBILE: fully interactive, touch-optimized
+     - Revenue line chart (auto-height, readable labels)
+     - Zip tap-to-filter horizontal bar (top 10 shown, scrollable list)
+     - Bedroom chips (large tap targets, toggle filter)
+     - Bedroom price bar chart (shows filtered data)
+     ══════════════════════════════════════════════════════════════ */
+  function buildMobile(wrap,root){
+
+    /* ── Revenue ─────────────────────────────────────────────── */
+    {
+      const card=mkCard(160);
+      card.appendChild(secTitle('Weekly Revenue 2016 — Seattle Airbnb'));
+      const cv=mkCanvas('tb-rev-m',118);
+      card.appendChild(cv);
+      card.appendChild(axisLbl('Peak: $2,110,350 (Dec 25 week)'));
+      wrap.appendChild(card);
+      charts['rev']=new Chart(cv.getContext('2d'),{
+        type:'line',
+        data:{labels:REV.labels,datasets:[{data:REV.values,borderColor:T.revLine,
+          backgroundColor:'rgba(91,155,213,0.10)',fill:true,tension:0.35,pointRadius:0,borderWidth:2}]},
+        options:{responsive:false,animation:false,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{enabled:true,callbacks:{label:ctx=>'$'+(ctx.raw/1000).toFixed(0)+'K'}}},
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:8},color:T.muted,maxTicksLimit:6,maxRotation:0}},
+            y:{ticks:{font:{size:9},color:T.muted,callback:v=>(v/1000).toFixed(0)+'K',maxTicksLimit:4},grid:{color:'rgba(0,0,0,0.06)'}},
+          },
+        },
+      });
+    }
+
+    /* ── Zip tap-to-filter bar chart ─────────────────────────── */
+    {
+      const card=mkCard(230);
+      const titleRow=document.createElement('div');
+      Object.assign(titleRow.style,{display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:'0',marginBottom:'4px'});
+      const t=document.createElement('div');
+      Object.assign(t.style,{fontSize:'0.7rem',fontWeight:'600',color:T.text,lineHeight:'1.2'});
+      t.textContent='Avg Price by Zip Code';
+      const hint=document.createElement('div');
+      Object.assign(hint.style,{fontSize:'0.6rem',color:T.muted,fontStyle:'italic'});
+      hint.textContent='Tap bar to filter';
+      titleRow.appendChild(t);
+      titleRow.appendChild(hint);
+      card.appendChild(titleRow);
+
+      const cv=mkCanvas('tb-zip-m',185);
+      card.appendChild(cv);
+      wrap.appendChild(card);
+
+      const zipBg=ZIP_DATA.map(z=>selZip===z.zip?T.highlight:(selZip?'rgba(180,180,180,0.4)':z.col));
+      charts['zip']=new Chart(cv.getContext('2d'),{
+        type:'bar',
+        data:{
+          labels:ZIP_DATA.map(z=>z.zip),
+          datasets:[{data:ZIP_DATA.map(z=>z.price),backgroundColor:zipBg,borderWidth:0,maxBarThickness:14}],
+        },
+        options:{
+          responsive:false,animation:{duration:250},maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{title:ctx=>ctx[0].label,label:ctx=>'$'+ctx.raw.toFixed(0)+'/night avg'}},
+          },
+          onClick:(evt,els)=>{
+            if(els.length){const z=ZIP_DATA[els[0].index].zip;selZip=(selZip===z?null:z);build(root);}
+          },
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:6},color:T.muted,maxRotation:90,minRotation:60}},
+            y:{min:0,grid:{color:'rgba(0,0,0,0.06)'},ticks:{font:{size:9},color:T.muted,maxTicksLimit:4},border:{display:false}},
+          },
+        },
+      });
+    }
+
+    /* ── Bedroom filter chips ────────────────────────────────── */
+    {
+      const card=mkCardAuto();
+      const t=document.createElement('div');
+      Object.assign(t.style,{fontSize:'0.7rem',fontWeight:'600',color:T.text,marginBottom:'8px'});
+      t.textContent='Filter by Bedrooms — tap to select';
+      card.appendChild(t);
+
+      const chipRow=document.createElement('div');
+      Object.assign(chipRow.style,{display:'flex',flexWrap:'wrap',gap:'8px'});
+
+      BED_COUNT.forEach(b=>{
+        const isSel=selBed===b.beds;
+        const chip=document.createElement('button');
+        chip.type='button';
+        Object.assign(chip.style,{
+          display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+          minWidth:'50px',padding:'8px 12px',
+          background:isSel?T.navy:'#f0f0f0',
+          color:isSel?'#fff':T.text,
+          border:'2px solid '+(isSel?T.navy:T.border),
+          borderRadius:'8px',cursor:'pointer',
+          fontSize:'0.75rem',fontWeight:'700',
+          touchAction:'manipulation',
+          transition:'background 0.18s,border-color 0.18s,color 0.18s',
+          flexShrink:'0',lineHeight:'1.2',
+        });
+        chip.innerHTML='<span style="font-size:1rem;font-weight:800;">'+b.beds+'</span><span style="font-size:0.6rem;font-weight:500;opacity:0.75;">bed'+(b.beds>1?'s':'')+'</span>';
+        chip.title=b.count.toLocaleString()+' listings';
+        chip.addEventListener('click',()=>{ selBed=(selBed===b.beds?null:b.beds); build(root); });
+        chipRow.appendChild(chip);
+      });
+      card.appendChild(chipRow);
+
+      /* Listing count below chips */
+      if(selBed){
+        const found=BED_COUNT.find(b=>b.beds===selBed);
+        const note=document.createElement('div');
+        Object.assign(note.style,{fontSize:'0.65rem',color:T.blue,marginTop:'8px',fontWeight:'600'});
+        note.textContent=(found?found.count.toLocaleString():'0')+' listings with '+selBed+' bedroom'+(selBed>1?'s':'');
+        card.appendChild(note);
+      }
+      wrap.appendChild(card);
+    }
+
+    /* ── Avg price by bedrooms bar (responds to selBed) ─────── */
+    {
+      const card=mkCard(190);
+      card.appendChild(secTitle('Avg Nightly Price by Bedroom Count'));
+      card.appendChild(axisLbl('Bedrooms',{textAlign:'left',marginBottom:'2px'}));
+      const cv=mkCanvas('tb-bed-m',148);
+      card.appendChild(cv);
+      wrap.appendChild(card);
+      charts['bed']=new Chart(cv.getContext('2d'),{
+        type:'bar',
+        data:{
+          labels:BED_PRICE.map(b=>b.beds+' bed'+(b.beds>1?'s':'')),
+          datasets:[{
+            data:BED_PRICE.map(b=>b.price),
+            backgroundColor:BED_PRICE.map(b=>selBed===b.beds?T.highlight:(selBed?'rgba(180,180,180,0.45)':T.navy)),
+            borderWidth:0,barThickness:22,
+          }],
+        },
+        options:{
+          indexAxis:'y',responsive:false,animation:{duration:250},maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'$'+ctx.raw+' avg/night'}}},
+          onClick:(evt,els)=>{if(els.length){const b=BED_PRICE[els[0].index].beds;selBed=(selBed===b?null:b);build(root);}},
+          scales:{
+            x:{min:0,grid:{color:'rgba(0,0,0,0.06)'},ticks:{font:{size:9},color:T.muted,maxTicksLimit:4},border:{display:false}},
+            y:{grid:{display:false},ticks:{font:{size:10},color:T.text,weight:'500'},border:{display:false}},
+          },
+          layout:{padding:{right:50}},
+        },
+        plugins:[{
+          afterDatasetsDraw(chart){
+            const ctx2=chart.ctx;
+            chart.data.datasets[0].data.forEach((val,i)=>{
+              const meta=chart.getDatasetMeta(0).data[i];
+              if(!meta)return;
+              ctx2.save();
+              ctx2.fillStyle=T.text;
+              ctx2.font='bold 9px Arial';
+              ctx2.textAlign='left';
+              ctx2.textBaseline='middle';
+              ctx2.fillText('$'+val.toFixed(0),meta.x+5,meta.y);
+              ctx2.restore();
+            });
+          },
+        }],
+      });
+    }
+  }
+
+  /* ── Mount + ResizeObserver ─────────────────────────────── */
+  function init(root){
+    build(root);
+    let lastW=root.offsetWidth;
+    const ro=new ResizeObserver(entries=>{
+      const newW=Math.round(entries[0].contentRect.width);
+      if(Math.abs(newW-lastW)>20){lastW=newW;build(root);}
+    });
+    ro.observe(root);
+  }
+
+  function waitForChartJS(cb,t){
+    t=t||0; if(window.Chart)return cb();
+    if(t>40)return; setTimeout(()=>waitForChartJS(cb,t+1),150);
+  }
+
+  function mount(root) {
     if (!root) return;
-
-    // EMBED SWAP: paste your Tableau Public embed URL here when ready
-    const TABLEAU_PUBLIC_URL = ''; // ← e.g. 'YourName/AirbnbSeattle2016'
-    if (TABLEAU_PUBLIC_URL) {
-      root.innerHTML = `
-        <div class='tableauPlaceholder' style='width:100%;height:520px'>
-          <object class='tableauViz' width='100%' height='100%' style='display:none'>
-            <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F'/>
-            <param name='embed_code_version' value='3'/>
-            <param name='name' value='${TABLEAU_PUBLIC_URL}'/>
-            <param name='tabs' value='yes'/><param name='toolbar' value='yes'/>
-          </object>
-        </div>
-        <script type='text/javascript' src='https://public.tableau.com/javascripts/api/viz_v1.js'><\/script>`;
-      return;
-    }
-
-    buildUI(root);
-    if (typeof Chart !== 'undefined') {
-      drawCharts(root);
-    } else {
-      const check = setInterval(() => {
-        if (typeof Chart !== 'undefined') { clearInterval(check); drawCharts(root); }
-      }, 100);
-    }
+    waitForChartJS(function () { init(root); });
   }
+  window.mountTableauReplica = mount;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  function autoMount() {
+    const r = document.getElementById('tableau-replica');
+    if (r) mount(r);
   }
+  document.addEventListener('DOMContentLoaded', autoMount);
+  if (document.readyState !== 'loading') autoMount();
 })();
