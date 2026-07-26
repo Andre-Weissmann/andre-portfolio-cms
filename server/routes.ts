@@ -334,7 +334,142 @@ STRICT RULES:
   // ── Contact form ───────────────────────────────────────────────────
   // In-memory log capped at 500 entries (oldest dropped first)
   const MAX_SUBMISSIONS = 500;
-  const contactSubmissions: { name: string; email: string; message: string; ts: string; meta?: Record<string, string>; sendStatus?: string; sendError?: string }[] = [];
+  const contactSubmissions: { name: string; email: string; message: string; ts: string; meta?: Record<string, string>; sendStatus?: string; sendError?: string; ghIssueStatus?: string; ghIssueUrl?: string; ghIssueError?: string }[] = [];
+
+  // ── GitHub Issues delivery (primary email path via GitHub notifications) ──
+  // When a submission comes in, we open an issue on a private inbox repo.
+  // GitHub then emails the repo owner. This is the reliable delivery mechanism
+  // for iCloud since it doesn't require a third-party mail-sending API key.
+  const GH_OWNER = process.env.GH_INBOX_OWNER || "Andre-Weissmann";
+  const GH_REPO = process.env.GH_INBOX_REPO || "andre-portfolio-inbox";
+  const GH_TOKEN = process.env.GH_INBOX_TOKEN || process.env.CUSTOM_CRED_API_GITHUB_COM_TOKEN || "";
+  const GH_API_BASE = (process.env.CUSTOM_CRED_API_GITHUB_COM_URL || "https://api.github.com").replace(/\/$/, "");
+
+  // Extract likely company/organization from an email domain.
+  function companyFromEmail(email: string): string | null {
+    const at = email.lastIndexOf("@");
+    if (at < 0) return null;
+    const domain = email.slice(at + 1).toLowerCase();
+    // Skip common consumer domains
+    const consumer = new Set(["gmail.com", "icloud.com", "me.com", "mac.com", "yahoo.com", "outlook.com", "hotmail.com", "live.com", "aol.com", "proton.me", "protonmail.com", "pm.me", "duck.com", "privaterelay.appleid.com"]);
+    if (consumer.has(domain)) return null;
+    // Trim TLD, take the label before it
+    const parts = domain.split(".");
+    if (parts.length < 2) return null;
+    const raw = parts[parts.length - 2];
+    if (!raw) return null;
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
+  // Light spam heuristic. Returns true if the submission looks like spam.
+  function looksLikeSpam(name: string, email: string, message: string): boolean {
+    const combined = `${name} ${email} ${message}`.toLowerCase();
+    const spamMarkers = [
+      /\bviagra\b/, /\bcialis\b/, /\bcasino\b/, /\bcrypto[- ]?(pump|guarantee)/,
+      /guaranteed?\s+(seo|ranking|first\s+page)/, /increase\s+your\s+(traffic|sales)\s+(by|to)\s+\d+/,
+      /\bhire\s+me\s+for\s+seo\b/, /\blink\s+building\s+services\b/,
+      /https?:\/\/[^\s]+\.(ru|tk|cn|top|xyz)(\/|$)/i,
+      /(bit\.ly|tinyurl\.com|goo\.gl|t\.co\/)/i,
+    ];
+    // Message with 3+ different URLs is very likely spam
+    const urlCount = (message.match(/https?:\/\//g) || []).length;
+    if (urlCount >= 3) return true;
+    return spamMarkers.some((re) => re.test(combined));
+  }
+
+  async function createGitHubIssue(record: typeof contactSubmissions[number], safeName: string, safeEmail: string, message: string, roleLabel: string, topicLabel: string, urgencyLabel: string, actionLabel: string, viaLabel: string, viaWho: string, channelLabel: string, phone: string, priorityLabel: string, urgent: boolean, isSpam: boolean): Promise<void> {
+    if (!GH_TOKEN) {
+      record.ghIssueStatus = "skipped";
+      record.ghIssueError = "No GitHub token configured on sandbox";
+      console.error("[GitHub Inbox] No token; skipping issue creation");
+      return;
+    }
+    if (isSpam) {
+      record.ghIssueStatus = "filtered";
+      record.ghIssueError = "Filtered as likely spam; kept in private inbox only";
+      console.log(`[GitHub Inbox] Filtered submission from ${safeEmail} as spam`);
+      return;
+    }
+
+    // Compose intelligent title
+    const company = companyFromEmail(safeEmail);
+    const roleSuffix = roleLabel ? `, ${roleLabel.toLowerCase()}` : "";
+    const companySuffix = company ? ` at ${company}` : "";
+    const urgentPrefix = urgent ? "[URGENT] " : "";
+    const title = `${urgentPrefix}${safeName}${companySuffix}${roleSuffix}`;
+
+    // Compose labels
+    const labels: string[] = [];
+    if (urgent) labels.push("urgent");
+    if (company) labels.push("company-domain");
+    const roleLc = roleLabel.toLowerCase();
+    if (/recruit|hiring|talent|hr\b/.test(roleLc)) labels.push("recruiter");
+    else if (/manager|director|lead|head/.test(roleLc)) labels.push("hiring-manager");
+    else if (/peer|engineer|analyst|developer/.test(roleLc)) labels.push("peer");
+    const topicLc = (topicLabel || "").toLowerCase();
+    if (/opportun|role|position|job/.test(topicLc)) labels.push("opportunity");
+    if (/question|curious|how|why/.test(topicLc)) labels.push("question");
+    if (/feedback|thought|impress/.test(topicLc)) labels.push("praise");
+
+    // Compose body
+    const bodyLines: string[] = [];
+    bodyLines.push(`## From ${safeName}`);
+    bodyLines.push("");
+    bodyLines.push(`- **Email:** [${safeEmail}](mailto:${safeEmail})`);
+    if (company) bodyLines.push(`- **Company:** ${company} (${safeEmail.split("@")[1]})`);
+    if (roleLabel) bodyLines.push(`- **Role:** ${roleLabel}`);
+    if (topicLabel) bodyLines.push(`- **Topic:** ${topicLabel}`);
+    if (urgencyLabel && urgencyLabel !== "Whenever") bodyLines.push(`- **Timeline:** ${urgencyLabel}`);
+    if (actionLabel && actionLabel !== "Just a reply") bodyLines.push(`- **Wants:** ${actionLabel}`);
+    if (viaLabel) bodyLines.push(`- **Found via:** ${viaLabel}${viaWho ? ` (${viaWho})` : ""}`);
+    if (channelLabel && channelLabel !== "Email") bodyLines.push(`- **Prefers reply on:** ${channelLabel}${phone ? ` — ${phone}` : ""}`);
+    if (priorityLabel) bodyLines.push(`- **Priority:** ${priorityLabel}`);
+    bodyLines.push(`- **Received:** ${new Date(record.ts).toISOString()}`);
+    bodyLines.push("");
+    bodyLines.push("---");
+    bodyLines.push("");
+    bodyLines.push("### Message");
+    bodyLines.push("");
+    bodyLines.push(message);
+    bodyLines.push("");
+    bodyLines.push("---");
+    bodyLines.push("");
+    bodyLines.push(`**Quick reply:** [Reply to ${safeName}](mailto:${safeEmail}?subject=Re:%20your%20portfolio%20message)`);
+    bodyLines.push("");
+    bodyLines.push(`_Delivered by the portfolio contact form. Full record also viewable in the private inbox._`);
+
+    try {
+      const url = `${GH_API_BASE}/repos/${GH_OWNER}/${GH_REPO}/issues`;
+      const r = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Accept": "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "Content-Type": "application/json",
+          // The custom-cred proxy injects the Authorization: Bearer header automatically
+          // when hitting api.github.com through CUSTOM_CRED_API_GITHUB_COM_URL. If we're
+          // using a direct token, we set it explicitly.
+          ...(process.env.CUSTOM_CRED_API_GITHUB_COM_URL ? {} : { "Authorization": `Bearer ${GH_TOKEN}` }),
+        },
+        body: JSON.stringify({ title, body: bodyLines.join("\n"), labels }),
+      });
+      if (!r.ok) {
+        const errText = await r.text().catch(() => "");
+        record.ghIssueStatus = "failed";
+        record.ghIssueError = `HTTP ${r.status}: ${errText.slice(0, 300)}`;
+        console.error(`[GitHub Inbox] Create issue failed HTTP ${r.status}:`, errText.slice(0, 400));
+        return;
+      }
+      const data = await r.json();
+      record.ghIssueStatus = "sent";
+      record.ghIssueUrl = data.html_url;
+      console.log(`[GitHub Inbox] Issue created: ${data.html_url}`);
+    } catch (err: unknown) {
+      record.ghIssueStatus = "failed";
+      record.ghIssueError = `Exception: ${String(err)}`;
+      console.error("[GitHub Inbox] Exception:", err);
+    }
+  }
 
   // Private inbox viewer token. Set via env INBOX_TOKEN if you want it stable;
   // otherwise a random token is minted at boot (visible only in server logs).
@@ -436,7 +571,7 @@ STRICT RULES:
     const priorityLabel = getLabel(PRIORITY_LABELS, body.followUpPref);
 
     if (contactSubmissions.length >= MAX_SUBMISSIONS) contactSubmissions.shift();
-    const submissionRecord: { name: string; email: string; message: string; ts: string; meta: Record<string, string>; sendStatus: string; sendError?: string } = {
+    const submissionRecord: { name: string; email: string; message: string; ts: string; meta: Record<string, string>; sendStatus: string; sendError?: string; ghIssueStatus?: string; ghIssueUrl?: string; ghIssueError?: string } = {
       name: safeName,
       email: safeEmail,
       message,
@@ -456,6 +591,18 @@ STRICT RULES:
     console.log(`[Contact] New message from ${safeName} <${safeEmail}>`);
 
     res.json({ ok: true });
+
+    // ── Delivery path 1: GitHub Issues (primary, reliable email via GitHub notifications) ──
+    const isSpam = looksLikeSpam(safeName, safeEmail, message);
+    const urgentGh = priorityLabel === PRIORITY_LABELS.followup;
+    submissionRecord.ghIssueStatus = "pending";
+    createGitHubIssue(
+      submissionRecord,
+      safeName, safeEmail, message,
+      roleLabel || "", topicLabel || "", urgencyLabel || "", actionLabel || "",
+      viaLabel || "", viaWho || "", channelLabel || "", phone || "",
+      priorityLabel || "", urgentGh, isSpam,
+    );
 
     // Resolve Resend auth. Three supported modes, in order of preference:
     //   1) RESEND_API_KEY as a native env var (canonical)
@@ -591,9 +738,10 @@ STRICT RULES:
     }
     const rows = [...contactSubmissions].reverse();
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const statusBadge = (s?: string) => {
-      const color = s === "sent" ? "#059669" : s === "failed" ? "#dc2626" : s === "skipped" ? "#d97706" : "#6b7280";
-      return `<span style="background:${color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${esc(s || "unknown").toUpperCase()}</span>`;
+    const statusBadge = (s?: string, label?: string) => {
+      const color = s === "sent" ? "#059669" : s === "failed" ? "#dc2626" : s === "skipped" ? "#d97706" : s === "filtered" ? "#7c3aed" : "#6b7280";
+      const text = label ? `${label}: ${(s || "unknown").toUpperCase()}` : (s || "unknown").toUpperCase();
+      return `<span style="background:${color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-left:4px;">${esc(text)}</span>`;
     };
     const cards = rows.length === 0
       ? '<p style="color:#6b7280;text-align:center;padding:60px 0;">No submissions yet.</p>'
@@ -603,9 +751,11 @@ STRICT RULES:
                 `<div style="display:flex;font-size:13px;color:#374151;margin:2px 0;"><span style="color:#6b7280;min-width:80px;text-transform:capitalize;">${esc(k)}:</span><span>${esc(v)}</span></div>`
               ).join("")
             : "";
-          const errBlock = r.sendError
-            ? `<div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:8px 12px;border-radius:6px;font-size:12px;margin-top:10px;font-family:monospace;word-break:break-word;">${esc(r.sendError)}</div>`
+          const errBlocks = [r.sendError, r.ghIssueError].filter(Boolean) as string[];
+          const errBlock = errBlocks.length > 0
+            ? errBlocks.map((e) => `<div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:8px 12px;border-radius:6px;font-size:12px;margin-top:10px;font-family:monospace;word-break:break-word;">${esc(e)}</div>`).join("")
             : "";
+          const ghLink = r.ghIssueUrl ? `<a href="${esc(r.ghIssueUrl)}" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;font-size:12px;margin-top:6px;display:inline-block;">View GitHub issue →</a>` : "";
           return `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;flex-wrap:wrap;">
               <div>
@@ -613,18 +763,20 @@ STRICT RULES:
                 <a href="mailto:${esc(r.email)}" style="color:#2563eb;text-decoration:none;font-size:14px;">${esc(r.email)}</a>
               </div>
               <div style="text-align:right;">
-                ${statusBadge(r.sendStatus)}
+                ${statusBadge(r.ghIssueStatus, "GitHub")}
+                ${statusBadge(r.sendStatus, "Email")}
                 <div style="color:#6b7280;font-size:12px;margin-top:4px;">${esc(r.ts)}</div>
               </div>
             </div>
             ${metaRows ? `<div style="background:#f9fafb;padding:10px 12px;border-radius:6px;margin-bottom:12px;">${metaRows}</div>` : ""}
             <div style="font-size:14px;color:#111827;white-space:pre-wrap;line-height:1.5;border-left:3px solid #e5e7eb;padding-left:12px;">${esc(r.message)}</div>
+            ${ghLink}
             ${errBlock}
           </div>`;
         }).join("");
-    const sentCount    = rows.filter((r) => r.sendStatus === "sent").length;
-    const failedCount  = rows.filter((r) => r.sendStatus === "failed").length;
-    const skippedCount = rows.filter((r) => r.sendStatus === "skipped").length;
+    const ghSentCount    = rows.filter((r) => r.ghIssueStatus === "sent").length;
+    const ghFailedCount  = rows.filter((r) => r.ghIssueStatus === "failed").length;
+    const ghFilteredCount = rows.filter((r) => r.ghIssueStatus === "filtered").length;
     res.setHeader("content-type", "text/html; charset=utf-8");
     res.setHeader("cache-control", "no-store");
     res.setHeader("x-robots-tag", "noindex, nofollow");
@@ -633,7 +785,7 @@ STRICT RULES:
   <div style="max-width:720px;margin:0 auto;">
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <h1 style="font-size:24px;color:#111827;margin:0;">Portfolio Inbox</h1>
-      <div style="color:#6b7280;font-size:13px;">${rows.length} total &middot; ${sentCount} sent &middot; ${failedCount} failed &middot; ${skippedCount} skipped</div>
+      <div style="color:#6b7280;font-size:13px;">${rows.length} total &middot; ${ghSentCount} delivered to GitHub &middot; ${ghFilteredCount} spam-filtered &middot; ${ghFailedCount} failed</div>
     </div>
     <p style="color:#6b7280;font-size:13px;margin:0 0 20px;">Private view. Submissions since last sandbox restart. Latest first.</p>
     ${cards}
@@ -653,6 +805,9 @@ STRICT RULES:
       RESEND_API_KEY: summarize(process.env.RESEND_API_KEY),
       CUSTOM_CRED_API_RESEND_COM_URL: summarize(process.env.CUSTOM_CRED_API_RESEND_COM_URL),
       CUSTOM_CRED_API_RESEND_COM_TOKEN: summarize(process.env.CUSTOM_CRED_API_RESEND_COM_TOKEN),
+      CUSTOM_CRED_API_GITHUB_COM_URL: summarize(process.env.CUSTOM_CRED_API_GITHUB_COM_URL),
+      CUSTOM_CRED_API_GITHUB_COM_TOKEN: summarize(process.env.CUSTOM_CRED_API_GITHUB_COM_TOKEN),
+      GH_INBOX_TOKEN: summarize(process.env.GH_INBOX_TOKEN),
       CONTACT_RECIPIENT: summarize(process.env.CONTACT_RECIPIENT),
       // Any env var that starts with CUSTOM_CRED_ so we can see what naming convention is actually in use
       all_custom_cred_keys: Object.keys(process.env).filter((k) => k.startsWith("CUSTOM_CRED_") || k.includes("RESEND") || k.includes("CUSTOM_CRED")),
