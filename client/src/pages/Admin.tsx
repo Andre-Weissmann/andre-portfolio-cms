@@ -478,7 +478,7 @@ export default function Admin() {
                             <span className={`font-medium text-sm truncate max-w-[160px] md:max-w-none ${isDraft ? "text-gray-400" : "text-white"}`}>{p.title}</span>
                             <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium text-white" style={{ backgroundColor: p.tool_color }}>{p.tool}</span>
                             <StatusBadge status={status} />
-                            {p.is_featured && <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center gap-1"><Star size={9} />Featured</span>}
+                            {p.is_featured && <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-teal-300 text-teal-950 font-semibold border border-teal-400 flex items-center gap-1"><Star size={9} />Featured</span>}
                           </div>
                           <p className="text-gray-500 text-xs line-clamp-1 hidden sm:block">{p.description}</p>
                         </div>

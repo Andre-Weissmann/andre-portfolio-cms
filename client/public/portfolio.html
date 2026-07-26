@@ -15,10 +15,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=1785015004" />
+  <link rel="stylesheet" href="style.css?v=1785076100" />
   <link rel="stylesheet" href="portfolio_os.css?v=1785014004" />
   <link rel="stylesheet" href="data_rail.css?v=1785014004" />
-  <link rel="stylesheet" href="deep_dive_v2.css?v=1785074000" />
+  <link rel="stylesheet" href="deep_dive_v2.css?v=1785076000" />
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Data Analyst | Healthcare Operations and Analytics","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
@@ -338,10 +338,11 @@
         <p class="section-sub">Don't just read about it. Run it. Every project below is fully interactive: enter your own data, run preset queries, filter dashboards, and explore the findings firsthand.</p>
 
         <div class="projects-list" id="featured-projects-list">
-          <article class="project-block" id="proj-nashville">
+<article class="project-block project-block--featured-tier" id="proj-nashville">
             <div class="project-block-info">
               <div class="project-meta-row">
                 <span class="proj-badge badge-sql">SQL</span>
+                <span class="proj-featured-tag" aria-label="Featured project">Featured</span>
                 <span class="proj-year">2023</span>
                 <button class="proj-explore-btn" data-explore="nashville">Deep Dive &rarr;</button>
               </div>
@@ -374,11 +375,11 @@
               </div>
             </div>
           </article>
-
-<article class="project-block" id="proj-survey">
+<article class="project-block project-block--featured-tier" id="proj-survey">
             <div class="project-block-info">
               <div class="project-meta-row">
                 <span class="proj-badge badge-powerbi">Power BI</span>
+                <span class="proj-featured-tag" aria-label="Featured project">Featured</span>
                 <span class="proj-year">2023</span>
                 <button class="proj-explore-btn" data-explore="survey">Deep Dive &rarr;</button>
               </div>
@@ -389,11 +390,11 @@
             </div>
 
           </article>
-
-<article class="project-block project-block--flip" id="proj-airbnb">
+<article class="project-block project-block--flip project-block--featured-tier" id="proj-airbnb">
             <div class="project-block-info">
               <div class="project-meta-row">
                 <span class="proj-badge badge-tableau">Tableau</span>
+                <span class="proj-featured-tag" aria-label="Featured project">Featured</span>
                 <span class="proj-year">2023</span>
                 <button class="proj-explore-btn" data-explore="airbnb">Deep Dive &rarr;</button>
               </div>
@@ -404,113 +405,94 @@
             </div>
 
           </article>
-
-<article class="project-block project-block--flip" id="proj-bmi">
-            <div class="project-block-info">
-              <div class="project-meta-row">
-                <span class="proj-badge badge-python">Python</span>
-                <span class="proj-year">2023</span>
-                <button class="proj-explore-btn" data-explore="bmi">Deep Dive &rarr;</button>
-              </div>
-              <h3 class="project-block-title">BMI and Waist-to-Hip Ratio: Clinical Risk Screening in Plain Language</h3>
-              <p class="project-block-desc">Raw BMI scores are screening tools, not diagnoses. This Python program applies the CDC formula across four clinical weight categories, then optionally calculates Waist-to-Hip Ratio using WHO thresholds (0.90 for men, 0.85 for women) to add a cardiovascular risk dimension BMI alone cannot provide. The output is not a number to Google. It is a plain-English assessment: your classification, your risk tier, and what it means, delivered in seconds to a patient or provider with no medical background required.</p>
-              <div class="project-tech-row"><span>Python</span><span>Health Analytics</span><span>Data Validation</span><span>CLI Programming</span></div>
-              <img src="images/bmi-main.jpg" alt="BMI Health Analysis" width="358" height="202" class="project-block-img" loading="lazy"/>
-            </div>
-            <div class="project-block-demo">
-              <div class="demo-header">
-                <span class="demo-badge"><span class="live-dot"></span>Live Python Program</span>
-                <p class="demo-hint">Live calculator · results update as you change height, weight, or WHR.</p>
-              </div>
-              <div class="bmi-app">
-                <div class="bmi-presets">
-                  <span class="bmi-preset-label">Quick scenarios:</span>
-                  <button class="bmi-preset-btn" data-feet="5" data-inches="8" data-weight="115">Underweight: 5'8", 115 lbs</button>
-                  <button class="bmi-preset-btn" data-feet="5" data-inches="10" data-weight="155">Healthy Weight: 5'10", 155 lbs</button>
-                  <button class="bmi-preset-btn" data-feet="6" data-inches="1" data-weight="190">Overweight: 6'1", 190 lbs</button>
-                  <button class="bmi-preset-btn" data-feet="5" data-inches="9" data-weight="220">Above Obesity: 5'9", 220 lbs</button>
-                </div>
-                <div class="bmi-row">
-                  <div class="bmi-field">
-                    <label class="bmi-label">Height</label>
-                    <div class="bmi-height-wrap">
-                      <div class="bmi-height-part">
-                        <select id="bmi-feet" class="bmi-input">
-                          <option value="">ft</option>
-                          <option value="3">3 ft</option>
-                          <option value="4">4 ft</option>
-                          <option value="5" selected>5 ft</option>
-                          <option value="6">6 ft</option>
-                          <option value="7">7 ft</option>
-                        </select>
-                      </div>
-                      <div class="bmi-height-part">
-                        <select id="bmi-inches" class="bmi-input">
-                          <option value="0">0 in</option>
-                          <option value="1">1 in</option>
-                          <option value="2">2 in</option>
-                          <option value="3">3 in</option>
-                          <option value="4">4 in</option>
-                          <option value="5">5 in</option>
-                          <option value="6">6 in</option>
-                          <option value="7">7 in</option>
-                          <option value="8">8 in</option>
-                          <option value="9">9 in</option>
-                          <option value="10">10 in</option>
-                          <option value="11" selected>11 in</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bmi-field">
-                    <label class="bmi-label">Weight (lbs)</label>
-                    <input type="number" id="bmi-weight" class="bmi-input" placeholder="185" value="185" min="50" max="500" />
-                  </div>
-                </div>
-                <label class="bmi-toggle-label">
-                  <input type="checkbox" id="bmi-whr-toggle" class="bmi-checkbox"/>
-                  Include Waist-to-Hip Ratio
-                </label>
-                <div id="bmi-whr-fields" style="display:none;">
-                  <div class="bmi-row" style="margin-top:var(--sp-3)">
-                    <div class="bmi-field">
-                      <label class="bmi-label">Waist (in)</label>
-                      <input type="number" id="bmi-waist" class="bmi-input" placeholder="34" min="20" max="80"/>
-                    </div>
-                    <div class="bmi-field">
-                      <label class="bmi-label">Hip (in)</label>
-                      <input type="number" id="bmi-hip" class="bmi-input" placeholder="40" min="20" max="80"/>
-                    </div>
-                    <div class="bmi-field">
-                      <label class="bmi-label">Sex</label>
-                      <select id="bmi-sex" class="bmi-input">
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div class="bmi-live-status" id="bmi-live-status" aria-live="polite">Live · updates as you type</div>
-                <div id="bmi-output"></div>
-              </div>
-            </div>
-          </article>
-
-<article class="project-block" id="proj-bikes">
-            <div class="project-block-info">
-              <div class="project-meta-row">
-                <span class="proj-badge badge-excel">Excel</span>
-                <span class="proj-year">2023</span>
-                <button class="proj-explore-btn" data-explore="bikes">Deep Dive &rarr;</button>
-              </div>
-              <h3 class="project-block-title">Bike Sales: Pacific Region Shows Strong Margins on a Smaller Sample Worth Watching</h3>
-              <p class="project-block-desc">13,351 sales records across Europe, North America, and the Pacific region. After deduplication and field standardization (marital status, gender, and age brackets via nested IF formula), four pivot tables and an interactive slicer dashboard revealed one clear finding: the Pacific region generates the highest profit margins in bike sales. The highest-income buyer profile is a married Pacific-region homeowner in a management role averaging $90,000 annually. The farthest commute distances are also in the Pacific region, where middle-aged female buyers ride more than 10 miles. For any stakeholder allocating sales or marketing investment, this dataset points to one region, one demographic, and one clear next move.</p>
-              <div class="project-tech-row"><span>Microsoft Excel</span><span>Data Visualization</span><span>Sales Analytics</span><span>BI</span></div>
-              <div class="project-block-img-link project-block-img-link--static"><img src="images/bike-sales.png" alt="Excel bike sales dashboard" width="358" height="202" class="project-block-img" loading="lazy"/></div>
-            </div>
-
-          </article>
         </div>
+
+        <div class="projects-more" id="projects-more">
+          <a class="projects-more-link" href="#project-archive">All projects (5)</a>
+          <span class="projects-more-sep" aria-hidden="true">·</span>
+          <a class="projects-more-link projects-more-link--ext" href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer">Source on GitHub</a>
+        </div>
+
+        <section class="project-archive" id="project-archive" aria-labelledby="project-archive-heading">
+          <div class="project-archive__head">
+            <p class="project-archive__eyebrow">Archive</p>
+            <h3 class="project-archive__title" id="project-archive-heading">Project archive</h3>
+            <p class="project-archive__sub">Everything shipped, including smaller tools and earlier work. Live demos stay in the featured strip above.</p>
+            <p class="project-archive__meta">5 projects · 2023 to 2026</p>
+          </div>
+          <div class="project-archive__table-wrap" role="region" aria-label="All projects table">
+            <table class="project-archive__table">
+              <thead>
+                <tr>
+                  <th scope="col">Year</th>
+                  <th scope="col">Project</th>
+                  <th scope="col">Stack</th>
+                  <th scope="col">Links</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="project-archive__row project-archive__row--featured">
+                  <td data-label="Year">2023</td>
+                  <td data-label="Project"><a href="#proj-nashville">Nashville Housing SQL</a> <span class="project-archive__pill">Featured</span></td>
+                  <td data-label="Stack">SQL</td>
+                  <td data-label="Links" class="project-archive__links">
+                    <a href="#proj-nashville">Demo</a>
+                    <button type="button" class="project-archive__dd proj-explore-btn" data-explore="nashville">Case</button>
+                    <a href="https://github.com/Andre-Weissmann/sql-data-projects" target="_blank" rel="noopener noreferrer">GitHub</a>
+                  </td>
+                </tr>
+                <tr class="project-archive__row project-archive__row--featured">
+                  <td data-label="Year">2023</td>
+                  <td data-label="Project"><a href="#proj-survey">Data Professionals Survey</a> <span class="project-archive__pill">Featured</span></td>
+                  <td data-label="Stack">Power BI</td>
+                  <td data-label="Links" class="project-archive__links">
+                    <a href="#proj-survey">Demo</a>
+                    <button type="button" class="project-archive__dd proj-explore-btn" data-explore="survey">Case</button>
+                    <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer">GitHub</a>
+                  </td>
+                </tr>
+                <tr class="project-archive__row project-archive__row--featured">
+                  <td data-label="Year">2023</td>
+                  <td data-label="Project"><a href="#proj-airbnb">Seattle Airbnb Tableau</a> <span class="project-archive__pill">Featured</span></td>
+                  <td data-label="Stack">Tableau</td>
+                  <td data-label="Links" class="project-archive__links">
+                    <a href="#proj-airbnb">Demo</a>
+                    <button type="button" class="project-archive__dd proj-explore-btn" data-explore="airbnb">Case</button>
+                    <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer">GitHub</a>
+                  </td>
+                </tr>
+                <tr class="project-archive__row">
+                  <td data-label="Year">2023</td>
+                  <td data-label="Project">Bike Sales Excel</td>
+                  <td data-label="Stack">Excel</td>
+                  <td data-label="Links" class="project-archive__links">
+                    <button type="button" class="project-archive__dd proj-explore-btn" data-explore="bikes">Case</button>
+                    <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer">GitHub</a>
+                  </td>
+                </tr>
+                <tr class="project-archive__row">
+                  <td data-label="Year">2023</td>
+                  <td data-label="Project">BMI and Waist-to-Hip Screening</td>
+                  <td data-label="Stack">Python</td>
+                  <td data-label="Links" class="project-archive__links">
+                    <button type="button" class="project-archive__dd proj-explore-btn" data-explore="bmi">Case</button>
+                    <a href="https://github.com/Andre-Weissmann/python-data-projects" target="_blank" rel="noopener noreferrer">GitHub</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="project-archive__foot">
+            <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer">Full source on GitHub</a>
+          </p>
+        </section>
+
+
+        <!-- Archive-only projects: deep dives open via data-explore; no homepage demo blocks -->
+        <div id="proj-bikes" class="project-anchor-only" hidden aria-hidden="true"></div>
+        <div id="proj-bmi" class="project-anchor-only" hidden aria-hidden="true"></div>
+
+
 
       </div>
     </section>
@@ -1034,6 +1016,13 @@
     <div class="container footer-inner footer-inner--centered">
       <p class="footer-copy footer-copy--name">Andre Weissmann</p>
       <p class="footer-copy">Data Analyst &nbsp;&middot;&nbsp; Healthcare Operations &amp; Analytics &nbsp;&middot;&nbsp; Chicago, IL</p>
+      <p class="footer-nav-links">
+        <a href="#project-archive">All projects</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/Andre-Weissmann" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span aria-hidden="true">·</span>
+        <a href="#resume">Resume</a>
+      </p>
       <p class="footer-copy footer-copy--year">&copy; 2026</p>
     </div>
   </footer>
@@ -1050,7 +1039,7 @@
   <!-- modals.js removed: Deep Dive system lives in portfolio.html directly -->
   <script src="portfolio_os.js?v=1784999000"></script>
   <script src="data_rail.js?v=1784999000"></script>
-  <script src="deep_dive_v2.js?v=1785074000"></script>
+  <script src="deep_dive_v2.js?v=1785076000"></script>
   <script src="powerbi.js?v=1785059000"></script>
   <script src="tableau.js?v=1785046000"></script>
   <script src="excel.js?v=1785046000"></script>
@@ -1400,6 +1389,6 @@ window.addEventListener('pageshow', function(e) {
 })();
 </script>
 
-  <script src="projects-sync.js?v=1785015000"></script>
+  <script src="projects-sync.js?v=1785076100"></script>
 </body>
 </html>
