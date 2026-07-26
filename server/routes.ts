@@ -492,16 +492,17 @@ STRICT RULES:
       '</div>',
     ].join("");
 
+    const RECIPIENT = process.env.CONTACT_RECIPIENT || "swimstar34@icloud.com";
     resend.emails.send({
       from: "Portfolio Contact <onboarding@resend.dev>",
-      to: "andre_weissmann@icloud.com",
+      to: RECIPIENT,
       reply_to: safeEmail,
       subject,
       text,
       html,
     }).then(({ error: resendError }) => {
       if (resendError) console.error("[Resend] Error:", resendError);
-      else console.log(`[Resend] Email sent to swimmerguy39@protonmail.com`);
+      else console.log(`[Resend] Email sent to ${RECIPIENT}`);
     }).catch((err: unknown) => {
       console.error("[Resend] Exception:", err);
     });
