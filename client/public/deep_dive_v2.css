@@ -5841,3 +5841,82 @@ body.dd-lightbox-open { overflow: hidden; }
   .brief-chart-tool { min-height: 40px; font-size: 12px; }
   .brief-chart-readout { font-size: 13px; }
 }
+
+
+/* ═══ POWER BI / SINGLE SHOT ENLARGE ═══ */
+.brief-dash-card--single {
+  width: 100%;
+}
+.brief-dash-card--single .brief-dash-card__body,
+.brief-shot-gallery--single {
+  max-width: none;
+  width: 100%;
+}
+.brief-dash-card--powerbi .brief-shot-gallery--single,
+.brief-dash-card--excel .brief-shot-gallery--single {
+  max-width: min(1100px, 100%);
+  margin: 0 auto;
+}
+.brief-dash-card--single .brief-shot--hero {
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+}
+.brief-dash-card--single .brief-shot--hero img,
+.brief-shot-gallery--single .brief-shot--hero img {
+  max-height: none !important;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+  object-position: top center;
+  background: #0b1220;
+  image-rendering: auto;
+}
+/* Prefer a tall reading frame on desktop; still one image */
+@media (min-width: 900px) {
+  .brief-dash-card--powerbi .brief-shot--hero img {
+    min-height: min(62vh, 640px);
+  }
+}
+@media (max-width: 899px) {
+  .brief-dash-card--powerbi .brief-shot--hero img,
+  .brief-dash-card--excel .brief-shot--hero img {
+    width: 100% !important;
+    max-height: none !important;
+  }
+}
+/* Lightbox: even larger for single dashboard shots */
+.brief-shot-lightbox img {
+  max-width: min(1400px, 100%) !important;
+  max-height: min(90dvh, 1000px) !important;
+}
+
+/* Dec 25 jump + peak flash */
+.brief-cold-open__jump-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.brief-cold-open__jump--primary {
+  font-weight: 780 !important;
+  border-color: color-mix(in srgb, var(--brief-accent, var(--dd-accent)) 55%, var(--brief-border)) !important;
+  background: color-mix(in srgb, var(--brief-accent, var(--dd-accent)) 18%, var(--brief-surface, var(--dd-surface))) !important;
+}
+.brief-cold-open__jump.is-active {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brief-accent, var(--dd-accent)) 45%, transparent);
+}
+.brief-cold-open__peak-note.is-flash,
+.brief-chart-readout.is-flash {
+  animation: briefFlashNote 0.85s ease;
+}
+@keyframes briefFlashNote {
+  0% { background: color-mix(in srgb, var(--brief-accent, #0d9488) 28%, transparent); }
+  100% { background: color-mix(in srgb, var(--brief-accent, #0d9488) 8%, var(--brief-surface, transparent)); }
+}
+@media (max-width: 640px) {
+  .brief-cold-open__jump-row { gap: 6px; }
+  .brief-cold-open__jump {
+    min-height: 44px;
+    padding: 0.55rem 0.9rem;
+  }
+}

@@ -292,7 +292,15 @@ function renderLineChart(container, datasets, opts) {
   shell.appendChild(readout);
   container.appendChild(shell);
 
-  var activeIdx = peaks.length ? peaks[peaks.length - 1] : Math.max(0, Math.floor((primary.values.length || 1) / 2));
+  var nPts = primary.values.length || 0;
+  var activeIdx;
+  if (opts.initialIndex != null && opts.initialIndex >= 0 && opts.initialIndex < nPts) {
+    activeIdx = opts.initialIndex | 0;
+  } else if (peaks.length) {
+    activeIdx = peaks[peaks.length - 1];
+  } else {
+    activeIdx = Math.max(0, Math.floor((nPts || 1) / 2));
+  }
 
   function yFmt(v) {
     return opts.yFmt ? opts.yFmt(v) : String(Math.round(v));
@@ -492,6 +500,27 @@ function renderLineChart(container, datasets, opts) {
     paint();
     setReadout(activeIdx);
   });
+
+  function goToIndex(i, optsGo) {
+    optsGo = optsGo || {};
+    if (i == null || isNaN(i)) return false;
+    i = i | 0;
+    if (i < 0 || i >= (primary.values.length || 0)) return false;
+    activeIdx = i;
+    paint();
+    setReadout(activeIdx);
+    if (optsGo.flash) {
+      readout.classList.remove('is-flash');
+      // reflow
+      void readout.offsetWidth;
+      readout.classList.add('is-flash');
+    }
+    return true;
+  }
+
+  // Public API for cold-open / external jump buttons
+  container._briefLineGoTo = goToIndex;
+  container._briefLineGetIndex = function() { return activeIdx; };
 
   paint();
   if (typeof ResizeObserver !== 'undefined') {
@@ -2704,9 +2733,9 @@ var DD_DASHBOARDS = {
   powerbi: {
     tool: 'Power BI',
     shots: [
-      { src: 'images/powerbi-dashboard.png', alt: 'Power BI dashboard for the data professionals survey', caption: 'Full dashboard view' }
+      { src: 'images/powerbi-dashboard.png?v=1785074000', alt: 'Power BI dashboard for the data professionals survey', caption: 'Full dashboard · tap to enlarge' }
     ],
-    caption: 'One Power BI Desktop view. Story, measures, and live charts are in this deep dive.',
+    caption: 'One full Power BI Desktop dashboard. Tap the image to view it large.',
     fileHref: '',
     fileLabel: ''
   },
@@ -2931,6 +2960,8 @@ function renderDashboardCard(container, key) {
   var shots = cfg.shots || [];
   var multi = shots.length > 1;
   card.className = 'brief-dash-card brief-dash-card--shots' + (multi ? ' brief-dash-card--multi' : ' brief-dash-card--single');
+  if (!multi && key === 'powerbi') card.classList.add('brief-dash-card--powerbi');
+  if (!multi && key === 'excel') card.classList.add('brief-dash-card--excel');
   card.setAttribute('aria-label', cfg.tool + (multi ? ' dashboard screenshots' : ' dashboard screenshot'));
   var galleryClass = 'brief-shot-gallery' + (multi ? ' brief-shot-gallery--multi' : ' brief-shot-gallery--single');
   var gallery = shots.map(function(s, i) {
@@ -3035,39 +3066,109 @@ function renderColdOpen(container, key, p, goToId) {
   } else if (key === 'tableau') {
     var line = findProjectSection(p, 'line-chart');
     if (line) {
+      var peakIdx = (line.peaks && line.peaks.length) ? line.peaks[line.peaks.length - 1] : 51;
+      var peakVal = line.values[peakIdx];
+
+      var jumpRow = document.createElement('div');
+      jumpRow.className = 'brief-cold-open__jump-row';
+
       var jump = document.createElement('button');
       jump.type = 'button';
-      jump.className = 'brief-disclose-btn brief-cold-open__jump';
+      jump.className = 'brief-disclose-btn brief-cold-open__jump brief-cold-open__jump--primary';
       jump.textContent = 'Jump to December 25 spike';
-      var lc = document.createElement('div');
-      lc.className = 'brief-chart-wrap';
-      stage.appendChild(jump);
-      stage.appendChild(lc);
-      var peakIdx = (line.peaks && line.peaks.length) ? line.peaks[line.peaks.length - 1] : 51;
-      jump.addEventListener('click', function() {
-        var note = stage.querySelector('.brief-cold-open__peak-note');
-        if (!note) {
-          note = document.createElement('div');
-          note.className = 'brief-cold-open__peak-note';
-          stage.insertBefore(note, lc);
-        }
-        var val = line.values[peakIdx];
-        note.textContent = 'Week ' + (peakIdx + 1) + ': $' + Number(val).toLocaleString() + ' weekly revenue peak (holiday demand).';
-        note.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      jump.setAttribute('aria-controls', 'brief-cold-line-chart');
+
+      // Secondary peak chips for the other three peaks
+      var otherPeaks = (line.peaks || []).filter(function(pi) { return pi !== peakIdx; });
+      otherPeaks.forEach(function(pi) {
+        var lab = (line.labels && line.labels[pi]) ? line.labels[pi] : ('W' + (pi + 1));
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'brief-disclose-btn brief-cold-open__jump';
+        b.textContent = lab;
+        b.setAttribute('data-peak-jump', String(pi));
+        jumpRow.appendChild(b);
       });
-      setTimeout(function() {
-        renderLineChart(lc, [{ values: line.values, peaks: line.peaks, color: 'var(--brief-accent)', width: 2 }], {
-          labels: line.labels,
-          yFmt: function(v) { return '$' + Math.round(v / 1000) + 'K'; },
-          height: 170
-        });
-      }, 0);
-      // Seed peak note without stealing focus/scroll
+      jumpRow.insertBefore(jump, jumpRow.firstChild);
+
       var seedNote = document.createElement('div');
       seedNote.className = 'brief-cold-open__peak-note';
-      var seedVal = line.values[peakIdx];
-      seedNote.textContent = 'Week ' + (peakIdx + 1) + ': $' + Number(seedVal).toLocaleString() + ' weekly revenue peak (holiday demand).';
-      stage.insertBefore(seedNote, lc);
+      seedNote.id = 'brief-cold-peak-note';
+      seedNote.textContent = 'December 25 is the top week: $' + Number(peakVal).toLocaleString() + ' city-wide revenue. Tap the button to pin the chart on that spike.';
+
+      var lc = document.createElement('div');
+      lc.className = 'brief-chart-wrap';
+      lc.id = 'brief-cold-line-chart';
+
+      stage.appendChild(jumpRow);
+      stage.appendChild(seedNote);
+      stage.appendChild(lc);
+
+      function pinPeak(pi, label) {
+        pi = pi | 0;
+        var val = line.values[pi];
+        var lab = label || ((line.labels && line.labels[pi]) ? line.labels[pi] : ('Week ' + (pi + 1)));
+        seedNote.textContent = lab + ' spike: $' + Number(val).toLocaleString() + ' city-wide weekly revenue.';
+        seedNote.classList.remove('is-flash');
+        void seedNote.offsetWidth;
+        seedNote.classList.add('is-flash');
+
+        function doGo() {
+          if (typeof lc._briefLineGoTo === 'function') {
+            lc._briefLineGoTo(pi, { flash: true });
+            return true;
+          }
+          return false;
+        }
+        if (!doGo()) {
+          // Chart not ready yet: render then go
+          renderLineChart(lc, [{ values: line.values, peaks: line.peaks, color: 'var(--brief-accent)', width: 2.5 }], {
+            labels: line.labels,
+            yFmt: function(v) { return '$' + Math.round(v / 1000) + 'K'; },
+            height: 210,
+            initialIndex: pi,
+            ariaLabel: 'Seattle weekly revenue'
+          });
+          doGo();
+        }
+        // Scroll chart into the phone/desktop reading frame
+        try {
+          if (typeof scrollDDToId === 'function') scrollDDToId('brief-cold-line-chart', 'smooth');
+          else lc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (eScr) {
+          try { lc.scrollIntoView({ block: 'center' }); } catch (e2) {}
+        }
+        jumpRow.querySelectorAll('button').forEach(function(btn) {
+          var isMain = btn === jump;
+          var dpi = btn.getAttribute('data-peak-jump');
+          var on = isMain ? (pi === peakIdx) : (dpi != null && parseInt(dpi, 10) === pi);
+          btn.classList.toggle('is-active', on);
+        });
+      }
+
+      jump.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        pinPeak(peakIdx, 'December 25');
+      });
+      jumpRow.addEventListener('click', function(e) {
+        var b = e.target.closest('[data-peak-jump]');
+        if (!b || !jumpRow.contains(b)) return;
+        e.preventDefault();
+        pinPeak(parseInt(b.getAttribute('data-peak-jump'), 10));
+      });
+
+      // Start on a neutral mid-year point so Dec 25 jump is a visible change
+      var startIdx = 26;
+      setTimeout(function() {
+        renderLineChart(lc, [{ values: line.values, peaks: line.peaks, color: 'var(--brief-accent)', width: 2.5 }], {
+          labels: line.labels,
+          yFmt: function(v) { return '$' + Math.round(v / 1000) + 'K'; },
+          height: 210,
+          initialIndex: startIdx,
+          ariaLabel: 'Seattle weekly revenue'
+        });
+      }, 0);
     }
   } else if (key === 'excel') {
     var eBars = findAllProjectSections(p, 'bar-chart');
