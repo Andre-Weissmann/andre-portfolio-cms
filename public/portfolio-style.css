@@ -2750,3 +2750,29 @@ select.bmi-input {
     overflow: visible !important;
   }
 }
+
+
+/* Nashville: house image sits beside title/text; SQL sandbox full width below */
+.project-block--nashville {
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+.project-block--nashville .project-block-visual {
+  align-self: start;
+}
+.project-block--nashville .project-block-demo--sql-full {
+  grid-column: 1 / -1;
+}
+.project-block--nashville .project-block-visual .project-block-img {
+  max-height: 280px;
+  width: 100%;
+  object-fit: cover;
+}
+@media (max-width: 768px) {
+  .project-block--nashville {
+    grid-template-columns: 1fr;
+  }
+  .project-block--nashville .project-block-demo--sql-full {
+    grid-column: auto;
+  }
+}
