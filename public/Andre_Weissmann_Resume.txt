@@ -20,6 +20,12 @@ Other Tools: Microsoft Copilot (AI-assisted debugging for VBA macros), Git/GitHu
 ------------------------------------------------------------
 PROJECTS
 ------------------------------------------------------------
+CMS Marketplace Quality + Federal IDR Outcomes (SQL + Python)
+- Analyzed CMS Marketplace Quality PUF (PY2026, 4,302 plans) and Federal IDR Supplemental tables (2025 Q1-Q2)
+- Dual-engine checked five human-confirmed keepers with NR exclusion discipline (never treat NR as 0)
+- Key results: EPO leads overall stars after NR exclusion (3.24); IDR provider prevailing share 87.4% to 88.2% Q1 to Q2; Admin at least 1 star above Overall on 48.8% of dual-rated plans
+- Skills: SQL, Python, healthcare public data, data quality definitions, reproducible proof
+
 Nashville Housing Data Cleanup (SQL)
 - Cleaned and standardized 56,000+ Nashville housing records using SQL
 - Removed duplicates, parsed addresses, normalized categorical fields
