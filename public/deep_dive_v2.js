@@ -2637,7 +2637,7 @@ cmsQualityIdr: {
       title: 'DataGlow Glow Canvas dashboard',
       items: [
         { icon: '📊', heading: 'Proof-first multi-chart board', body: 'Four analysis lenses on one board: stars by plan type, IDR provider wins, Admin vs Overall gap, initiating concentration. Each tile shows VERDICT + engine stamps + why it matters.' },
-        { icon: '🛡️', heading: 'Unique vs typical BI', body: 'Not a vanity viz pack. Cleaning rule (NR never as 0) sits in the chrome. Quality and IDR stay separate grains. Dual-engine stamps can pull a claim down if engines disagree.' },
+        { icon: '🛡️', heading: 'Proof-first board', body: 'Cleaning rule (NR never as 0) sits in the chrome. Quality and IDR stay separate grains. Dual-engine stamps can pull a claim down if engines disagree.' },
         { icon: '🔗', heading: 'Open the interactive board', body: 'Live interactive page: dataglow-alpha-dashboard.html on this portfolio host. Product shell: https://dataglow-platform.pplx.app · source https://github.com/Andre-Weissmann/dataglow' }
       ]
     },
@@ -3005,7 +3005,7 @@ cmsQualityIdr: {
       { src: 'images/dataglow/process/03-purpose-ready-paths.png?v=1785153000', alt: 'DataGlow Clean Ask Prove paths', caption: '7. Product paths · Clean / Ask / Prove' },
       { src: 'images/dataglow/process/00-live-home-now.png?v=1785153000', alt: 'Live DataGlow home', caption: '8. Live product home · dataglow-platform.pplx.app' }
     ],
-    caption: "DataGlow Glow Canvas dashboard for CMS Quality + Federal IDR. VERDICT on every tile, dual-engine stamps, NR discipline in the chrome. Not a Power BI clone.",
+    caption: "DataGlow Glow Canvas dashboard for CMS Quality + Federal IDR. VERDICT on every tile, dual-engine stamps, NR discipline in the chrome.",
     fileHref: 'dataglow-alpha-dashboard.html',
     fileLabel: 'Open interactive DataGlow dashboard'
   },
