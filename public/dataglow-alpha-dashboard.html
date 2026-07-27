@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DataGlow · CMS Quality + Federal IDR · Alpha Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --charcoal: #2D2D2D;
+      --coral: #FF6B6B;
+      --coral-hover: #F45555;
+      --coral-highlight: #FFE3E1;
+      --white: #FFFFFF;
+      --teal: #0A7E8C;
+      --blue: #4A90D9;
+      --amber: #F5A623;
+      --red: #E74C3C;
+      --navy: #0D1B2A;
+      --bg: #FAFAF9;
+      --surface: #FFFFFF;
+      --surface-2: #F5F4F2;
+      --border: #E2E0DC;
+      --text: #2D2D2D;
+      --muted: #6B6A67;
+      --faint: #A6A49F;
+      --font-display: 'Poppins', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --shadow: 0 4px 14px rgba(45,45,45,0.08);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.45; }
+    a { color: var(--teal); }
+    .shell { max-width: 1280px; margin: 0 auto; padding: 20px 20px 48px; }
+    .topbar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+      background: var(--navy); color: #FAFAF9; border-radius: 16px; padding: 16px 20px; margin-bottom: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--coral), #ff9a8b);
+      display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; color: white; font-size: 18px;
+    }
+    .brand h1 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .brand p { margin: 2px 0 0; font-size: 0.875rem; color: #C8C6C2; }
+    .top-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); font-size: 0.8125rem; color: #EDECEA;
+    }
+    .chip strong { color: #fff; font-weight: 600; }
+    .chip.green { background: rgba(10,126,140,0.25); border-color: rgba(10,126,140,0.45); color: #9EE7F0; }
+    .banner {
+      background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--teal);
+      border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; box-shadow: var(--shadow);
+    }
+    .banner h2 { margin: 0 0 6px; font-size: 1rem; font-family: var(--font-display); }
+    .banner p { margin: 0; color: var(--muted); font-size: 0.9375rem; }
+    .kpi-row {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px;
+    }
+    @media (max-width: 900px) { .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px) { .kpi-row { grid-template-columns: 1fr; } }
+    .kpi {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 14px 16px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .kpi::before {
+      content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--coral);
+    }
+    .kpi .label { font-size: 0.8125rem; color: var(--muted); font-weight: 500; }
+    .kpi .value { font-family: var(--font-display); font-size: 1.65rem; font-weight: 700; letter-spacing: -0.03em; margin-top: 4px; }
+    .kpi .sub { margin-top: 4px; font-size: 0.8125rem; color: var(--muted); }
+    .verdict {
+      display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.75rem;
+      font-weight: 600; letter-spacing: 0.04em; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;
+    }
+    .verdict.green { background: rgba(10,126,140,0.12); color: var(--teal); border: 1px solid rgba(10,126,140,0.28); }
+    .verdict.amber { background: rgba(245,166,35,0.14); color: #9A6700; border: 1px solid rgba(245,166,35,0.35); }
+    .canvas-label {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      margin: 8px 0 12px;
+    }
+    .canvas-label h2 { margin: 0; font-family: var(--font-display); font-size: 1.1rem; }
+    .canvas-label span { font-size: 0.875rem; color: var(--muted); }
+    .glow-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;
+    }
+    @media (max-width: 900px) { .glow-grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; min-height: 340px;
+    }
+    .card-head {
+      display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px;
+      padding: 14px 16px 10px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, #fff, #FBFBFA);
+    }
+    .card-head h3 { margin: 0; font-size: 1rem; font-family: var(--font-display); font-weight: 600; }
+    .card-head p { margin: 4px 0 0; font-size: 0.8125rem; color: var(--muted); max-width: 42ch; }
+    .card-body { padding: 12px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .chart-wrap { position: relative; height: 220px; }
+    .engine-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .engine {
+      font-family: var(--font-mono); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--muted);
+    }
+    .engine.ok { color: var(--teal); border-color: rgba(10,126,140,0.3); background: rgba(10,126,140,0.08); }
+    .why {
+      margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--border);
+      font-size: 0.875rem; color: var(--muted);
+    }
+    .why strong { color: var(--text); }
+    .rail {
+      margin-top: 16px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px;
+    }
+    @media (max-width: 900px) { .rail { grid-template-columns: 1fr; } }
+    .panel {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: var(--shadow);
+    }
+    .panel h3 { margin: 0 0 10px; font-family: var(--font-display); font-size: 1rem; }
+    .panel ul { margin: 0; padding-left: 1.1rem; color: var(--muted); }
+    .panel li { margin: 6px 0; }
+    .panel code { font-family: var(--font-mono); font-size: 0.85em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+    .footer {
+      margin-top: 18px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
+      color: var(--muted); font-size: 0.875rem;
+    }
+    .footer a {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px;
+      background: var(--coral-highlight); color: #9B2C2C; text-decoration: none; font-weight: 600; font-size: 0.875rem;
+    }
+    .footer a.secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">D</div>
+        <div>
+          <h1>DataGlow · Glow Canvas</h1>
+          <p>CMS Quality Stars (PY2026) + Federal IDR (2025 Q1–Q2)</p>
+        </div>
+      </div>
+      <div class="top-meta">
+        <span class="chip green"><strong>VERDICT</strong> 5 / 5 GREEN</span>
+        <span class="chip">Engines · <strong>SQL + Python</strong></span>
+        <span class="chip">NR discipline · <strong>never as 0</strong></span>
+        <span class="chip">Local-first · <strong>public CMS files</strong></span>
+      </div>
+    </header>
+
+    <section class="banner">
+      <h2>Not a Power BI clone. A proof-first analytics dashboard.</h2>
+      <p>
+        Every tile carries a <strong>VERDICT</strong>, dual-engine stamp, and the cleaning rule that protects the number.
+        Built with DataGlow’s Glow Canvas idea: multi-chart board + prove trail, not a vanity viz pack.
+        Product: <a href="https://dataglow-platform.pplx.app" target="_blank" rel="noopener">dataglow-platform.pplx.app</a>
+        · Code: <a href="https://github.com/Andre-Weissmann/dataglow" target="_blank" rel="noopener">github.com/Andre-Weissmann/dataglow</a>
+      </p>
+    </section>
+
+    <section class="kpi-row" aria-label="Headline KPIs">
+      <article class="kpi">
+        <div class="label">Top plan type · avg overall stars</div>
+        <div class="value">EPO 3.24</div>
+        <div class="sub">n = 922 · NR excluded · <span class="verdict green">GREEN</span></div>
+      </article>
+      <article class="kpi">
+        <div class="label">IDR provider win share · Q2</div>
+        <div class="value">88.2%</div>
+        <div class="sub">+0.81 pp vs Q1 · <span class="verdict green">GREEN</span></div>
+      </article>
+      <article class="kpi">
+        <div class="label">Admin ≥ Overall +1 star</div>
+        <div class="value">48.8%</div>
+        <div class="sub">1,531 / 3,139 dual-rated · <span class="verdict green">GREEN</span></div>
+      </article>
+      <article class="kpi">
+        <div class="label">Top-3 IDR initiators · Q2</div>
+        <div class="value">~46%</div>
+        <div class="sub">HaloMD + Team Health + SCP · <span class="verdict green">GREEN</span></div>
+      </article>
+    </section>
+
+    <div class="canvas-label">
+      <h2>Glow Canvas · four analysis lenses</h2>
+      <span>Each card = question · chart · engines · why it matters</span>
+    </div>
+
+    <section class="glow-grid">
+      <article class="card" id="card-stars">
+        <div class="card-head">
+          <div>
+            <h3>1. Overall stars by plan type</h3>
+            <p>NR / blank / N/A excluded. Never treat NR as zero.</p>
+          </div>
+          <span class="verdict green">GREEN</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chartStars" aria-label="Average overall stars by plan type"></canvas></div>
+          <div class="engine-row">
+            <span class="engine ok">DuckDB / SQL ✓</span>
+            <span class="engine ok">Python twin ✓</span>
+            <span class="engine">grain: plan_type</span>
+          </div>
+          <p class="why"><strong>Why it matters:</strong> Marketplace quality comparisons collapse if NR is coded as 0. EPO leads on rated plans; PPO trails on this cut.</p>
+        </div>
+      </article>
+
+      <article class="card" id="card-idr">
+        <div class="card-head">
+          <div>
+            <h3>2. IDR provider prevailing share</h3>
+            <p>Payment determinations Q1 vs Q2 (Federal supplemental tables).</p>
+          </div>
+          <span class="verdict green">GREEN</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chartIdr" aria-label="Provider win share Q1 vs Q2"></canvas></div>
+          <div class="engine-row">
+            <span class="engine ok">CMS tables ✓</span>
+            <span class="engine ok">Python check ✓</span>
+            <span class="engine">delta +0.807 pp</span>
+          </div>
+          <p class="why"><strong>Why it matters:</strong> Providers still win the large majority of payment determinations; the Q2 share ticked up, not down.</p>
+        </div>
+      </article>
+
+      <article class="card" id="card-admin">
+        <div class="card-head">
+          <div>
+            <h3>3. Admin vs overall gap</h3>
+            <p>Share where Admin stars ≥ Overall + 1 (both rated).</p>
+          </div>
+          <span class="verdict green">GREEN</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chartAdmin" aria-label="Admin gap by plan type"></canvas></div>
+          <div class="engine-row">
+            <span class="engine ok">SQL ✓</span>
+            <span class="engine ok">Python ✓</span>
+            <span class="engine">1,531 / 3,139</span>
+          </div>
+          <p class="why"><strong>Why it matters:</strong> Nearly half of dual-rated plans look stronger on admin than overall. Ops and member experience can diverge.</p>
+        </div>
+      </article>
+
+      <article class="card" id="card-init">
+        <div class="card-head">
+          <div>
+            <h3>4. Initiating party concentration</h3>
+            <p>Q2 initiating-only share. Top 3 vs rest of field.</p>
+          </div>
+          <span class="verdict green">GREEN</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chartInit" aria-label="Top initiating parties Q2"></canvas></div>
+          <div class="engine-row">
+            <span class="engine ok">filter: initiating ✓</span>
+            <span class="engine ok">no naive sort trap ✓</span>
+            <span class="engine">~46% top 3</span>
+          </div>
+          <p class="why"><strong>Why it matters:</strong> A few intermediaries drive a large slice of initiations. Policy and ops should track concentration, not only totals.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="rail">
+      <div class="panel">
+        <h3>Proof rail · what makes this a DataGlow dashboard</h3>
+        <ul>
+          <li><strong>VERDICT on every tile</strong> (GREEN / RED / GRAY / AMBER), not a naked chart.</li>
+          <li><strong>Dual-engine stamps</strong> so a second runtime can disagree and pull a claim down.</li>
+          <li><strong>Cleaning rule in the chrome</strong> (NR never as 0) instead of buried footnotes.</li>
+          <li><strong>Different grain honesty</strong>: Quality PUF and IDR are separate files. No fake join.</li>
+          <li><strong>Human confirm</strong> before any number is portfolio-ready. Propose → prove → confirm.</li>
+          <li>Product path: Ingest → Purpose → Validate → Scout → Prove → Narrate → Export ship pack.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Rated plan types · table twin</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Plan type</th><th>n</th><th>Avg overall</th><th>Share 4+</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>EPO</td><td class="num">922</td><td class="num">3.2375</td><td class="num">39.8%</td></tr>
+              <tr><td>HMO</td><td class="num">1,733</td><td class="num">3.1823</td><td class="num">32.2%</td></tr>
+              <tr><td>POS</td><td class="num">90</td><td class="num">3.0889</td><td class="num">20.0%</td></tr>
+              <tr><td>PPO</td><td class="num">394</td><td class="num">3.0508</td><td class="num">26.9%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>
+        Andre Weissmann · DataGlow · public CMS analysis · not HIPAA certification · supporting viz only
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="https://dataglow-platform.pplx.app" target="_blank" rel="noopener">Open live DataGlow</a>
+        <a class="secondary" href="https://github.com/Andre-Weissmann/dataglow" target="_blank" rel="noopener">GitHub source</a>
+        <a class="secondary" href="portfolio.html">Back to portfolio</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const teal = '#0A7E8C';
+    const coral = '#FF6B6B';
+    const blue = '#4A90D9';
+    const amber = '#F5A623';
+    const charcoal = '#2D2D2D';
+    const muted = '#6B6A67';
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.color = muted;
+    Chart.defaults.borderColor = '#E2E0DC';
+
+    new Chart(document.getElementById('chartStars'), {
+      type: 'bar',
+      data: {
+        labels: ['EPO', 'HMO', 'POS', 'PPO'],
+        datasets: [{
+          label: 'Avg overall stars (NR excluded)',
+          data: [3.2375, 3.1823, 3.0889, 3.0508],
+          backgroundColor: [teal, blue, amber, coral],
+          borderRadius: 8,
+          maxBarThickness: 48
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.parsed.y.toFixed(4)} stars` } } },
+        scales: {
+          y: { min: 2.8, max: 3.4, ticks: { stepSize: 0.1 }, title: { display: true, text: 'Avg overall' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('chartIdr'), {
+      type: 'bar',
+      data: {
+        labels: ['2025 Q1', '2025 Q2'],
+        datasets: [{
+          label: 'Provider prevailing share',
+          data: [87.4291, 88.2361],
+          backgroundColor: [blue, teal],
+          borderRadius: 8,
+          maxBarThickness: 64
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ` ${c.parsed.y.toFixed(2)}%` } }
+        },
+        scales: {
+          y: { min: 80, max: 92, ticks: { callback: (v) => v + '%' }, title: { display: true, text: 'Provider win %' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('chartAdmin'), {
+      type: 'bar',
+      data: {
+        labels: ['All dual-rated', 'PPO (highest type)'],
+        datasets: [{
+          label: 'Admin ≥ Overall +1',
+          data: [48.7735, 51.27],
+          backgroundColor: [coral, teal],
+          borderRadius: 8,
+          maxBarThickness: 64
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.parsed.x.toFixed(2)}%` } } },
+        scales: {
+          x: { min: 0, max: 70, ticks: { callback: (v) => v + '%' }, title: { display: true, text: 'Share of dual-rated plans' } },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('chartInit'), {
+      type: 'doughnut',
+      data: {
+        labels: ['HaloMD', 'Team Health', 'SCP Health', 'Rest of field'],
+        datasets: [{
+          data: [22, 13, 11, 54],
+          backgroundColor: [coral, teal, blue, '#E2E0DC'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, font: { size: 12 } } },
+          tooltip: { callbacks: { label: (c) => ` ${c.label}: ${c.parsed}%` } }
+        },
+        cutout: '58%'
+      }
+    });
+  </script>
+</body>
+</html>
