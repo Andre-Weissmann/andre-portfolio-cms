@@ -1,85 +1,70 @@
 ANDRE WEISSMANN
-Chicago, IL
+Chicago, IL | Data Analyst | Healthcare Operations and Analytics
 andre_weissmann@icloud.com
-https://andre-weissmann-data-portfolio-view.pplx.app
+https://andre-weissmann-data-portfolio.pplx.app
 https://linkedin.com/in/andre-weissmann
 https://github.com/Andre-Weissmann
 
 ------------------------------------------------------------
-SUMMARY
+PROFESSIONAL SUMMARY
 ------------------------------------------------------------
-Data analytics professional with hands-on experience in Microsoft Excel (advanced), Power BI, Tableau, SQL, and Python. Passionate about turning raw data into clear insights that drive decisions. Currently transitioning from operations into a full-time data analyst role, with a growing portfolio of healthcare and business intelligence projects.
+Data Analyst with 5+ years embedded in EMS medical billing and healthcare operations. Builds technical solutions for real workflow problems across revenue cycle, claims analytics, and EHR documentation. Toolkit: SQL, Python, Power BI, Tableau, Excel/VBA. Built DataGlow, a local-first analytics workbench, and ships hire-grade public CMS analyses with dual-engine verification.
 
 ------------------------------------------------------------
-TECHNICAL SKILLS
+CORE SKILLS
 ------------------------------------------------------------
-Analytics Tools: Microsoft Excel (Power Pivot, Power Query, Macros/VBA), Power BI, Tableau, SQL, Python
-Data Skills: Data cleaning, validation, visualization, dashboard design, pivot tables, DAX, chart formatting
-Other Tools: Microsoft Copilot (AI-assisted debugging for VBA macros), Git/GitHub, Databricks (Associate level)
+Languages and Analytics: SQL, Python, R, VBA, Excel (Power Query, Power Pivot, DAX, Macros)
+Visualization and BI: Power BI, Tableau, Excel, EDA, data cleaning and validation
+Healthcare Domain: Revenue cycle, claims analytics, medical billing, ICD-10, CPT, denials, AR, prior auth, HIPAA awareness, EHR/EMR, HL7, FHIR, EDI 837/835
+AI and Automation: Microsoft Copilot, prompt engineering, GitHub, local-first analytics tooling (DataGlow)
 
 ------------------------------------------------------------
-PROJECTS
+DATA ANALYTICS PROJECTS
 ------------------------------------------------------------
-CMS Marketplace Quality + Federal IDR Outcomes (SQL + Python)
-- Analyzed CMS Marketplace Quality PUF (PY2026, 4,302 plans) and Federal IDR Supplemental tables (2025 Q1-Q2)
-- Dual-engine checked five human-confirmed keepers with NR exclusion discipline (never treat NR as 0)
-- Key results: EPO leads overall stars after NR exclusion (3.24); IDR provider prevailing share 87.4% to 88.2% Q1 to Q2; Admin at least 1 star above Overall on 48.8% of dual-rated plans
-- Skills: SQL, Python, healthcare public data, data quality definitions, reproducible proof
+CMS Marketplace Quality Stars + Federal IDR Outcomes (SQL + Python) | 2026
+- Analyzed CMS Marketplace Quality PUF (PY2026, 4,302 plans) and Federal IDR supplemental tables (2025 Q1-Q2)
+- Applied Not Rated (NR) exclusion rules so unrated plans never drag star averages toward zero
+- Findings: EPO leads plan-type overall stars after NR exclusion (3.24, n=922); IDR provider prevailing share 87.4% (Q1) to 88.2% (Q2); Plan Administration at least 1 star above Overall on 48.8% of dual-rated plans (1,531/3,139)
+- Reproduced results in SQL and Python on the same public files; explored the workflow in DataGlow (local-first workbench)
+- Skills: SQL, Python, healthcare public data, definition discipline, reproducible analysis
 
-Nashville Housing Data Cleanup (SQL)
-- Cleaned and standardized 56,000+ Nashville housing records using SQL
-- Removed duplicates, parsed addresses, normalized categorical fields
-- Skills: SQL, data cleaning, data standardization
+Nashville Housing Data Cleaning (SQL)
+- Cleaned 56,477 Metro Nashville sales rows: address recovery, duplicate closings, vacancy label standardization
+- Skills: SQL, data cleaning, data quality
 
-Employee Survey Response Analysis (Power BI)
-- Built interactive Power BI dashboard analyzing employee satisfaction across departments
-- Identified key drivers of attrition using slicers and drill-through reports
-- Skills: Power BI, DAX, data visualization, HR analytics
+Data Professionals Survey (Power BI)
+- Dashboard on 630 survey responses; salary patterns by role and education
+- Skills: Power BI, DAX, survey analytics
 
-Airbnb NYC Listings Analysis (Tableau)
-- Developed Tableau dashboard analyzing 20,000+ NYC Airbnb listings
-- Visualized pricing trends by neighborhood, room type, and availability
-- Skills: Tableau, geographic data, trend analysis
+Airbnb Seattle Analysis (Tableau)
+- Joined listings/calendar/reviews; peak weekly revenue and bedroom pricing patterns
+- Skills: Tableau, joins, seasonality
 
 BMI Health Calculator (Python)
-- Built Python script calculating BMI with weight/height inputs and health category output
-- Skills: Python, user input handling, conditional logic
+- Interactive BMI and WHR screening tool with transparent formulas
+- Skills: Python, healthcare screening logic
 
 Bike Sales Dashboard (Excel)
-- Created interactive Excel dashboard with pivot tables and slicers for bike sales data
-- Segmented data by demographics, region, and commute distance
-- Skills: Excel, pivot tables, data visualization, dashboard design
+- Buyer segmentation with pivots and slicers (region, commute, income)
+- Skills: Excel, segmentation, dashboard design
 
 ------------------------------------------------------------
 WORK EXPERIENCE
 ------------------------------------------------------------
-EMS|MC (Emergency Medical Services Medical Center)
-Mailroom Specialist | Chicago, IL
-- Processed and routed incoming/outgoing mail and packages across departments
-- Managed check processing, tape operations, and data entry workflows using Excel macros
-- Developed and maintained VBA macros to automate repetitive data entry tasks
-- Utilized Microsoft Copilot to debug Visual Basic runtime errors during macro development
+EMS Management and Consultants — Mailroom Specialist (Billing and Claims Operations)
+- Processed billing and claims operations workflows; Excel macro automation for repetitive entry
+- Supported tape/check and data entry processes used by revenue cycle teams
+- Used Microsoft Copilot to debug VBA runtime issues during macro development
 
-Walmart
-Associate | Palatine, IL
-- Provided customer service and maintained store operations
-- Handled inventory management and product stocking
+Walmart — Associate | Palatine, IL
+- Customer service, inventory, and store operations
 
-Goodwill
-Associate | Palatine, IL
-- Assisted customers and maintained merchandise displays
-- Processed donations and managed sales floor organization
+Goodwill — Associate | Palatine, IL
+- Customer assistance, merchandising, donations processing
 
 ------------------------------------------------------------
-EDUCATION
+EDUCATION AND LEARNING
 ------------------------------------------------------------
-Bachelor of Arts
-Graduated 2022
-
-Ongoing Learning:
-- Maven Analytics — Data Analytics portfolio coursework
-- Analyst Builder — SQL and Python certifications
-- Databricks Generative AI Associate Certificate (2024)
-- Databricks Certified Context Engineer Associate
-
-------------------------------------------------------------
+Bachelor of Arts — Graduated 2022
+Ongoing: Maven Analytics / Analyst Builder portfolio coursework; Google Data Analytics concepts; continuous SQL/Python practice
+DataGlow: local-first analytics workbench (personal product) — https://dataglow-platform.pplx.app

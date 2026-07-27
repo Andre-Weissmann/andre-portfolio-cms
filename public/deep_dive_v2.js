@@ -2439,10 +2439,10 @@ cmsQualityIdr: {
   badge: 'SQL + Python',
   badgeColor: '#0F766E',
   title: 'CMS Quality Stars + Federal IDR',
-  subtitle: 'Healthcare public data · dual-engine proof',
-  outcome: 'Five human-confirmed keepers on current CMS public files: Marketplace Quality PUF PY2026 (4,302 plans) and Federal IDR supplemental tables for 2025 Q1-Q2, checked with Python and SQLite on the same downloads.',
-  bridge: 'Same discipline health plans and provider ops need: define NR before averaging stars, never invent a join across different grains, and only publish numbers engines can re-run.',
-  insight: 'After excluding Not Rated (NR) rows, EPO plans lead average overall stars (3.24, n=922). On the payment side, providers prevailed in 87.4% of Federal IDR determinations in Q1 and 88.2% in Q2. Among plans with both Overall and Plan Administration rated, Admin sits at least one full star above Overall almost half the time (48.8%).',
+  subtitle: 'Healthcare public data analysis · SQL + Python · DataGlow',
+  outcome: 'On current CMS public files, EPO plans lead average overall quality stars after honest Not Rated rules, Federal IDR still favors providers in roughly 7 of 8 payment determinations, and Plan Administration outruns Overall by a full star on nearly half of dual-rated plans.',
+  bridge: 'Health plan quality, network, and payment ops teams need numbers they can defend in a meeting: clear definitions, reproducible SQL/Python, and no fake joins across different grains.',
+  insight: 'After excluding Not Rated rows, EPO averages 3.24 overall stars (n=922 rated plans), ahead of HMO, POS, and PPO. Provider-prevailing share in Federal IDR moved from 87.4% in 2025 Q1 to 88.2% in Q2. Among plans with both Overall and Plan Administration rated, Admin is at least one star above Overall 48.8% of the time (1,531 of 3,139).',
   github: 'https://github.com/Andre-Weissmann/andre-portfolio-content',
   kpis: [
     { label: 'Quality plan rows', value: 4302, comma: true, icon: '📋' },
@@ -2451,38 +2451,142 @@ cmsQualityIdr: {
     { label: 'Admin ≥ Overall+1', value: 48.8, suffix: '%', icon: '📈' },
   ],
   chapters: [
-    { title: 'What this project is', id: 'ch-what' },
-    { title: 'Thinking trail', id: 'ch-trail' },
+    { title: 'Business question', id: 'ch-what' },
+    { title: 'Analysis trail', id: 'ch-trail' },
+    { title: 'SQL + Python proof', id: 'ch-sql' },
     { title: 'Quality stars by plan type', id: 'ch-stars' },
-    { title: 'IDR provider outcomes', id: 'ch-idr' },
+    { title: 'IDR payment outcomes', id: 'ch-idr' },
     { title: 'Admin vs overall gap', id: 'ch-admin' },
-    { title: 'How it was built (honest)', id: 'ch-honest' },
-    { title: 'What hiring teams can use', id: 'ch-impact' },
+    { title: 'Why it matters', id: 'ch-impact' },
   ],
   sections: [
     {
       type: 'insight-card',
-      text: 'This project answers one hiring question: can you work current CMS public data without cheating the definitions? Marketplace Quality PUF PY2026 has 4,302 plan rows. Federal IDR supplemental tables cover 2025 Q1-Q2 payment determinations and initiating parties. Cleaning here is mostly NR exclusion discipline, not Excel hell. Quality and IDR are different grains, so they are never fake-joined. Five keepers were locked (four analyst-picked, one Scout-style ops question), dual-engine checked (Python + SQLite), then human-confirmed before anything hit the portfolio.'
+      text: 'Hiring managers in healthcare analytics do not need another tutorial CSV. They need proof you can open current CMS public files, write down the definition before the average, and produce numbers a director can challenge. This project uses two public sources side by side: Marketplace Quality PUF for plan year 2026 (4,302 plan rows) and Federal IDR supplemental tables for 2025 Q1-Q2 (payment determinations and initiating parties). Quality answers "how do plans rate?" IDR answers "who prevails when out-of-network payment is disputed?" Different grains. No fake join. SQL and Python both recompute the same results. DataGlow is the local-first workbench used to load the Quality PUF, set purpose, and move through clean / ask / prove paths on device.'
     },
     {
       type: 'thinking-trail',
-      title: 'The analyst thinking trail',
+      title: 'Analysis trail (what changed the answer)',
       steps: [
-        { type: 'assume', text: 'Assumed star averages could use the raw Overall column as-is, treating blanks and NR like missing-at-random zeros or simple ignores without a written rule.', result: null },
-        { type: 'find', text: 'Overall is NR or empty on about 27% of plans. Member Experience is NR-heavy (~55%). Treating NR as 0 would invent fake low quality. Treating NR as average would invent fake mid quality. The only honest rule is: exclude NR from the mean and report n of rated plans.', result: 'NR exclusion locked before any plan-type ranking.' },
-        { type: 'pivot', text: 'Stopped trying to one-table join Quality stars to IDR payment outcomes. Different grains (plan-year quality vs dispute payment determinations). Side-by-side keepers beat a pretty but false join.', result: null },
-        { type: 'find', text: 'IDR initiating-party tables mix initiating and non-initiating roles. Sorting the whole file naively produced a bogus concentration story (~0.67). Filtering to initiating parties first fixed the top-3 share to ~46% vs 54% rest.', result: 'Initiating-only filter before share math.' },
-        { type: 'insight', text: 'Keeper 5 (Scout-style): among dual-rated plans, Plan Administration is at least 1 star above Overall in 48.8% of cases (1,531 / 3,139). That is an ops signal about where admin experience outruns the blended overall score, not a claim that admin causes overall.', result: null },
-        { type: 'limit', text: 'Workspace dual-engine proof is GREEN on the same public files. Product UI path (DataGlow Project Run / ship pack) is available on the live workbench; this portfolio deep dive does not claim a one-click only-inside-UI receipt with zero external orchestration.', result: 'Honest hybrid path documented below.' }
+        { type: 'assume', text: 'First instinct: average the Overall star column as-is and rank plan types. Fast, and wrong if Not Rated is mixed in.', result: null },
+        { type: 'find', text: 'Overall is NR or empty on about 27% of plans. Member Experience is NR-heavy (~55%). Treating NR as 0 invents fake low quality. The honest rule is exclude NR from the mean and always show n of rated plans.', result: 'NR exclusion locked before any plan-type ranking.' },
+        { type: 'pivot', text: 'Stopped forcing Quality and IDR into one joined table. Plan-year quality ratings and dispute payment determinations are different grains. Side-by-side findings beat a pretty false join.', result: null },
+        { type: 'find', text: 'IDR initiating-party files mix initiating and non-initiating roles. Sorting the whole file produced a bogus concentration story. Filtering to initiating parties first fixed top-3 share to about 46% vs 54% rest (HaloMD, Team Health, SCP Health).', result: 'Role filter before share math.' },
+        { type: 'insight', text: 'Ops-relevant gap: among plans with both Overall and Plan Administration rated, Admin sits at least one full star above Overall in 48.8% of cases (1,531 / 3,139). That is a signal about where admin experience outruns the blended score, not a claim that admin causes overall.', result: null },
+        { type: 'limit', text: 'Public CMS files only. IDR figures are supplemental aggregates, not claim-line microdata. No HIPAA certification claim. Results were reproduced in SQL and Python; workflow explored in DataGlow. Build assistance used during product and portfolio packaging is disclosed, not hidden.', result: null }
+      ]
+    },
+    {
+      type: 'sql-dashboard',
+      title: 'SQL lenses (same numbers hiring managers can re-run)',
+      subtitle: 'Each lens is a business question. SQL is the proof. Python produced matching results on the same downloads.',
+      hint: 'Definitions first: NR excluded from star means. IDR shares use determination counts from CMS supplemental tables.',
+      meta: 'Quality PUF PY2026 · Federal IDR 2025 Q1-Q2 · SQL + Python dual check',
+      lenses: [
+        {
+          label: 'Stars by plan type',
+          why: 'Which Marketplace plan types rate highest on overall quality after removing Not Rated rows?',
+          sql: "SELECT plan_type,\n       ROUND(AVG(CAST(overall_star AS DOUBLE)), 4) AS avg_overall,\n       COUNT(*) AS n_rated\nFROM quality_puf\nWHERE overall_star IS NOT NULL\n  AND TRIM(CAST(overall_star AS VARCHAR)) NOT IN ('', 'NR', 'Not Rated')\nGROUP BY plan_type\nORDER BY avg_overall DESC;",
+          kpis: [
+            { label: 'EPO avg', value: '3.24' },
+            { label: 'EPO n', value: 922 },
+            { label: 'Plan types', value: 4 }
+          ],
+          chartTitle: 'Avg overall star (NR excluded)',
+          chart: [
+            { label: 'EPO', value: 3.24, color: '#0F766E' },
+            { label: 'HMO', value: 3.18, color: '#20808D' },
+            { label: 'POS', value: 3.09, color: '#1B474D' },
+            { label: 'PPO', value: 3.05, color: '#6E522B' }
+          ],
+          table: [
+            ['plan_type', 'avg_overall', 'n_rated'],
+            ['EPO', '3.2375', '922'],
+            ['HMO', '3.1823', 'rated'],
+            ['POS', '3.0889', 'rated'],
+            ['PPO', '3.0508', 'rated']
+          ]
+        },
+        {
+          label: 'IDR provider wins',
+          why: 'When Federal IDR decides an out-of-network payment dispute, how often does the provider prevail, and did Q2 move vs Q1?',
+          sql: "SELECT quarter,\n       provider_prevailing,\n       total_determinations,\n       ROUND(100.0 * provider_prevailing / total_determinations, 2) AS provider_win_pct\nFROM idr_payment_determinations\nWHERE quarter IN ('2025Q1', '2025Q2')\nORDER BY quarter;",
+          kpis: [
+            { label: 'Q1 win %', value: '87.4%' },
+            { label: 'Q2 win %', value: '88.2%' },
+            { label: 'Q2 delta', value: '+0.8 pp' }
+          ],
+          chartTitle: 'Provider prevailing share',
+          chart: [
+            { label: 'Q1 2025', value: 87.4, color: '#20808D' },
+            { label: 'Q2 2025', value: 88.2, color: '#0F766E' }
+          ],
+          table: [
+            ['quarter', 'provider_prevailing', 'total', 'pct'],
+            ['2025Q1', '407618', '466227', '87.4'],
+            ['2025Q2', '543552', '616020', '88.2']
+          ]
+        },
+        {
+          label: 'Admin vs overall',
+          why: 'How often does Plan Administration rate at least one full star above Overall among dual-rated plans?',
+          sql: "SELECT\n  SUM(CASE WHEN admin_star >= overall_star + 1 THEN 1 ELSE 0 END) AS admin_ahead,\n  COUNT(*) AS dual_rated,\n  ROUND(100.0 * SUM(CASE WHEN admin_star >= overall_star + 1 THEN 1 ELSE 0 END)\n        / COUNT(*), 2) AS pct\nFROM quality_puf\nWHERE overall_star IS NOT NULL\n  AND admin_star IS NOT NULL\n  AND TRIM(CAST(overall_star AS VARCHAR)) NOT IN ('', 'NR')\n  AND TRIM(CAST(admin_star AS VARCHAR)) NOT IN ('', 'NR');",
+          kpis: [
+            { label: 'Admin ahead', value: '1531' },
+            { label: 'Dual-rated', value: '3139' },
+            { label: 'Share', value: '48.8%' }
+          ],
+          chartTitle: 'Admin ≥ Overall + 1 star',
+          chart: [
+            { label: 'Admin ahead', value: 48.8, color: '#0F766E' },
+            { label: 'Not', value: 51.2, color: '#94A3B8' }
+          ],
+          table: [
+            ['metric', 'value'],
+            ['admin_ahead', '1531'],
+            ['dual_rated', '3139'],
+            ['pct', '48.77']
+          ]
+        },
+        {
+          label: 'Initiating concentration',
+          why: 'Among initiating parties only, how concentrated is Q2 out-of-network volume in the top three names?',
+          sql: "SELECT party_name, oon_items,\n       ROUND(100.0 * oon_items / SUM(oon_items) OVER (), 1) AS pct\nFROM idr_initiating_parties_q2\nWHERE role = 'initiating'\nORDER BY oon_items DESC\nLIMIT 5;",
+          kpis: [
+            { label: 'Top 3 share', value: '~46%' },
+            { label: 'Rest', value: '~54%' },
+            { label: 'Filter', value: 'initiating' }
+          ],
+          chartTitle: 'Top initiating parties vs rest (Q2)',
+          chart: [
+            { label: 'Top 3', value: 46, color: '#0F766E' },
+            { label: 'All others', value: 54, color: '#94A3B8' }
+          ],
+          table: [
+            ['group', 'approx_share'],
+            ['HaloMD + Team Health + SCP Health', '46%'],
+            ['All other initiating parties', '54%']
+          ]
+        }
+      ]
+    },
+    {
+      type: 'impact-text',
+      title: 'Python twin (same definitions, second engine)',
+      items: [
+        { icon: '🐍', heading: 'Why a second engine', body: 'SQL answers the business question. Python recomputes the same filters and aggregates on the identical CSV downloads. If the engines disagree, the number does not ship. That is the professional bar for portfolio claims.' },
+        { icon: '📐', heading: 'NR exclusion in pandas', body: "rated = df[df['overall_star'].notna() & ~df['overall_star'].astype(str).str.strip().isin(['', 'NR', 'Not Rated'])]\nby_type = rated.groupby('plan_type')['overall_star'].agg(['mean','count']).sort_values('mean', ascending=False)" },
+        { icon: '⚖️', heading: 'IDR win rate', body: "win_pct = 100.0 * provider_prevailing / total_determinations\n# Q1: 407618/466227 → 87.4%   Q2: 543552/616020 → 88.2%   delta ≈ +0.8 pp" },
+        { icon: '🔎', heading: 'Admin gap', body: "dual = df[both_rated_mask]\npct = 100.0 * (dual['admin_star'] >= dual['overall_star'] + 1).sum() / len(dual)\n# 1531 / 3139 → 48.8%" }
       ]
     },
     {
       type: 'bar-chart',
       title: 'Average overall star by plan type (NR excluded)',
-      subtitle: 'Marketplace Quality PUF PY2026 · n = rated plans only',
+      subtitle: 'Marketplace Quality PUF PY2026 · rated plans only',
       data: [
         { label: 'EPO (n=922)', value: 3.24, color: '#0F766E' },
-        { label: 'HMO (n rated)', value: 3.18, color: '#20808D' },
+        { label: 'HMO', value: 3.18, color: '#20808D' },
         { label: 'POS', value: 3.09, color: '#1B474D' },
         { label: 'PPO', value: 3.05, color: '#6E522B' }
       ],
@@ -2490,7 +2594,7 @@ cmsQualityIdr: {
     },
     {
       type: 'bar-chart',
-      title: 'Federal IDR: provider prevailing share',
+      title: 'Federal IDR provider prevailing share',
       subtitle: 'CMS supplemental payment determinations · 2025 Q1 vs Q2',
       data: [
         { label: 'Q1 2025', value: 87.4, color: '#20808D' },
@@ -2499,57 +2603,37 @@ cmsQualityIdr: {
       fmt: function(v) { return v.toFixed(1) + '%'; }
     },
     {
-      type: 'bar-chart',
-      title: 'Admin at least 1 star above Overall',
-      subtitle: 'Among plans with both Overall and Plan Administration rated (n=3,139)',
-      data: [
-        { label: 'Admin ≥ Overall+1', value: 48.8, color: '#0F766E' },
-        { label: 'Not', value: 51.2, color: '#94A3B8' }
-      ],
-      fmt: function(v) { return v.toFixed(1) + '%'; }
-    },
-    {
       type: 'impact-text',
-      title: 'How this was built (plain English)',
+      title: 'Why this matters (director-level)',
       items: [
-        { icon: '📂', heading: 'What the sources are', body: 'Two public CMS families only. (1) Marketplace Quality PUF for plan year 2026: star ratings by plan. (2) No Surprises Act Federal IDR reports and supplemental tables for 2025 Q1-Q2: payment determinations and initiating parties. Links live on cms.gov. No hospital PHI, no proprietary claims extract.' },
-        { icon: '🧪', heading: 'What dual-engine proof means', body: 'Each keeper number was recomputed in Python and again in SQLite on the same downloaded files. If the two engines disagree, the number does not ship. That is the professional bar: propose, prove, human confirm.' },
-        { icon: '🧰', heading: 'What DataGlow did vs orchestration help', body: 'DataGlow is the local-first workbench path (ingest, purpose, Scout-style question help, VERDICT surfaces, project run / ship pack). Build, ranking, and some dual-engine runs also used Perplexity Computer orchestration. Correct claim: local-first product + dual-engine verified public CMS + human confirm. Incorrect claim: 100% only inside DataGlow with zero external help, or one-click unverifiable AI findings.' },
-        { icon: '🚫', heading: 'What we refuse to claim', body: 'No HIPAA certification. No pure-local overclaim (see below). No fake Quality↔IDR join. No treating NR as zero. No auto-posted LinkedIn numbers without human confirm.' }
+        { icon: '⭐', heading: 'Quality rankings without invented lows', body: 'EPO leading after NR exclusion is a defensible plan-type story. Publishing star KPIs without an NR rule is how dashboards quietly lie. Hiring teams should see that you wrote the rule down first.' },
+        { icon: '💰', heading: 'IDR is still a provider-leaning forum in this window', body: 'Provider prevailing near 87-88% across hundreds of thousands of determinations is a network and payment-strategy input, not trivia. Q2 ticked up about 0.8 percentage points vs Q1.' },
+        { icon: '🏢', heading: 'Initiating volume is concentrated', body: 'After filtering to initiating roles, the top three parties account for roughly 46% of listed OON items/services vs 54% for everyone else. Concentration changes how ops prioritizes outreach and dispute prep.' },
+        { icon: '🧭', heading: 'Admin experience can outrun the blended score', body: 'Almost half of dual-rated plans show Admin at least one star above Overall. That is a prompt for plan ops and product: where is the member feeling friction that the overall star averages away?' }
       ]
     },
     {
       type: 'impact-text',
-      title: 'What "no pure-local overclaim" means',
+      title: 'DataGlow in this project',
       items: [
-        { icon: '✅', heading: 'Safe to say', body: 'Built a local-first analytics workbench (DataGlow). Analyzed current public CMS files. Dual-engine checked the five keepers. Human confirmed every portfolio number. Hybrid build path with disclosed orchestration help.' },
-        { icon: '❌', heading: 'Not safe to say', body: '"Entire analysis ran only inside DataGlow with zero outside tools." "100% local, zero external AI." "One click produced verified findings with no human check." Those would be pure-local overclaims or cheating-style claims.' },
-        { icon: '📝', heading: 'Do you need to write a novel?', body: 'No. The deep dive and portfolio card carry the story. Optional LinkedIn: 4-6 short lines + the three headline numbers + the honest hybrid sentence. DataGlow narrative surfaces can draft structure from proven numbers only; you still confirm before anything public.' }
-      ]
-    },
-    {
-      type: 'impact-text',
-      title: 'What hiring teams can use',
-      items: [
-        { icon: '⭐', heading: 'Plan-type quality ranking with NR discipline', body: 'EPO 3.24 average overall (n=922 rated) leads HMO, POS, and PPO after NR exclusion. Shows you can publish a star KPI without inventing quality for unrated plans.' },
-        { icon: '⚖️', heading: 'IDR money-side outcomes', body: 'Provider prevailing share 87.4% (Q1) to 88.2% (Q2) across hundreds of thousands of determinations. Shows comfort with CMS policy supplemental tables, not only tutorial CSVs.' },
-        { icon: '🏢', heading: 'Concentration among initiating parties', body: 'Q2 top-3 initiating parties (HaloMD, Team Health, SCP Health) ≈ 46% of listed OON items/services vs 54% rest, after filtering to initiating roles only.' },
-        { icon: '🔎', heading: 'Admin vs overall gap', body: '48.8% of dual-rated plans show Admin at least one star above Overall (1,531 / 3,139). Useful prompt for plan ops: where does admin experience outrun the blended score?' }
+        { icon: '🧰', heading: 'What DataGlow is', body: 'DataGlow is a local-first analytics workbench Andre built: load files on device, set purpose, clean/validate, Scout questions, and prove claims with engine checks. Live product: https://dataglow-platform.pplx.app' },
+        { icon: '📂', heading: 'What you see in the screenshots', body: 'Home drop zone, then Marketplace Quality PUF loaded (4,302 rows × 9 columns) with clean / ask / prove paths. That is the real project file, not a toy demo rename.' },
+        { icon: '🤝', heading: 'Help used (plain English)', body: 'Perplexity Computer helped with product build steps, dataset ranking, and some dual-engine runs. That is build assistance and coordination help, not "the AI invented the findings." Final portfolio numbers are human-confirmed and engine-checked on public CMS files. This project belongs on the portfolio.' }
       ]
     }
   ],
   noFile: true,
   decision: {
-    what: 'Five keepers on current CMS public data, dual-engine checked and human-confirmed: EPO leads NR-excluded overall stars; IDR provider win share ticked up Q1 to Q2; Admin outruns Overall by ≥1 star nearly half the time among dual-rated plans.',
-    why: 'Healthcare analytics roles need proof you respect definitions (NR), grains (no fake joins), and verification (two engines + human), not just a pretty dashboard on a clean tutorial file.',
-    next: 'Optional full IDR PUF microdata slice later. Optional PDF resume export sync. Live DataGlow path for re-prove when you want UI receipts alongside workspace engines.'
+    what: 'Current CMS public data shows EPO leading NR-excluded overall stars, Federal IDR still provider-leaning into Q2, and Plan Administration outrunning Overall by a full star on nearly half of dual-rated plans.',
+    why: 'Healthcare analytics roles need analysts who defend definitions, refuse fake joins, and can show SQL and Python that match. That is more valuable than a pretty dashboard on a clean tutorial file.',
+    next: 'Optional deeper IDR microdata later. Live DataGlow path remains available to re-open the Quality PUF and walk clean / ask / prove with a hiring manager on a call.'
   },
   stakeholders: [
-    { role: 'What did the data show?', icon: '💡', summary: 'EPO leads plan-type overall stars after NR exclusion. IDR provider prevailing share rose slightly from Q1 to Q2. Almost half of dual-rated plans have Admin ≥ Overall+1 star. Top initiating parties concentrate a large share of OON volume once roles are filtered correctly.' },
-    { role: 'What would break a weaker analysis?', icon: '🔍', summary: 'Treating NR as zero, joining Quality to IDR on a made-up key, sorting mixed initiating/non-initiating party rows, or publishing AI-drafted KPIs without engine proof and human confirm.' },
-    { role: 'How was it built?', icon: '⚙️', summary: 'Public CMS downloads → NR rules → five keepers → Python + SQLite dual-engine → human confirm → portfolio deep dive. DataGlow local-first workbench path plus disclosed orchestration help. No HIPAA claim. No pure-local overclaim.' }
+    { role: 'What should a hiring manager take away?', icon: '💡', summary: 'Three defensible findings on current CMS files, NR discipline, dual SQL/Python reproduction, and a real local-first workbench (DataGlow) in the workflow screenshots.' },
+    { role: 'What would a weaker analysis get wrong?', icon: '🔍', summary: 'Treat NR as zero, join Quality to IDR on a made-up key, rank initiating parties without filtering roles, or publish AI-drafted KPIs without engine proof and human confirm.' },
+    { role: 'How was it built?', icon: '⚙️', summary: 'Public CMS downloads → NR and grain rules → SQL + Python dual check → human confirm → portfolio deep dive with DataGlow workflow screenshots. Build assistance disclosed. Public files only. No HIPAA certification claim.' }
   ],
-  context: 'CMS Marketplace Quality PUF PY2026 (4302 plans) plus Federal IDR supplemental 2025 Q1-Q2. Keepers: EPO avg overall 3.24 NR-excluded; IDR provider win 87.4% to 88.2%; top3 initiating ~46%; best plan type by state min n=5; Admin>=Overall+1 in 48.8% (1531/3139). Dual-engine Python+SQLite. Honest hybrid build. Public files only.'
+  context: 'CMS Marketplace Quality PUF PY2026 (4302 plans) plus Federal IDR supplemental 2025 Q1-Q2. Findings: EPO avg overall 3.24 NR-excluded; IDR provider win 87.4% to 88.2%; top3 initiating ~46%; Admin>=Overall+1 in 48.8% (1531/3139). SQL+Python. DataGlow workflow screenshots. Public files only.'
 },
 
 }; // end PROJECTS
@@ -2561,33 +2645,32 @@ cmsQualityIdr: {
 var PLAYABLE = {
 
   cmsQualityIdr: {
-    tagline: 'Play this analysis',
-    sub: 'Seven beats. Real CMS public files. Honest hybrid path.',
+    tagline: 'Walk the analysis',
+    sub: 'Business question → definitions → SQL/Python → why it matters.',
     beats: [
-      { title: 'Land the result', blurb: 'Five keepers. Dual-engine. Human confirmed.', target: 'ch-overview' },
-      { title: 'See the problem', blurb: 'NR is not zero. Grains stay separate.', target: 'ch-what' },
-      { title: 'Follow the trail', blurb: 'Wrong turns on NR, joins, and party filters.', target: 'ch-trail' },
-      { title: 'Quality stars', blurb: 'Plan-type averages after NR exclusion.', target: 'ch-stars' },
-      { title: 'IDR outcomes', blurb: 'Provider prevailing share Q1 to Q2.', target: 'ch-idr' },
-      { title: 'Admin gap', blurb: 'Admin ≥ Overall+1 almost half the time.', target: 'ch-admin' },
-      { title: 'Honest build path', blurb: 'What pure-local overclaim means and what we refuse.', target: 'ch-honest' }
+      { title: 'Land the result', blurb: 'Three headline findings hiring managers can challenge.', target: 'ch-overview' },
+      { title: 'See DataGlow', blurb: 'Local-first workbench screenshots with the Quality PUF loaded.', target: 'ch-dashboard' },
+      { title: 'Business question', blurb: 'Why these CMS files, and why not a fake join.', target: 'ch-what' },
+      { title: 'Analysis trail', blurb: 'NR rules, grain discipline, initiating filter.', target: 'ch-trail' },
+      { title: 'SQL lenses', blurb: 'Re-runnable SQL for stars, IDR, admin gap.', target: 'ch-sql' },
+      { title: 'Why it matters', blurb: 'Director-level implications for quality and payment ops.', target: 'ch-impact' }
     ],
     wrongTurns: [
-      { title: 'Treat NR as zero stars', looked: 'Simple average on the raw column.', killed: 'NR exclusion. Invented low quality would tank means and lie about unrated plans.' },
-      { title: 'Join Quality PUF to IDR on plan id', looked: 'One mega table for a flashy story.', killed: 'Different grains. Side-by-side keepers only.' },
-      { title: 'Rank initiating parties on the full mixed file', looked: 'Quick top-N sort.', killed: 'Filter initiating roles first. Naive sort invented ~0.67 concentration.' }
+      { title: 'Treat NR as zero stars', looked: 'Simple average on the raw column.', killed: 'NR exclusion. Invented low quality would tank means and mislead plan rankings.' },
+      { title: 'Join Quality PUF to IDR on plan id', looked: 'One mega table for a flashy story.', killed: 'Different grains. Side-by-side findings only.' },
+      { title: 'Rank parties on the mixed initiating file', looked: 'Quick top-N sort.', killed: 'Filter initiating roles first or concentration is fiction.' }
     ],
     limits: [
       'Public CMS files only. Not a hospital PHI project and not a HIPAA certification claim.',
       'Quality and IDR are different grains. No combined causal model.',
       'IDR figures are CMS supplemental aggregates, not claim-line microdata.',
-      'Hybrid build path: local-first DataGlow workbench plus disclosed orchestration help. Not a pure-local-only story.'
+      'DataGlow is the local-first workbench used in the workflow. Build assistance during product/portfolio packaging is disclosed.'
     ],
     peels: {
       'Quality plan rows': '4,302 rows in Marketplace Quality PUF PY2026 after load.',
       'EPO avg overall (NR out)': 'Mean overall star among EPO plans with a rated overall value. NR/blank excluded. n=922.',
-      'IDR provider win Q2': 'Provider-prevailing share of Federal IDR payment determinations in 2025 Q2 supplemental tables (88.2%).',
-      'Admin ≥ Overall+1': 'Share of plans with both Overall and Plan Administration rated where Admin is at least one full star above Overall (1,531 / 3,139 = 48.8%).'
+      'IDR provider win Q2': 'Provider-prevailing share of Federal IDR payment determinations in 2025 Q2 (88.2%).',
+      'Admin ≥ Overall+1': 'Share of dual-rated plans where Admin is at least one full star above Overall (1,531 / 3,139 = 48.8%).'
     }
   },
 
@@ -2881,6 +2964,18 @@ function renderFilterBench(container, barSec, opts) {
 /* BI interactive board destinations (Chart.js replicas, not case-study pages) */
 /* BI proof: screenshots + deep dive story. No multi-CTA board chrome. */
 var DD_DASHBOARDS = {
+cmsQualityIdr: {
+    tool: 'DataGlow',
+    shots: [
+      { src: 'images/dataglow/dg-01-home.png?v=1785148000', alt: 'DataGlow home drop zone, local-first analytics workbench', caption: 'DataGlow home: local-first drop zone' },
+      { src: 'images/dataglow/dg-02-quality-loaded.png?v=1785148000', alt: 'DataGlow after loading PY2026 Quality PUF, 4302 rows ready', caption: 'Quality PUF loaded: 4,302 rows × 9 columns' },
+      { src: 'images/dataglow/dg-03-ready-paths.png?v=1785148000', alt: 'DataGlow clean, ask, and prove paths after purpose on Quality PUF', caption: 'Clean / Ask / Prove paths on the real CMS file' },
+      { src: 'images/dataglow/dg-04-workspace.png?v=1785148000', alt: 'DataGlow workspace after load showing analysis chrome', caption: 'Workspace chrome after load' }
+    ],
+    caption: "DataGlow is Andre’s local-first analytics workbench used on this project. Screenshots show the real Marketplace Quality PUF path, not a renamed toy file.",
+    fileHref: 'https://dataglow-platform.pplx.app',
+    fileLabel: 'Open DataGlow live'
+  },
   powerbi: {
     tool: 'Power BI',
     shots: [
@@ -3138,6 +3233,7 @@ function renderDashboardCard(container, key) {
 
 function renderColdOpen(container, key, p, goToId) {
   var captions = {
+    cmsQualityIdr: 'Open a SQL lens. Charts update with the question.',
     nashville: 'Drag raw rows into cleaned sales.',
     python: 'Move height and weight. BMI updates live.',
     powerbi: 'Filter a group. The chart re-draws live.',
