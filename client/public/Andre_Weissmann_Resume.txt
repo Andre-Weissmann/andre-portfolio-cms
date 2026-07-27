@@ -1,0 +1,85 @@
+ANDRE WEISSMANN
+Chicago, IL
+andre_weissmann@icloud.com
+https://andre-weissmann-data-portfolio-view.pplx.app
+https://linkedin.com/in/andre-weissmann
+https://github.com/Andre-Weissmann
+
+------------------------------------------------------------
+SUMMARY
+------------------------------------------------------------
+Data analytics professional with hands-on experience in Microsoft Excel (advanced), Power BI, Tableau, SQL, and Python. Passionate about turning raw data into clear insights that drive decisions. Currently transitioning from operations into a full-time data analyst role, with a growing portfolio of healthcare and business intelligence projects.
+
+------------------------------------------------------------
+TECHNICAL SKILLS
+------------------------------------------------------------
+Analytics Tools: Microsoft Excel (Power Pivot, Power Query, Macros/VBA), Power BI, Tableau, SQL, Python
+Data Skills: Data cleaning, validation, visualization, dashboard design, pivot tables, DAX, chart formatting
+Other Tools: Microsoft Copilot (AI-assisted debugging for VBA macros), Git/GitHub, Databricks (Associate level)
+
+------------------------------------------------------------
+PROJECTS
+------------------------------------------------------------
+CMS Marketplace Quality + Federal IDR Outcomes (SQL + Python)
+- Analyzed CMS Marketplace Quality PUF (PY2026, 4,302 plans) and Federal IDR Supplemental tables (2025 Q1-Q2)
+- Dual-engine checked five human-confirmed keepers with NR exclusion discipline (never treat NR as 0)
+- Key results: EPO leads overall stars after NR exclusion (3.24); IDR provider prevailing share 87.4% to 88.2% Q1 to Q2; Admin at least 1 star above Overall on 48.8% of dual-rated plans
+- Skills: SQL, Python, healthcare public data, data quality definitions, reproducible proof
+
+Nashville Housing Data Cleanup (SQL)
+- Cleaned and standardized 56,000+ Nashville housing records using SQL
+- Removed duplicates, parsed addresses, normalized categorical fields
+- Skills: SQL, data cleaning, data standardization
+
+Employee Survey Response Analysis (Power BI)
+- Built interactive Power BI dashboard analyzing employee satisfaction across departments
+- Identified key drivers of attrition using slicers and drill-through reports
+- Skills: Power BI, DAX, data visualization, HR analytics
+
+Airbnb NYC Listings Analysis (Tableau)
+- Developed Tableau dashboard analyzing 20,000+ NYC Airbnb listings
+- Visualized pricing trends by neighborhood, room type, and availability
+- Skills: Tableau, geographic data, trend analysis
+
+BMI Health Calculator (Python)
+- Built Python script calculating BMI with weight/height inputs and health category output
+- Skills: Python, user input handling, conditional logic
+
+Bike Sales Dashboard (Excel)
+- Created interactive Excel dashboard with pivot tables and slicers for bike sales data
+- Segmented data by demographics, region, and commute distance
+- Skills: Excel, pivot tables, data visualization, dashboard design
+
+------------------------------------------------------------
+WORK EXPERIENCE
+------------------------------------------------------------
+EMS|MC (Emergency Medical Services Medical Center)
+Mailroom Specialist | Chicago, IL
+- Processed and routed incoming/outgoing mail and packages across departments
+- Managed check processing, tape operations, and data entry workflows using Excel macros
+- Developed and maintained VBA macros to automate repetitive data entry tasks
+- Utilized Microsoft Copilot to debug Visual Basic runtime errors during macro development
+
+Walmart
+Associate | Palatine, IL
+- Provided customer service and maintained store operations
+- Handled inventory management and product stocking
+
+Goodwill
+Associate | Palatine, IL
+- Assisted customers and maintained merchandise displays
+- Processed donations and managed sales floor organization
+
+------------------------------------------------------------
+EDUCATION
+------------------------------------------------------------
+Bachelor of Arts
+Graduated 2022
+
+Ongoing Learning:
+- Maven Analytics — Data Analytics portfolio coursework
+- Analyst Builder — SQL and Python certifications
+- Databricks Generative AI Associate Certificate (2024)
+- Databricks Certified Context Engineer Associate
+
+------------------------------------------------------------
