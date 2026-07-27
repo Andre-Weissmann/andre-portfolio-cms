@@ -1937,7 +1937,7 @@ function updateCaseWhenSummary(caseVal) {
 
   /* ── Wire Deep Dive v4 buttons ── intercept explore buttons and route to openDD ── */
   (function wireDDButtons() {
-    var KEY_MAP = { nashville: 'nashville', bmi: 'python', survey: 'powerbi', airbnb: 'tableau', bikes: 'excel' };
+    var KEY_MAP = { nashville: 'nashville', bmi: 'python', survey: 'powerbi', airbnb: 'tableau', bikes: 'excel', cmsQualityIdr: 'cmsQualityIdr', 'cms-quality-idr': 'cmsQualityIdr' };
     document.addEventListener('click', function(e) {
       var btn = e.target.closest('[data-explore]');
       if (!btn) return;

@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="style.css?v=1785112750" />
   <link rel="stylesheet" href="portfolio_os.css?v=1785014004" />
   <link rel="stylesheet" href="data_rail.css?v=1785014004" />
-  <link rel="stylesheet" href="deep_dive_v2.css?v=1785108877" />
+  <link rel="stylesheet" href="deep_dive_v2.css?v=1785144000" />
 
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"Andre Weissmann","jobTitle":"Data Analyst | Healthcare Operations and Analytics","url":"https://www.linkedin.com/in/andre-weissmann","address":{"@type":"PostalAddress","addressLocality":"Chicago","addressRegion":"IL"},"sameAs":["https://www.linkedin.com/in/andre-weissmann","https://github.com/Andre-Weissmann"]}
@@ -339,20 +339,23 @@
 
         <div class="projects-list" id="featured-projects-list"><!-- Project: CMS Quality + IDR (Project Alpha) -->
       <article class="project-block" id="proj-cms-quality-idr" data-tool="sql">
-        <div class="project-block-header">
-          <span class="project-tool badge-sql">SQL + Python</span>
-          <span class="project-year">2026</span>
-        </div>
-        <h3 class="project-block-title">CMS Quality Stars and Federal IDR: Five Keepers, Dual-Engine Proof</h3>
-        <p class="project-block-desc">Public CMS Marketplace Quality PUF for PY2026 (4,302 plans) plus Federal IDR Supplemental tables for 2025 Q1-Q2. The work is definition-first: NR is never treated as zero, Quality and IDR stay on their own grains, and every portfolio number is dual-engine checked (Python + SQLite) then human-confirmed. This is hire-grade healthcare public-data analysis, not a tutorial CSV.</p>
-        <ul class="project-block-bullets">
-          <li>EPO leads plan types on average overall stars after NR exclusion (3.24, n=922), ahead of HMO, POS, and PPO.</li>
-          <li>IDR provider prevailing share moved from 87.4% in Q1 to 88.2% in Q2 across hundreds of thousands of payment determinations.</li>
-          <li>Among plans with both Overall and Plan Administration rated, Admin is at least 1 star above Overall in 48.8% of cases (1,531 / 3,139).</li>
-          <li>Honest framing: local-first DataGlow workbench path plus disclosed orchestration help. No HIPAA certification claim. No pure-local overclaim.</li>
-        </ul>
-        <p class="project-block-meta">Sources: CMS Marketplace quality downloads; CMS No Surprises Federal IDR reports and supplemental tables (July 2026-current files).</p>
-      </article>
+            <div class="project-block-info">
+              <div class="project-meta-row">
+                <span class="proj-badge badge-sql">SQL + Python</span>
+                <span class="proj-year">2026</span>
+                <button class="proj-explore-btn" data-explore="cmsQualityIdr">Deep Dive &rarr;</button>
+              </div>
+              <h3 class="project-block-title">CMS Quality Stars and Federal IDR: Five Keepers, Dual-Engine Proof</h3>
+              <p class="project-block-desc">Current public CMS files: Marketplace Quality PUF for plan year 2026 (4,302 plans) and Federal IDR supplemental tables for 2025 Q1-Q2. Definition-first work: Not Rated is never treated as zero, Quality and IDR stay on their own grains, and every portfolio number is dual-engine checked (Python + SQLite) then human-confirmed.</p>
+              <ul class="project-block-bullets">
+                <li>EPO leads plan types on average overall stars after NR exclusion (3.24, n=922), ahead of HMO, POS, and PPO.</li>
+                <li>IDR provider prevailing share moved from 87.4% in Q1 to 88.2% in Q2 across hundreds of thousands of payment determinations.</li>
+                <li>Among plans with both Overall and Plan Administration rated, Admin is at least 1 star above Overall in 48.8% of cases (1,531 / 3,139).</li>
+                <li>Open the Deep Dive for the full story: thinking trail, charts, sources, and honest build path (what was local-first vs orchestration help).</li>
+              </ul>
+              <div class="project-tech-row"><span>SQL</span><span>Python</span><span>CMS public data</span><span>Data quality</span><span>Healthcare analytics</span></div>
+            </div>
+          </article>
 
 <article class="project-block" id="proj-nashville">
             <div class="project-block-info">
@@ -1112,7 +1115,7 @@
   <!-- modals.js removed: Deep Dive system lives in portfolio.html directly -->
   <script src="portfolio_os.js?v=1784999000"></script>
   <script src="data_rail.js?v=1784999000"></script>
-  <script src="deep_dive_v2.js?v=1785108877"></script>
+  <script src="deep_dive_v2.js?v=1785144000"></script>
   <script src="powerbi.js?v=1785059000"></script>
   <script src="tableau.js?v=1785046000"></script>
   <script src="excel.js?v=1785046000"></script>
@@ -1401,7 +1404,7 @@
   if (!btn) return;
   var ref = document.referrer || '';
   var hash = window.location.hash || '';
-  var projectHashes = ['#proj-nashville','#proj-survey','#proj-airbnb','#proj-bmi','#proj-bikes'];
+  var projectHashes = ['#proj-cms-quality-idr','#proj-nashville','#proj-survey','#proj-airbnb','#proj-bmi','#proj-bikes'];
   var fromResume = ref.indexOf('resume') !== -1 ||
                    ref.indexOf('/resume') !== -1 ||
                    projectHashes.some(function(h) { return hash === h || hash.startsWith(h); });
