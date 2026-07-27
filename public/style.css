@@ -10077,8 +10077,7 @@ body, .header, .qb-block, .cmp-card, .qb-input {
 .v7-p-textarea {
   height: auto;
   min-height: 120px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  padding: 12px 14px;
   resize: none;
   line-height: 1.6;
 }
@@ -11014,8 +11013,7 @@ body, .header, .qb-block, .cmp-card, .qb-input {
   }
   .v7-p-textarea {
     font-size: 16px;
-    padding-top: 14px;
-    padding-bottom: 14px;
+    padding: 14px 16px;
     min-height: 130px;
   }
   .v7-p-label { font-size: 14px; }
@@ -13222,5 +13220,121 @@ body, .header, .qb-block, .cmp-card, .qb-input {
   }
   .project-block-demo--static {
     padding: var(--sp-4);
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   CONTACT FORM — RESPONSIVE OPTIMIZATION
+   Desktop (>=1024px): widen the wrap, use a 2-column field grid,
+                       align intent bar and form panel to same width.
+   Mobile (<=480px):   tighten intent pills so 5 fit in 2 rows.
+   Both:               fixed asymmetric textarea right padding above.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── DESKTOP (>=1024px) ── */
+@media (min-width: 1024px) {
+
+  /* Wider wrapper so the form breathes on laptops/desktops. */
+  .v7-wrap {
+    max-width: 960px;
+  }
+
+  /* Header content stays centered inside the wider wrap. */
+  .v7-header {
+    text-align: center;
+  }
+  .v7-header .v7-eyebrow,
+  .v7-header .v7-headline,
+  .v7-header .v7-subhead {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .v7-header .v7-subhead {
+    max-width: 620px;
+  }
+  .v7-contact-links {
+    justify-content: center;
+  }
+
+  /* Intent bar fills the wrap width and centers its buttons. */
+  .v7-intent-btns {
+    justify-content: center;
+    gap: 10px;
+  }
+  .v7-intent-label,
+  .v7-intent-hint {
+    text-align: center;
+  }
+
+  /* Panel expands to the wrap width; no more 480px pinch. */
+  .v7-plain-panel {
+    max-width: 100%;
+  }
+
+  /* Two-column grid: Name | Email on row 1, Message full-width on row 2. */
+  .v7-p-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+    row-gap: 22px;
+    margin-bottom: 24px;
+  }
+  #v7-pf-name  { grid-column: 1 / 2; }
+  #v7-pf-email { grid-column: 2 / 3; }
+  #v7-pf-msg   { grid-column: 1 / -1; }
+
+  /* Message textarea gets more vertical room to match the wider column. */
+  .v7-p-textarea {
+    min-height: 180px;
+  }
+
+  /* Submit row: button on the left, reassurance sentence on the right,
+     vertically centered — instead of stacked. */
+  .v7-p-submit-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .v7-p-reassure {
+    margin: 0;
+    text-align: right;
+    max-width: 420px;
+  }
+}
+
+
+/* ── LAPTOP (mid-range 1024–1279): slightly narrower to stay comfortable ── */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .v7-wrap {
+    max-width: 900px;
+  }
+}
+
+
+/* ── MOBILE (<=480px) ── */
+@media (max-width: 480px) {
+  /* Intent pills: 2-column grid — tidy 3 rows of equal-width pairs,
+     SQL mode spans both cols on the last row so it doesn't sit orphaned. */
+  .v7-intent-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .v7-intent-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+    gap: 6px;
+    justify-content: center;
+  }
+  .v7-intent-btn--sql {
+    grid-column: 1 / -1;
+  }
+
+  /* Textarea: fix asymmetric right padding (was 48px reserved for the check
+     icon slot, which textarea does not use). */
+  .v7-p-textarea {
+    padding-right: 16px;
   }
 }
