@@ -2614,11 +2614,40 @@ cmsQualityIdr: {
     },
     {
       type: 'impact-text',
+      title: 'What is DataGlow? (not made up)',
+      items: [
+        { icon: '🌐', heading: 'Public live product', body: 'DataGlow runs at https://dataglow-platform.pplx.app. Anyone can open it. It is not a slide mock.' },
+        { icon: '📦', heading: 'Public source repo', body: 'Code lives at https://github.com/Andre-Weissmann/dataglow. Andre built this local-first analytics workbench (DuckDB in the browser, Project Run, Scout, Prove, ship pack).' },
+        { icon: '🔒', heading: 'Local-first by design', body: 'Default path keeps your file in the browser session. Capture and ship-pack export are designed for zero network upload of that pack.' },
+        { icon: '🧪', heading: 'What it can do on-device today', body: 'Ingest → purpose → validate → Scout questions → SQL/Prove with engine checks → optional second-engine corroboration when the Python bridge is up → narrate structure from proven numbers → export ship pack. Human still confirms every public claim.' }
+      ]
+    },
+    {
+      type: 'impact-text',
+      title: 'Is this cheating? How to answer that',
+      items: [
+        { icon: '✅', heading: 'Professional bar used here', body: 'Propose a question → run it in engines → human confirms the number → only then put it on the portfolio. That is the opposite of one-click unverifiable AI findings.' },
+        { icon: '🧠', heading: 'What help is allowed', body: 'Tools may draft SQL, rank datasets, or package a write-up. That is normal, like using Stack Overflow or a senior review. The analyst still owns definitions (NR rules), refuses fake joins, and confirms results.' },
+        { icon: '📎', heading: 'What would be cheating', body: 'Publishing KPIs the engines never ran. Treating NR as zero. Fake-joining Quality to IDR. Claiming 100% only-DataGlow / zero help when packaging help was used. Auto-posting numbers without human confirm.' },
+        { icon: '🏁', heading: 'How a skeptic can check', body: 'Download the same CMS public files. Re-run the SQL in the deep dive. Open live DataGlow. Compare GitHub. Challenge any number that does not reproduce.' }
+      ]
+    },
+    {
+      type: 'impact-text',
+      title: 'DataGlow Glow Canvas dashboard',
+      items: [
+        { icon: '📊', heading: 'Proof-first multi-chart board', body: 'Four analysis lenses on one board: stars by plan type, IDR provider wins, Admin vs Overall gap, initiating concentration. Each tile shows VERDICT + engine stamps + why it matters.' },
+        { icon: '🛡️', heading: 'Unique vs typical BI', body: 'Not a vanity viz pack. Cleaning rule (NR never as 0) sits in the chrome. Quality and IDR stay separate grains. Dual-engine stamps can pull a claim down if engines disagree.' },
+        { icon: '🔗', heading: 'Open the interactive board', body: 'Live interactive page: dataglow-alpha-dashboard.html on this portfolio host. Product shell: https://dataglow-platform.pplx.app · source https://github.com/Andre-Weissmann/dataglow' }
+      ]
+    },
+    {
+      type: 'impact-text',
       title: 'DataGlow in this project',
       items: [
         { icon: '🧰', heading: 'What DataGlow is', body: 'DataGlow is a local-first analytics workbench Andre built: load files on device, set purpose, clean/validate, Scout questions, and prove claims with engine checks. Live product: https://dataglow-platform.pplx.app' },
         { icon: '📂', heading: 'What you see in the screenshots', body: 'Home drop zone, then Marketplace Quality PUF loaded (4,302 rows × 9 columns) with clean / ask / prove paths. That is the real project file, not a toy demo rename.' },
-        { icon: '🤝', heading: 'Help used (plain English)', body: 'Perplexity Computer helped with product build steps, dataset ranking, and some dual-engine runs. That is build assistance and coordination help, not "the AI invented the findings." Final portfolio numbers are human-confirmed and engine-checked on public CMS files. This project belongs on the portfolio.' }
+        { icon: '🤝', heading: 'Help used (plain English)', body: 'DataGlow can run the local path (load, Scout, SQL/Prove, ship pack). For this portfolio package, extra help was also used for product build and write-up packaging. That does not invent findings. Final numbers are human-confirmed and engine-checked on public CMS files. Skeptics can re-run the SQL and open the live product.' }
       ]
     }
   ],
@@ -2967,15 +2996,20 @@ var DD_DASHBOARDS = {
 cmsQualityIdr: {
     tool: 'DataGlow',
     shots: [
-      { src: 'images/dataglow/dg-01-home.png?v=1785148000', alt: 'DataGlow home drop zone, local-first analytics workbench', caption: 'DataGlow home: local-first drop zone' },
-      { src: 'images/dataglow/dg-02-quality-loaded.png?v=1785148000', alt: 'DataGlow after loading PY2026 Quality PUF, 4302 rows ready', caption: 'Quality PUF loaded: 4,302 rows × 9 columns' },
-      { src: 'images/dataglow/dg-03-ready-paths.png?v=1785148000', alt: 'DataGlow clean, ask, and prove paths after purpose on Quality PUF', caption: 'Clean / Ask / Prove paths on the real CMS file' },
-      { src: 'images/dataglow/dg-04-workspace.png?v=1785148000', alt: 'DataGlow workspace after load showing analysis chrome', caption: 'Workspace chrome after load' }
+      { src: 'images/dataglow/process/08-dashboard-desktop-top.png?v=1785153000', alt: 'DataGlow Alpha Glow Canvas dashboard top KPIs and VERDICT chips', caption: '1. DataGlow Glow Canvas · headline KPIs + VERDICT bar' },
+      { src: 'images/dataglow/process/10-dashboard-glow-canvas.png?v=1785153000', alt: 'DataGlow multi-chart Glow Canvas with stars and IDR tiles', caption: '2. Multi-chart Glow Canvas · stars + IDR provider wins' },
+      { src: 'images/dataglow/process/11-dashboard-cards-lower.png?v=1785153000', alt: 'Admin gap and initiating concentration dashboard cards', caption: '3. Admin gap + initiating concentration cards' },
+      { src: 'images/dataglow/process/12-dashboard-proof-rail.png?v=1785153000', alt: 'DataGlow proof rail explaining VERDICT dual-engine rules', caption: '4. Proof rail · what makes this a DataGlow dashboard' },
+      { src: 'images/dataglow/process/13-dashboard-mobile-top.png?v=1785153000', alt: 'DataGlow Alpha dashboard on mobile', caption: '5. Mobile · same proof-first dashboard' },
+      { src: 'images/dataglow/process/02-quality-puf-loaded.png?v=1785153000', alt: 'Quality PUF loaded in DataGlow product', caption: '6. Live product path · Quality PUF loaded (4,302 × 9)' },
+      { src: 'images/dataglow/process/03-purpose-ready-paths.png?v=1785153000', alt: 'DataGlow Clean Ask Prove paths', caption: '7. Product paths · Clean / Ask / Prove' },
+      { src: 'images/dataglow/process/00-live-home-now.png?v=1785153000', alt: 'Live DataGlow home', caption: '8. Live product home · dataglow-platform.pplx.app' }
     ],
-    caption: "DataGlow is Andre’s local-first analytics workbench used on this project. Screenshots show the real Marketplace Quality PUF path, not a renamed toy file.",
-    fileHref: 'https://dataglow-platform.pplx.app',
-    fileLabel: 'Open DataGlow live'
+    caption: "DataGlow Glow Canvas dashboard for CMS Quality + Federal IDR. VERDICT on every tile, dual-engine stamps, NR discipline in the chrome. Not a Power BI clone.",
+    fileHref: 'dataglow-alpha-dashboard.html',
+    fileLabel: 'Open interactive DataGlow dashboard'
   },
+
   powerbi: {
     tool: 'Power BI',
     shots: [
