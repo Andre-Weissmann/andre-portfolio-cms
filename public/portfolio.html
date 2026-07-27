@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=1785109747" />
+  <link rel="stylesheet" href="style.css?v=1785111504" />
   <link rel="stylesheet" href="portfolio_os.css?v=1785014004" />
   <link rel="stylesheet" href="data_rail.css?v=1785014004" />
   <link rel="stylesheet" href="deep_dive_v2.css?v=1785108877" />
@@ -356,10 +356,10 @@
               <div class="sql-sandbox">
                 <p class="sql-preset-label">Live SQL sandbox · results update as you explore</p>
                 <div class="sql-examples">
-                  <button class="sql-ex" data-query="SELECT ParcelID, LandUse, SaleDate, SalePrice, LegalReference FROM housing LIMIT 10;">Preview rows</button>
-                  <button class="sql-ex" data-query="SELECT LandUse, COUNT(*) as total, ROUND(AVG(SalePrice),0) as avg_price FROM housing GROUP BY LandUse ORDER BY total DESC;">By land use</button>
-                  <button class="sql-ex" data-query="SELECT * FROM housing WHERE SalePrice IS NULL OR SaleDate IS NULL;">Find NULLs</button>
-                  <button class="sql-ex" data-query="SELECT LandUse, SaleDate, SalePrice FROM housing WHERE SalePrice > 500000 ORDER BY SalePrice DESC;">High-value sales</button>
+                  <button class="sql-ex" data-query="SELECT ParcelID, LandUse, SaleDate, SalePrice, LegalReference&#10;FROM housing&#10;LIMIT 10;">Preview rows</button>
+                  <button class="sql-ex" data-query="SELECT LandUse,&#10;       COUNT(*) AS total,&#10;       ROUND(AVG(SalePrice), 0) AS avg_price&#10;FROM housing&#10;GROUP BY LandUse&#10;ORDER BY total DESC;">By land use</button>
+                  <button class="sql-ex" data-query="SELECT *&#10;FROM housing&#10;WHERE SalePrice IS NULL&#10;   OR SaleDate  IS NULL;">Find NULLs</button>
+                  <button class="sql-ex" data-query="SELECT LandUse, SaleDate, SalePrice&#10;FROM housing&#10;WHERE SalePrice > 500000&#10;ORDER BY SalePrice DESC;">High-value sales</button>
                 </div>
                 <!-- SQL code reveal block -->
                 <div class="sql-code-reveal" id="sql-code-reveal" style="display:none;">
