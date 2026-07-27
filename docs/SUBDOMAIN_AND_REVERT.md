@@ -1,3 +1,6 @@
+**Current canonical (2026-07-27):** https://andre-weissmann-data-portfolio.pplx.app
+- site_id: `3c5a557f-f631-44fd-a744-fb22ac0a8309`
+
 # Subdomains, version history, and how to revert
 
 ## Can you always revert?

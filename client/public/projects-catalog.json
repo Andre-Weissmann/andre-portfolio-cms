@@ -1,7 +1,7 @@
 {
-  "portfolioBaseUrl": "https://andre-weissmann-data-portfolio-view.pplx.app",
+  "portfolioBaseUrl": "https://andre-weissmann-data-portfolio.pplx.app",
   "updatedAt": "2026-07-27",
-  "notes": "Homepage shows all interactive demos. Expandable archive is a scannable index. tier=featured is signal for future spotlight, not homepage hide.",
+  "notes": "Homepage shows all interactive demos. Expandable archive is a scannable index. tier=featured is signal for future spotlight, not homepage hide. Canonical publish site_id 3c5a557f-f631-44fd-a744-fb22ac0a8309 (2026-07-27).",
   "projects": [
     {
       "id": "cms-quality-idr",
