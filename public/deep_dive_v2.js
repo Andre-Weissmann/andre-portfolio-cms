@@ -2451,7 +2451,7 @@ cmsQualityIdr: {
     { label: 'Admin ≥ Overall+1', value: 48.8, suffix: '%', icon: '📈' },
   ],
   chapters: [
-    { title: 'Business question', id: 'ch-what' },
+    { title: 'The problem', id: 'ch-what' },
     { title: 'Analysis trail', id: 'ch-trail' },
     { title: 'SQL + Python proof', id: 'ch-sql' },
     { title: 'Quality stars by plan type', id: 'ch-stars' },
@@ -2462,7 +2462,7 @@ cmsQualityIdr: {
   sections: [
     {
       type: 'insight-card',
-      text: 'Hiring managers in healthcare analytics do not need another tutorial CSV. They need proof you can open current CMS public files, write down the definition before the average, and produce numbers a director can challenge. This project uses two public sources side by side: Marketplace Quality PUF for plan year 2026 (4,302 plan rows) and Federal IDR supplemental tables for 2025 Q1-Q2 (payment determinations and initiating parties). Quality answers "how do plans rate?" IDR answers "who prevails when out-of-network payment is disputed?" Different grains. No fake join. SQL and Python both recompute the same results. DataGlow is the local-first workbench used to load the Quality PUF, set purpose, and move through clean / ask / prove paths on device.'
+      text: 'Marketplace quality and out-of-network payment teams need defensible answers from current CMS files, not a demo spreadsheet. Three real questions drive this analysis. (1) After honest Not Rated rules, which Marketplace plan types lead on overall quality stars, and by how much? (2) In Federal IDR payment determinations, how often do providers prevail, and did that shift from 2025 Q1 to Q2? (3) How often does Plan Administration outrun Overall by a full star among dual-rated plans, and which initiating parties concentrate IDR volume? Sources: Marketplace Quality PUF for plan year 2026 (4,302 plan rows) and Federal IDR supplemental tables for 2025 Q1-Q2. Quality answers how plans rate. IDR answers who prevails when out-of-network payment is disputed. Different grains. No fake join. Definitions locked before averages. SQL and Python recompute the same results.'
     },
     {
       type: 'thinking-trail',
@@ -2478,8 +2478,8 @@ cmsQualityIdr: {
     },
     {
       type: 'sql-dashboard',
-      title: 'SQL lenses (same numbers hiring managers can re-run)',
-      subtitle: 'Each lens is a business question. SQL is the proof. Python produced matching results on the same downloads.',
+      title: 'SQL lenses (re-runnable on the same public files)',
+      subtitle: 'Each lens is a real operations question. SQL is the proof. Python produced matching results on the same downloads.',
       hint: 'Definitions first: NR excluded from star means. IDR shares use determination counts from CMS supplemental tables.',
       meta: 'Quality PUF PY2026 · Federal IDR 2025 Q1-Q2 · SQL + Python dual check',
       lenses: [
@@ -2574,7 +2574,7 @@ cmsQualityIdr: {
       type: 'impact-text',
       title: 'Python twin (same definitions, second engine)',
       items: [
-        { icon: '🐍', heading: 'Why a second engine', body: 'SQL answers the business question. Python recomputes the same filters and aggregates on the identical CSV downloads. If the engines disagree, the number does not ship. That is the professional bar for portfolio claims.' },
+        { icon: '🐍', heading: 'Why a second engine', body: 'SQL answers the operations question. Python recomputes the same filters and aggregates on the identical CSV downloads. If the engines disagree, the number does not ship.' },
         { icon: '📐', heading: 'NR exclusion in pandas', body: "rated = df[df['overall_star'].notna() & ~df['overall_star'].astype(str).str.strip().isin(['', 'NR', 'Not Rated'])]\nby_type = rated.groupby('plan_type')['overall_star'].agg(['mean','count']).sort_values('mean', ascending=False)" },
         { icon: '⚖️', heading: 'IDR win rate', body: "win_pct = 100.0 * provider_prevailing / total_determinations\n# Q1: 407618/466227 → 87.4%   Q2: 543552/616020 → 88.2%   delta ≈ +0.8 pp" },
         { icon: '🔎', heading: 'Admin gap', body: "dual = df[both_rated_mask]\npct = 100.0 * (dual['admin_star'] >= dual['overall_star'] + 1).sum() / len(dual)\n# 1531 / 3139 → 48.8%" }
@@ -2604,9 +2604,9 @@ cmsQualityIdr: {
     },
     {
       type: 'impact-text',
-      title: 'Why this matters (director-level)',
+      title: 'Why this matters (ops and strategy)',
       items: [
-        { icon: '⭐', heading: 'Quality rankings without invented lows', body: 'EPO leading after NR exclusion is a defensible plan-type story. Publishing star KPIs without an NR rule is how dashboards quietly lie. Hiring teams should see that you wrote the rule down first.' },
+        { icon: '⭐', heading: 'Quality rankings without invented lows', body: 'EPO leading after NR exclusion is a defensible plan-type story for quality and product reviews. Publishing star KPIs without an NR rule is how dashboards quietly lie. Write the rule down before the average.' },
         { icon: '💰', heading: 'IDR is still a provider-leaning forum in this window', body: 'Provider prevailing near 87-88% across hundreds of thousands of determinations is a network and payment-strategy input, not trivia. Q2 ticked up about 0.8 percentage points vs Q1.' },
         { icon: '🏢', heading: 'Initiating volume is concentrated', body: 'After filtering to initiating roles, the top three parties account for roughly 46% of listed OON items/services vs 54% for everyone else. Concentration changes how ops prioritizes outreach and dispute prep.' },
         { icon: '🧭', heading: 'Admin experience can outrun the blended score', body: 'Almost half of dual-rated plans show Admin at least one star above Overall. That is a prompt for plan ops and product: where is the member feeling friction that the overall star averages away?' }
@@ -2654,11 +2654,11 @@ cmsQualityIdr: {
   noFile: true,
   decision: {
     what: 'Current CMS public data shows EPO leading NR-excluded overall stars, Federal IDR still provider-leaning into Q2, and Plan Administration outrunning Overall by a full star on nearly half of dual-rated plans.',
-    why: 'Healthcare analytics roles need analysts who defend definitions, refuse fake joins, and can show SQL and Python that match. That is more valuable than a pretty dashboard on a clean tutorial file.',
-    next: 'Optional deeper IDR microdata later. Live DataGlow path remains available to re-open the Quality PUF and walk clean / ask / prove with a hiring manager on a call.'
+    why: 'Quality and payment ops need analysts who defend definitions, refuse fake joins, and can show SQL and Python that match on current CMS files. Wrong NR handling or a fake Quality-IDR join leads to bad decisions in real meetings.',
+    next: 'Optional deeper IDR microdata later. The same Quality PUF can be re-opened to re-check clean / ask / prove paths when definitions change.'
   },
   stakeholders: [
-    { role: 'What should a hiring manager take away?', icon: '💡', summary: 'Three defensible findings on current CMS files, NR discipline, dual SQL/Python reproduction, and a real local-first workbench (DataGlow) in the workflow screenshots.' },
+    { role: 'What should a quality or payment lead take away?', icon: '💡', summary: 'Three defensible findings on current CMS files: plan-type star leaders after NR rules, IDR provider prevailing trend, and Admin vs Overall gaps, all dual-checked in SQL and Python with no fake join.' },
     { role: 'What would a weaker analysis get wrong?', icon: '🔍', summary: 'Treat NR as zero, join Quality to IDR on a made-up key, rank initiating parties without filtering roles, or publish AI-drafted KPIs without engine proof and human confirm.' },
     { role: 'How was it built?', icon: '⚙️', summary: 'Public CMS downloads → NR and grain rules → SQL + Python dual check → human confirm → portfolio deep dive with DataGlow workflow screenshots. Build assistance disclosed. Public files only. No HIPAA certification claim.' }
   ],
@@ -2675,14 +2675,14 @@ var PLAYABLE = {
 
   cmsQualityIdr: {
     tagline: 'Walk the analysis',
-    sub: 'Business question → definitions → SQL/Python → why it matters.',
+    sub: 'Real problem → definitions → SQL/Python → why it matters.',
     beats: [
-      { title: 'Land the result', blurb: 'Three headline findings hiring managers can challenge.', target: 'ch-overview' },
+      { title: 'Land the result', blurb: 'Three headline findings a quality or payment ops lead can challenge.', target: 'ch-overview' },
       { title: 'See DataGlow', blurb: 'Local-first workbench screenshots with the Quality PUF loaded.', target: 'ch-dashboard' },
-      { title: 'Business question', blurb: 'Why these CMS files, and why not a fake join.', target: 'ch-what' },
+      { title: 'The problem', blurb: 'Quality stars, IDR wins, and admin gaps the data can answer.', target: 'ch-what' },
       { title: 'Analysis trail', blurb: 'NR rules, grain discipline, initiating filter.', target: 'ch-trail' },
       { title: 'SQL lenses', blurb: 'Re-runnable SQL for stars, IDR, admin gap.', target: 'ch-sql' },
-      { title: 'Why it matters', blurb: 'Director-level implications for quality and payment ops.', target: 'ch-impact' }
+      { title: 'Why it matters', blurb: 'Ops implications for quality and payment ops.', target: 'ch-impact' }
     ],
     wrongTurns: [
       { title: 'Treat NR as zero stars', looked: 'Simple average on the raw column.', killed: 'NR exclusion. Invented low quality would tank means and mislead plan rankings.' },
