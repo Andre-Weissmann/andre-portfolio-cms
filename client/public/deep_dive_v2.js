@@ -2996,11 +2996,11 @@ var DD_DASHBOARDS = {
 cmsQualityIdr: {
     tool: 'DataGlow',
     shots: [
-      { src: 'images/dataglow/process/08-dashboard-desktop-top.png?v=1785153000', alt: 'DataGlow Alpha Glow Canvas dashboard top KPIs and VERDICT chips', caption: '1. DataGlow Glow Canvas · headline KPIs + VERDICT bar' },
-      { src: 'images/dataglow/process/10-dashboard-glow-canvas.png?v=1785153000', alt: 'DataGlow multi-chart Glow Canvas with stars and IDR tiles', caption: '2. Multi-chart Glow Canvas · stars + IDR provider wins' },
-      { src: 'images/dataglow/process/11-dashboard-cards-lower.png?v=1785153000', alt: 'Admin gap and initiating concentration dashboard cards', caption: '3. Admin gap + initiating concentration cards' },
-      { src: 'images/dataglow/process/12-dashboard-proof-rail.png?v=1785153000', alt: 'DataGlow proof rail explaining VERDICT dual-engine rules', caption: '4. Proof rail · what makes this a DataGlow dashboard' },
-      { src: 'images/dataglow/process/13-dashboard-mobile-top.png?v=1785153000', alt: 'DataGlow Alpha dashboard on mobile', caption: '5. Mobile · same proof-first dashboard' },
+      { src: 'images/dataglow/process/08-dashboard-desktop-top.png?v=1785162000', alt: 'DataGlow Alpha Glow Canvas dashboard top KPIs and VERDICT chips', caption: '1. DataGlow Glow Canvas · headline KPIs + VERDICT bar' },
+      { src: 'images/dataglow/process/10-dashboard-glow-canvas.png?v=1785162000', alt: 'DataGlow multi-chart Glow Canvas with stars and IDR tiles', caption: '2. Multi-chart Glow Canvas · stars + IDR provider wins' },
+      { src: 'images/dataglow/process/11-dashboard-cards-lower.png?v=1785162000', alt: 'Admin gap and initiating concentration dashboard cards', caption: '3. Admin gap + initiating concentration cards' },
+      { src: 'images/dataglow/process/12-dashboard-proof-rail.png?v=1785162000', alt: 'DataGlow proof rail explaining VERDICT dual-engine rules', caption: '4. Proof rail · what makes this a DataGlow dashboard' },
+      { src: 'images/dataglow/process/13-dashboard-mobile-top.png?v=1785162000', alt: 'DataGlow Alpha dashboard on mobile', caption: '5. Mobile · same proof-first dashboard' },
       { src: 'images/dataglow/process/02-quality-puf-loaded.png?v=1785153000', alt: 'Quality PUF loaded in DataGlow product', caption: '6. Live product path · Quality PUF loaded (4,302 × 9)' },
       { src: 'images/dataglow/process/03-purpose-ready-paths.png?v=1785153000', alt: 'DataGlow Clean Ask Prove paths', caption: '7. Product paths · Clean / Ask / Prove' },
       { src: 'images/dataglow/process/00-live-home-now.png?v=1785153000', alt: 'Live DataGlow home', caption: '8. Live product home · dataglow-platform.pplx.app' }
