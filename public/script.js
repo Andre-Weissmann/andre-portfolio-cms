@@ -1750,9 +1750,10 @@ function updateCaseWhenSummary(caseVal) {
 
   function submitForm(mode){
     if(mode==='sql'&&!validateSql()) return;
+    var staleErr=document.getElementById('v7-send-error');
+    if(staleErr&&staleErr.parentNode) staleErr.parentNode.removeChild(staleErr);
     var submitBtn=mode==='plain'?q('v7-p-submit'):q('v7-s-submit');
     var tabRunBtn=q('v7-tab-run-btn');
-    setTimeout(function(){ handleSuccess(mode); },400);
     if(mode==='plain'){
       var label=q('v7-p-btn-label'); var spinner=q('v7-p-spinner');
       if(label) label.textContent='Sending...'; if(spinner) spinner.hidden=false;
@@ -1790,18 +1791,123 @@ function updateCaseWhenSummary(caseVal) {
       return '';
     })();
 
-    var MAX_RETRIES=4; var RETRY_DELAYS=[3000,5000,8000,12000];
+    // Retry ladder sized to survive a cold backend start. The static page is
+    // served from a CDN and can load while the API is still waking up, so the
+    // total window here is about 40 seconds before we declare failure.
+    var MAX_RETRIES=5; var RETRY_DELAYS=[2000,4000,7000,11000,16000];
     function attemptFetch(attempt){
       var retryDelay=RETRY_DELAYS[Math.min(attempt-1,RETRY_DELAYS.length-1)];
+      function retryOrFail(kind,detail){
+        if(attempt<MAX_RETRIES){ setTimeout(function(){ attemptFetch(attempt+1); },retryDelay); }
+        else { handleFailure(mode,kind,detail); }
+      }
       fetch(apiBase+'/api/contact',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
       .then(function(r){
-        if(r.status===200){ console.log('[Contact] Delivered.'); }
-        else if(r.status===429){ console.warn('[Contact] Rate limited.'); }
-        else if(attempt<MAX_RETRIES){ setTimeout(function(){ attemptFetch(attempt+1); },retryDelay); }
+        if(r.status===200){ handleSuccess(mode); return; }
+        if(r.status===400){
+          // A validation rejection will fail identically every time, so stop now
+          // instead of burning the whole retry ladder on it.
+          r.json().then(function(j){ handleFailure(mode,'validation',(j&&j.error)||''); })
+                  .catch(function(){ handleFailure(mode,'validation',''); });
+          return;
+        }
+        if(r.status===429){ handleFailure(mode,'ratelimit',''); return; }
+        retryOrFail('network','Server responded '+r.status+'.');
       })
-      .catch(function(){ if(attempt<MAX_RETRIES) setTimeout(function(){ attemptFetch(attempt+1); },retryDelay); });
+      .catch(function(){ retryOrFail('network','Could not reach the server.'); });
     }
     attemptFetch(1);
+  }
+
+  function handleFailure(mode,kind,detail){
+    stopSendingLabelRotation();
+
+    var msg, hint;
+    if(kind==='validation'){
+      msg  = detail || 'Something in the form was not accepted.';
+      hint = 'Please check your name, email, and message, then try again.';
+    } else if(kind==='ratelimit'){
+      msg  = 'Too many messages sent from this connection.';
+      hint = 'Please wait a few minutes and try again.';
+    } else {
+      msg  = 'Your message could not be delivered.';
+      hint = 'The server did not respond. Your message is still in the form, nothing was lost.';
+    }
+
+    var liveEl=q('v7-aria-live'); if(liveEl) liveEl.textContent=msg+' '+hint;
+
+    // Restore the submit control so the user can retry immediately.
+    var submitBtn=mode==='plain'?q('v7-p-submit'):q('v7-s-submit');
+    if(submitBtn){ submitBtn.disabled=false; submitBtn.dataset.state=''; }
+    if(mode==='plain'){
+      var label=q('v7-p-btn-label'); var spinner=q('v7-p-spinner');
+      if(label) label.textContent='Try again';
+      if(spinner) spinner.hidden=true;
+      var arrow=submitBtn?submitBtn.querySelector('.v7-p-btn-arrow'):null; if(arrow) arrow.hidden=false;
+    } else {
+      var runLabel=q('v7-run-label'); if(runLabel) runLabel.textContent='RUN';
+      var tabRunBtn=q('v7-tab-run-btn'); if(tabRunBtn) tabRunBtn.disabled=false;
+    }
+
+    var panel=mode==='plain'?q('v7-plain-panel'):q('v7-sql-panel');
+    if(!panel) return;
+
+    var existing=document.getElementById('v7-send-error');
+    if(existing) existing.parentNode.removeChild(existing);
+
+    var box=document.createElement('div');
+    box.id='v7-send-error';
+    box.className='v7-send-error';
+    box.setAttribute('role','alert');
+
+    var title=document.createElement('p');
+    title.className='v7-send-error__title';
+    title.textContent=msg;
+    box.appendChild(title);
+
+    var sub=document.createElement('p');
+    sub.className='v7-send-error__hint';
+    sub.textContent=hint;
+    box.appendChild(sub);
+
+    if(kind!=='validation'){
+      var actions=document.createElement('div');
+      actions.className='v7-send-error__actions';
+
+      var copyBtn=document.createElement('button');
+      copyBtn.type='button';
+      copyBtn.className='v7-send-error__btn';
+      copyBtn.textContent='Copy my message';
+      copyBtn.addEventListener('click',function(){
+        var text='From: '+state.name+' <'+state.email+'>\n\n'+state.message;
+        function done(){ copyBtn.textContent='Copied'; setTimeout(function(){ copyBtn.textContent='Copy my message'; },2000); }
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+          navigator.clipboard.writeText(text).then(done).catch(function(){ fallbackCopy(text,done); });
+        } else { fallbackCopy(text,done); }
+      });
+      actions.appendChild(copyBtn);
+
+      var li=document.createElement('a');
+      li.className='v7-send-error__btn v7-send-error__btn--alt';
+      li.href='https://www.linkedin.com/in/andre-weissmann';
+      li.target='_blank'; li.rel='noopener noreferrer';
+      li.textContent='Reach me on LinkedIn';
+      actions.appendChild(li);
+
+      box.appendChild(actions);
+    }
+
+    panel.appendChild(box);
+    if(box.scrollIntoView) box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  function fallbackCopy(text,cb){
+    var ta=document.createElement('textarea');
+    ta.value=text; ta.setAttribute('readonly','');
+    ta.style.position='absolute'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); if(cb) cb(); }catch(e){}
+    document.body.removeChild(ta);
   }
 
   function handleSuccess(mode){
@@ -2060,3 +2166,23 @@ function updateCaseWhenSummary(caseVal) {
 
 
 })();
+
+  /* Wake the API the moment someone starts filling the form, so a cold
+     backend is already up by the time they press send. */
+  (function warmOnEngage(){
+    var warmed=false;
+    function warm(){
+      if(warmed) return; warmed=true;
+      var base=(function(){
+        var m=window.location.pathname.match(/^\/port\/\d+/); if(m) return m[0];
+        if(window.location.hostname.endsWith('.pplx.app')) return '/port/5000';
+        if(window.location.hostname==='www.perplexity.ai') return '/port/5000';
+        return '';
+      })();
+      fetch(base+'/api/ping',{method:'GET',cache:'no-store'}).catch(function(){});
+    }
+    ['v7-p-name','v7-p-email','v7-p-msg','v7-s-name','v7-s-email','v7-s-msg'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el){ el.addEventListener('focus',warm,{once:true}); }
+    });
+  })();
