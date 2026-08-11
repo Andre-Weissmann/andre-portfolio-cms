@@ -582,7 +582,7 @@ STRICT RULES:
     const priorityLabel = getLabel(PRIORITY_LABELS, body.followUpPref);
 
     if (contactSubmissions.length >= MAX_SUBMISSIONS) contactSubmissions.shift();
-    const submissionRecord: { name: string; email: string; message: string; ts: string; meta: Record<string, string>; sendStatus: string; sendError?: string; ghIssueStatus?: string; ghIssueUrl?: string; ghIssueError?: string } = {
+    const submissionRecord: { name: string; email: string; message: string; ts: string; meta: Record<string, string>; sendStatus: string; sendVia?: string; sendError?: string; ghIssueStatus?: string; ghIssueUrl?: string; ghIssueError?: string } = {
       name: safeName,
       email: safeEmail,
       message,
@@ -615,6 +615,61 @@ STRICT RULES:
       priorityLabel || "", urgentGh, isSpam,
     );
 
+    // ── Delivery path 2: Web3Forms (primary email notification) ──
+    // Purpose-built for contact forms: no domain and no DNS records required, which
+    // matters because this site runs on a *.pplx.app subdomain we do not control DNS for.
+    // Free tier is 250 submissions/month. The access key is public by design (it is
+    // normally embedded in client HTML); we keep it server-side as a sandbox env var so
+    // the endpoint cannot be scraped off the page and abused.
+    const web3Key = process.env.WEB3FORMS_ACCESS_KEY || "";
+    if (web3Key) {
+      const urgentW3 = priorityLabel === PRIORITY_LABELS.followup;
+      const w3Subject = `${urgentW3 ? "URGENT: " : ""}New portfolio message from ${safeName}${roleLabel ? ` (${roleLabel})` : ""}`;
+      const w3Payload: Record<string, string> = {
+        access_key: web3Key,
+        subject: w3Subject,
+        from_name: "Portfolio Contact Form",
+        replyto: safeEmail,
+        Name: safeName,
+        Email: safeEmail,
+        ...(roleLabel    ? { "Who they are": roleLabel } : {}),
+        ...(topicLabel   ? { Topic: topicLabel } : {}),
+        ...(urgencyLabel && urgencyLabel !== "Whenever"      ? { Timeline: urgencyLabel } : {}),
+        ...(actionLabel  && actionLabel  !== "Just a reply"  ? { Wants: actionLabel } : {}),
+        ...(viaLabel     ? { "Found via": viaLabel + (viaWho ? ` (${viaWho})` : "") } : {}),
+        ...(channelLabel && channelLabel !== "Email"         ? { "Prefers reply on": channelLabel + (phone ? ` - ${phone}` : "") } : {}),
+        ...(priorityLabel ? { Priority: priorityLabel } : {}),
+        Message: message,
+      };
+
+      submissionRecord.sendVia = "web3forms";
+      try {
+        const w3res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(w3Payload),
+        });
+        const w3json: any = await w3res.json().catch(() => ({}));
+        if (w3res.ok && w3json?.success) {
+          submissionRecord.sendStatus = "sent";
+          console.log(`[Web3Forms] Delivered message from ${safeName} <${safeEmail}>`);
+        } else {
+          submissionRecord.sendStatus = "failed";
+          submissionRecord.sendError = `Web3Forms HTTP ${w3res.status}: ${JSON.stringify(w3json).slice(0, 300)}`;
+          console.error("[Web3Forms] Send failed:", submissionRecord.sendError);
+        }
+      } catch (err) {
+        submissionRecord.sendStatus = "failed";
+        submissionRecord.sendError = `Web3Forms exception: ${String(err).slice(0, 300)}`;
+        console.error("[Web3Forms] Exception:", err);
+      }
+      return;
+    }
+
+    // ── Delivery path 3: Resend (legacy fallback) ──
+    // Only reached when WEB3FORMS_ACCESS_KEY is absent. Note that the shared
+    // onboarding@resend.dev sender is documented by Resend as testing-only and can
+    // deliver solely to the Resend account owner's own address.
     // Resolve Resend auth. Three supported modes, in order of preference:
     //   1) RESEND_API_KEY as a native env var (canonical)
     //   2) Perplexity custom-credentials proxy (CUSTOM_CRED_API_RESEND_COM_URL + _TOKEN),
@@ -813,6 +868,7 @@ STRICT RULES:
     const summarize = (v: string | undefined) => v && v.length > 0 ? { present: true, length: v.length } : { present: false };
     res.setHeader("cache-control", "no-store");
     res.json({
+      WEB3FORMS_ACCESS_KEY: summarize(process.env.WEB3FORMS_ACCESS_KEY),
       RESEND_API_KEY: summarize(process.env.RESEND_API_KEY),
       CUSTOM_CRED_API_RESEND_COM_URL: summarize(process.env.CUSTOM_CRED_API_RESEND_COM_URL),
       CUSTOM_CRED_API_RESEND_COM_TOKEN: summarize(process.env.CUSTOM_CRED_API_RESEND_COM_TOKEN),
