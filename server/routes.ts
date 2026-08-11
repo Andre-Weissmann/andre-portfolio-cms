@@ -4,7 +4,6 @@ import multer from "multer";
 import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import * as gh from "./github-content";
-import { Resend } from "resend";
 import { SYSTEM_PROMPT } from "./chat-knowledge";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -334,6 +333,28 @@ STRICT RULES:
   // ── Contact form ───────────────────────────────────────────────────
   // In-memory log capped at 500 entries (oldest dropped first)
   const MAX_SUBMISSIONS = 500;
+// Render an ISO timestamp in Andre's local time (US Central), e.g.
+// "Monday, August 10, 2026 at 8:39 PM CDT". Falls back to the raw
+// string if the date is unparseable so we never lose the value.
+function fmtCentral(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Chicago",
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    }).format(d).replace(" at ", " at ");
+  } catch {
+    return iso;
+  }
+}
+
   const contactSubmissions: { name: string; email: string; message: string; ts: string; meta?: Record<string, string>; sendStatus?: string; sendError?: string; ghIssueStatus?: string; ghIssueUrl?: string; ghIssueError?: string }[] = [];
 
   // ── GitHub Issues delivery (primary email path via GitHub notifications) ──
@@ -384,12 +405,14 @@ STRICT RULES:
   async function createGitHubIssue(record: typeof contactSubmissions[number], safeName: string, safeEmail: string, message: string, roleLabel: string, topicLabel: string, urgencyLabel: string, actionLabel: string, viaLabel: string, viaWho: string, channelLabel: string, phone: string, priorityLabel: string, urgent: boolean, isSpam: boolean): Promise<void> {
     if (!GH_TOKEN) {
       record.ghIssueStatus = "skipped";
+      record.sendStatus = "skipped";
       record.ghIssueError = "No GitHub token configured on sandbox";
       console.error("[GitHub Inbox] No token; skipping issue creation");
       return;
     }
     if (isSpam) {
       record.ghIssueStatus = "filtered";
+      record.sendStatus = "filtered";
       record.ghIssueError = "Filtered as likely spam; kept in private inbox only";
       console.log(`[GitHub Inbox] Filtered submission from ${safeEmail} as spam`);
       return;
@@ -428,7 +451,7 @@ STRICT RULES:
     if (viaLabel) bodyLines.push(`- **Found via:** ${viaLabel}${viaWho ? ` (${viaWho})` : ""}`);
     if (channelLabel && channelLabel !== "Email") bodyLines.push(`- **Prefers reply on:** ${channelLabel}${phone ? ` — ${phone}` : ""}`);
     if (priorityLabel) bodyLines.push(`- **Priority:** ${priorityLabel}`);
-    bodyLines.push(`- **Received:** ${new Date(record.ts).toISOString()}`);
+    bodyLines.push(`- **Received:** ${fmtCentral(record.ts)}`);
     bodyLines.push("");
     bodyLines.push("---");
     bodyLines.push("");
@@ -467,16 +490,20 @@ STRICT RULES:
       if (!r.ok) {
         const errText = await r.text().catch(() => "");
         record.ghIssueStatus = "failed";
+        record.sendStatus = "failed";
         record.ghIssueError = `HTTP ${r.status}: ${errText.slice(0, 300)}`;
         console.error(`[GitHub Inbox] Create issue failed HTTP ${r.status}:`, errText.slice(0, 400));
         return;
       }
       const data = await r.json();
       record.ghIssueStatus = "sent";
+      record.sendStatus = "sent";
+      record.sendVia = "github";
       record.ghIssueUrl = data.html_url;
       console.log(`[GitHub Inbox] Issue created: ${data.html_url}`);
     } catch (err: unknown) {
       record.ghIssueStatus = "failed";
+      record.sendStatus = "failed";
       record.ghIssueError = `Exception: ${String(err)}`;
       console.error("[GitHub Inbox] Exception:", err);
     }
@@ -615,179 +642,9 @@ STRICT RULES:
       priorityLabel || "", urgentGh, isSpam,
     );
 
-    // ── Delivery path 2: Web3Forms (primary email notification) ──
-    // Purpose-built for contact forms: no domain and no DNS records required, which
-    // matters because this site runs on a *.pplx.app subdomain we do not control DNS for.
-    // Free tier is 250 submissions/month. The access key is public by design (it is
-    // normally embedded in client HTML); we keep it server-side as a sandbox env var so
-    // the endpoint cannot be scraped off the page and abused.
-    const web3Key = process.env.WEB3FORMS_ACCESS_KEY || "";
-    if (web3Key) {
-      const urgentW3 = priorityLabel === PRIORITY_LABELS.followup;
-      const w3Subject = `${urgentW3 ? "URGENT: " : ""}New portfolio message from ${safeName}${roleLabel ? ` (${roleLabel})` : ""}`;
-      const w3Payload: Record<string, string> = {
-        access_key: web3Key,
-        subject: w3Subject,
-        from_name: "Portfolio Contact Form",
-        replyto: safeEmail,
-        Name: safeName,
-        Email: safeEmail,
-        ...(roleLabel    ? { "Who they are": roleLabel } : {}),
-        ...(topicLabel   ? { Topic: topicLabel } : {}),
-        ...(urgencyLabel && urgencyLabel !== "Whenever"      ? { Timeline: urgencyLabel } : {}),
-        ...(actionLabel  && actionLabel  !== "Just a reply"  ? { Wants: actionLabel } : {}),
-        ...(viaLabel     ? { "Found via": viaLabel + (viaWho ? ` (${viaWho})` : "") } : {}),
-        ...(channelLabel && channelLabel !== "Email"         ? { "Prefers reply on": channelLabel + (phone ? ` - ${phone}` : "") } : {}),
-        ...(priorityLabel ? { Priority: priorityLabel } : {}),
-        Message: message,
-      };
-
-      submissionRecord.sendVia = "web3forms";
-      try {
-        const w3res = await fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify(w3Payload),
-        });
-        const w3json: any = await w3res.json().catch(() => ({}));
-        if (w3res.ok && w3json?.success) {
-          submissionRecord.sendStatus = "sent";
-          console.log(`[Web3Forms] Delivered message from ${safeName} <${safeEmail}>`);
-        } else {
-          submissionRecord.sendStatus = "failed";
-          submissionRecord.sendError = `Web3Forms HTTP ${w3res.status}: ${JSON.stringify(w3json).slice(0, 300)}`;
-          console.error("[Web3Forms] Send failed:", submissionRecord.sendError);
-        }
-      } catch (err) {
-        submissionRecord.sendStatus = "failed";
-        submissionRecord.sendError = `Web3Forms exception: ${String(err).slice(0, 300)}`;
-        console.error("[Web3Forms] Exception:", err);
-      }
-      return;
-    }
-
-    // ── Delivery path 3: Resend (legacy fallback) ──
-    // Only reached when WEB3FORMS_ACCESS_KEY is absent. Note that the shared
-    // onboarding@resend.dev sender is documented by Resend as testing-only and can
-    // deliver solely to the Resend account owner's own address.
-    // Resolve Resend auth. Three supported modes, in order of preference:
-    //   1) RESEND_API_KEY as a native env var (canonical)
-    //   2) Perplexity custom-credentials proxy (CUSTOM_CRED_API_RESEND_COM_URL + _TOKEN),
-    //      used when publishing via publish_website with `credentials={'custom-cred:api.resend.com': ''}`
-    //   3) Missing -> log and skip send (in-memory backup still captured above)
-    const resendKey = process.env.RESEND_API_KEY || "";
-    const proxyUrl = process.env.CUSTOM_CRED_API_RESEND_COM_URL || "";
-    const proxyToken = process.env.CUSTOM_CRED_API_RESEND_COM_TOKEN || "";
-    if (!resendKey && !(proxyUrl && proxyToken)) {
-      console.error("[Resend] No Resend credentials found (neither RESEND_API_KEY nor custom-cred proxy env). Skipping email notification.");
-      submissionRecord.sendStatus = "skipped";
-      submissionRecord.sendError = "No Resend credentials configured on sandbox";
-      return;
-    }
-
-    const urgent = priorityLabel === PRIORITY_LABELS.followup;
-    const subjectPrefix = urgent ? "URGENT: " : "";
-    const subject = roleLabel
-      ? `${subjectPrefix}New portfolio message from ${safeName} (${roleLabel})`
-      : `${subjectPrefix}New portfolio message from ${safeName}`;
-
-    const textLines = [
-      `Name: ${safeName}`,
-      `Email: ${safeEmail}`,
-      roleLabel    ? `Who they are: ${roleLabel}` : null,
-      topicLabel   ? `Topic: ${topicLabel}` : null,
-      urgencyLabel && urgencyLabel !== "Whenever" ? `Timeline: ${urgencyLabel}` : null,
-      actionLabel  && actionLabel !== "Just a reply" ? `Wants: ${actionLabel}` : null,
-      viaLabel     ? (viaWho ? `Found via: ${viaLabel} (${viaWho})` : `Found via: ${viaLabel}`) : null,
-      channelLabel && channelLabel !== "Email" ? (phone ? `Prefers reply on: ${channelLabel} - ${phone}` : `Prefers reply on: ${channelLabel}`) : null,
-      priorityLabel ? `Priority: ${priorityLabel}` : null,
-      "",
-      "Message:",
-      message,
-    ].filter((l): l is string => l !== null);
-
-    const text = textLines.join("\n");
-
-    const row = (labelText: string, value: string) =>
-      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;font-size:13px;white-space:nowrap;vertical-align:top;">${labelText}</td><td style="padding:4px 0;font-size:14px;color:#111827;">${value}</td></tr>`;
-
-    const metaRows = [
-      row("Name:", `<strong>${escapeHtml(safeName)}</strong>`),
-      row("Email:", `<a href="mailto:${escapeHtml(safeEmail)}" style="color:#111827;text-decoration:none;">${escapeHtml(safeEmail)}</a>`),
-      roleLabel    ? row("Who they are:",   escapeHtml(roleLabel)) : "",
-      topicLabel   ? row("Topic:",          escapeHtml(topicLabel)) : "",
-      urgencyLabel && urgencyLabel !== "Whenever" ? row("Timeline:", escapeHtml(urgencyLabel)) : "",
-      actionLabel  && actionLabel !== "Just a reply" ? row("Wants:", escapeHtml(actionLabel)) : "",
-      viaLabel     ? row("Found via:", escapeHtml(viaLabel) + (viaWho ? ` (${escapeHtml(viaWho)})` : "")) : "",
-      channelLabel && channelLabel !== "Email" ? row("Prefers reply on:", escapeHtml(channelLabel) + (phone ? ` - ${escapeHtml(phone)}` : "")) : "",
-      priorityLabel ? row("Priority:", `<strong style="color:${urgent ? "#dc2626" : "#111827"}">${escapeHtml(priorityLabel)}</strong>`) : "",
-    ].join("");
-
-    const urgentNote = urgent ? " (marked urgent)" : "";
-    const html = [
-      '<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto;">',
-      `<h2 style="font-size:16px;color:#111827;margin:0 0 12px;">New portfolio message${urgentNote}</h2>`,
-      `<table style="border-collapse:collapse;width:100%;margin-bottom:16px;">${metaRows}</table>`,
-      '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;" />',
-      '<p style="font-size:13px;color:#6b7280;margin:0 0 4px;">Message:</p>',
-      `<p style="font-size:14px;color:#111827;white-space:pre-wrap;line-height:1.5;">${escapeHtml(message).replace(/\n/g, "<br/>")}</p>`,
-      '</div>',
-    ].join("");
-
-    const RECIPIENT = process.env.CONTACT_RECIPIENT || "swimstar34@icloud.com";
-    const emailPayload = {
-      from: "Portfolio Contact <onboarding@resend.dev>",
-      to: RECIPIENT,
-      reply_to: safeEmail,
-      subject,
-      text,
-      html,
-    };
-
-    if (resendKey) {
-      // Path 1 - native SDK against api.resend.com
-      const resend = new Resend(resendKey);
-      resend.emails.send(emailPayload).then(({ error: resendError }) => {
-        if (resendError) {
-          console.error("[Resend] SDK error:", resendError);
-          submissionRecord.sendStatus = "failed";
-          submissionRecord.sendError = `SDK error: ${JSON.stringify(resendError)}`;
-        } else {
-          console.log(`[Resend] Email sent to ${RECIPIENT} (via native key)`);
-          submissionRecord.sendStatus = "sent";
-        }
-      }).catch((err: unknown) => {
-        console.error("[Resend] SDK exception:", err);
-        submissionRecord.sendStatus = "failed";
-        submissionRecord.sendError = `SDK exception: ${String(err)}`;
-      });
-    } else {
-      // Path 2 - Perplexity custom-cred proxy. The proxy forwards to api.resend.com/emails,
-      // authorizing with x-api-key so the Resend backend sees a valid Authorization header.
-      const endpoint = proxyUrl.replace(/\/$/, "") + "/emails";
-      fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": proxyToken,
-        },
-        body: JSON.stringify(emailPayload),
-      }).then(async (r) => {
-        if (!r.ok) {
-          const errText = await r.text().catch(() => "");
-          console.error(`[Resend] Proxy HTTP ${r.status}:`, errText.slice(0, 500));
-          submissionRecord.sendStatus = "failed";
-          submissionRecord.sendError = `Proxy HTTP ${r.status}: ${errText.slice(0, 300)}`;
-        } else {
-          console.log(`[Resend] Email sent to ${RECIPIENT} (via proxy)`);
-          submissionRecord.sendStatus = "sent";
-        }
-      }).catch((err: unknown) => {
-        console.error("[Resend] Proxy exception:", err);
-        submissionRecord.sendStatus = "failed";
-        submissionRecord.sendError = `Proxy exception: ${String(err)}`;
-      });
-    }
+    // Delivery is handled entirely by the GitHub Issues path above, which
+    // triggers a GitHub notification email. No third-party mail provider is
+    // used, so there is no API key to expire and nothing to pay for.
   });
 
   app.get("/api/admin/contacts", (req, res) => {
@@ -830,8 +687,7 @@ STRICT RULES:
               </div>
               <div style="text-align:right;">
                 ${statusBadge(r.ghIssueStatus, "GitHub")}
-                ${statusBadge(r.sendStatus, "Email")}
-                <div style="color:#6b7280;font-size:12px;margin-top:4px;">${esc(r.ts)}</div>
+                <div style="color:#6b7280;font-size:12px;margin-top:4px;">${esc(fmtCentral(r.ts))}</div>
               </div>
             </div>
             ${metaRows ? `<div style="background:#f9fafb;padding:10px 12px;border-radius:6px;margin-bottom:12px;">${metaRows}</div>` : ""}
@@ -859,7 +715,7 @@ STRICT RULES:
 </body></html>`);
   });
 
-  // Diagnostic: dump which Resend-relevant env vars the sandbox actually sees.
+  // Diagnostic: dump which delivery-relevant env vars the sandbox actually sees.
   // Token-guarded like the inbox. Never returns values, only presence + length.
   app.get("/api/inbox/:token/env", (req, res) => {
     if (req.params.token !== INBOX_TOKEN) {
@@ -868,8 +724,6 @@ STRICT RULES:
     const summarize = (v: string | undefined) => v && v.length > 0 ? { present: true, length: v.length } : { present: false };
     res.setHeader("cache-control", "no-store");
     res.json({
-      WEB3FORMS_ACCESS_KEY: summarize(process.env.WEB3FORMS_ACCESS_KEY),
-      RESEND_API_KEY: summarize(process.env.RESEND_API_KEY),
       CUSTOM_CRED_API_RESEND_COM_URL: summarize(process.env.CUSTOM_CRED_API_RESEND_COM_URL),
       CUSTOM_CRED_API_RESEND_COM_TOKEN: summarize(process.env.CUSTOM_CRED_API_RESEND_COM_TOKEN),
       CUSTOM_CRED_API_GITHUB_COM_URL: summarize(process.env.CUSTOM_CRED_API_GITHUB_COM_URL),
